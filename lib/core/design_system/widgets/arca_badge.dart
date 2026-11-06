@@ -1,13 +1,8 @@
 import 'package:flutter/widgets.dart';
+
 import '../tokens/tokens.dart';
 
-enum ArcaBadgeVariant {
-  normal,
-  warning,
-  critical,
-  info,
-  neutral,
-}
+enum ArcaBadgeVariant { normal, warning, critical, info, neutral }
 
 /// Clinical indicator pill badge for lab ranges, document states, and vitals.
 class ArcaBadge extends StatelessWidget {
@@ -47,10 +42,7 @@ class ArcaBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: ArcaRadii.pill,
-        border: Border.all(
-          color: text.withValues(alpha: 0.3),
-          width: 0.5,
-        ),
+        border: Border.all(color: text.withValues(alpha: 0.3), width: 0.5),
       ),
       child: Text(
         label,

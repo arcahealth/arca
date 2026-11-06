@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 import '../tokens/tokens.dart';
 
 /// Clean, accessible header bar for Arca screens.
@@ -26,46 +27,92 @@ class ArcaHeader extends StatelessWidget {
       decoration: const BoxDecoration(
         color: ArcaColors.background,
         border: Border(
-          bottom: BorderSide(
-            color: ArcaColors.borderSubtle,
-            width: 1.0,
-          ),
+          bottom: BorderSide(color: ArcaColors.borderSubtle, width: 1.0),
         ),
       ),
-      child: Row(
-        children: [
-          if (leading != null) ...[
-            leading!,
-            const SizedBox(width: ArcaSpacing.sm),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final textScale =
+              MediaQuery.maybeTextScalerOf(context)?.scale(10) ?? 10.0;
+          final isStacked = constraints.maxWidth < 420 || textScale > 13.0;
+          if (isStacked && trailing != null) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  title,
-                  style: ArcaTypography.titleMedium,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    if (leading != null) ...[
+                      leading!,
+                      const SizedBox(width: ArcaSpacing.sm),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            title,
+                            style: ArcaTypography.titleMedium,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: ArcaSpacing.xxs),
+                            Text(
+                              subtitle!,
+                              style: ArcaTypography.caption,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: ArcaSpacing.xxs),
-                  Text(
-                    subtitle!,
-                    style: ArcaTypography.caption,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                const SizedBox(height: ArcaSpacing.xs),
+                Align(alignment: Alignment.centerRight, child: trailing!),
               ],
-            ),
-          ),
-          if (trailing != null) ...[
-            const SizedBox(width: ArcaSpacing.sm),
-            trailing!,
-          ],
-        ],
+            );
+          }
+
+          return Row(
+            children: [
+              if (leading != null) ...[
+                leading!,
+                const SizedBox(width: ArcaSpacing.sm),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: ArcaTypography.titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: ArcaSpacing.xxs),
+                      Text(
+                        subtitle!,
+                        style: ArcaTypography.caption,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (trailing != null) ...[
+                const SizedBox(width: ArcaSpacing.sm),
+                Flexible(flex: 0, child: trailing!),
+              ],
+            ],
+          );
+        },
       ),
     );
   }

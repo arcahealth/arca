@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart' show TextStyle, FontWeight;
+
 import 'arca_colors.dart';
 
 /// Clean typography hierarchy for medical records, journal entries, and vitals.

@@ -1,11 +1,8 @@
 import 'package:flutter/widgets.dart';
+
 import '../tokens/tokens.dart';
 
-enum ArcaButtonVariant {
-  primary,
-  secondary,
-  ghost,
-}
+enum ArcaButtonVariant { primary, secondary, ghost }
 
 /// Accessible, foundation-first button widget for Arca.
 ///
@@ -86,20 +83,23 @@ class _ArcaButtonState extends State<ArcaButton> {
       button: true,
       enabled: _isEnabled,
       label: effectiveLabel,
+      onTap: _isEnabled ? widget.onPressed : null,
+      excludeSemantics: true,
       child: FocusableActionDetector(
         enabled: _isEnabled,
         onShowHoverHighlight: (hovered) => setState(() => _isHovered = hovered),
         child: GestureDetector(
           onTap: _isEnabled ? widget.onPressed : null,
-          onTapDown: _isEnabled ? (_) => setState(() => _isPressed = true) : null,
-          onTapUp: _isEnabled ? (_) => setState(() => _isPressed = false) : null,
+          onTapDown: _isEnabled
+              ? (_) => setState(() => _isPressed = true)
+              : null,
+          onTapUp: _isEnabled
+              ? (_) => setState(() => _isPressed = false)
+              : null,
           onTapCancel: () => setState(() => _isPressed = false),
           behavior: HitTestBehavior.opaque,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: 48.0,
-              minWidth: 48.0,
-            ),
+            constraints: const BoxConstraints(minHeight: 48.0, minWidth: 48.0),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 120),
               padding: const EdgeInsets.symmetric(
@@ -120,10 +120,16 @@ class _ArcaButtonState extends State<ArcaButton> {
                       widget.icon!,
                       const SizedBox(width: ArcaSpacing.xs),
                     ],
-                    Text(
-                      widget.label,
-                      style: ArcaTypography.button.copyWith(color: _textColor),
-                      textAlign: TextAlign.center,
+                    Flexible(
+                      child: Text(
+                        widget.label,
+                        style: ArcaTypography.button.copyWith(
+                          color: _textColor,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),

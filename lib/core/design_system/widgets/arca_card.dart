@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 import '../tokens/tokens.dart';
 
 /// Surface card for clinical records, vitals summaries, and family member cards.
@@ -25,10 +26,7 @@ class ArcaCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: ArcaRadii.md,
-        border: Border.all(
-          color: borderColor,
-          width: 1.0,
-        ),
+        border: Border.all(color: borderColor, width: 1.0),
       ),
       child: child,
     );
