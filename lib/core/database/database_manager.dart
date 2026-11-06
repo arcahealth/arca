@@ -1,11 +1,12 @@
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite_async/sqlite_async.dart';
+
 import 'migrations.dart';
 
 /// Manages lifecycle, connection pool, and migrations for the on-device SQLite vault.
 class DatabaseManager {
-  DatabaseManager({SqliteDatabase? db}) : _db = db;
+  DatabaseManager({SqliteDatabase? customDatabase}) : _db = customDatabase;
 
   SqliteDatabase? _db;
 

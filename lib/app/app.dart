@@ -7,6 +7,10 @@ import '../features/journal/data/repositories/in_memory_journal_repository.dart'
 import '../features/journal/domain/repositories/journal_repository.dart';
 import '../features/journal/presentation/bloc/journal_bloc.dart';
 import '../features/journal/presentation/bloc/journal_event.dart';
+import '../features/profiles/data/repositories/in_memory_profile_repository.dart';
+import '../features/profiles/domain/repositories/profile_repository.dart';
+import '../features/profiles/presentation/bloc/profile_bloc.dart';
+import '../features/profiles/presentation/bloc/profile_event.dart';
 import 'router.dart';
 import 'routes.dart';
 
@@ -16,9 +20,15 @@ import 'routes.dart';
 /// a decoupled [WidgetsApp.router], deliberately avoiding monolithic Material
 /// and Cupertino framework dependencies.
 class ArcaApp extends StatefulWidget {
-  const ArcaApp({super.key, this.journalRepository, this.routerConfig});
+  const ArcaApp({
+    super.key,
+    this.journalRepository,
+    this.profileRepository,
+    this.routerConfig,
+  });
 
   final JournalRepository? journalRepository;
+  final ProfileRepository? profileRepository;
   final KaiselRouterConfig<AppRoute>? routerConfig;
 
   @override
@@ -26,25 +36,41 @@ class ArcaApp extends StatefulWidget {
 }
 
 class _ArcaAppState extends State<ArcaApp> {
-  late final JournalRepository _repository;
+  late final JournalRepository _journalRepository;
+  late final ProfileRepository _profileRepository;
   late final KaiselRouterConfig<AppRoute> _routerConfig;
 
   @override
   void initState() {
     super.initState();
-    _repository = widget.journalRepository ?? InMemoryJournalRepository();
+    _journalRepository =
+        widget.journalRepository ?? InMemoryJournalRepository();
+    _profileRepository =
+        widget.profileRepository ?? InMemoryProfileRepository();
     _routerConfig =
-        widget.routerConfig ?? createAppRouter(repository: _repository);
+        widget.routerConfig ?? createAppRouter(repository: _journalRepository);
   }
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider<JournalRepository>.value(
-      value: _repository,
-      child: BlocProvider<JournalBloc>(
-        create: (_) =>
-            JournalBloc(repository: _repository)
-              ..add(const JournalLoadRequested()),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<JournalRepository>.value(value: _journalRepository),
+        RepositoryProvider<ProfileRepository>.value(value: _profileRepository),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<ProfileBloc>(
+            create: (_) =>
+                ProfileBloc(repository: _profileRepository)
+                  ..add(const ProfileLoadRequested()),
+          ),
+          BlocProvider<JournalBloc>(
+            create: (_) =>
+                JournalBloc(repository: _journalRepository)
+                  ..add(const JournalLoadRequested()),
+          ),
+        ],
         child: WidgetsApp.router(
           color: ArcaColors.primary,
           textStyle: ArcaTypography.bodyMedium,

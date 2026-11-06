@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite_async/sqlite_async.dart';
@@ -27,34 +28,37 @@ void main() {
       }
     });
 
-    test('adds and retrieves entries sorted by recordedAt descending', () async {
-      final entry1 = JournalEntry(
-        id: 'entry-1',
-        title: 'Morning Vitals',
-        summary: 'Blood pressure 120/80 mmHg',
-        category: JournalCategory.vital,
-        recordedAt: DateTime(2026, 11, 7, 8),
-        memberId: 'self',
-      );
+    test(
+      'adds and retrieves entries sorted by recordedAt descending',
+      () async {
+        final entry1 = JournalEntry(
+          id: 'entry-1',
+          title: 'Morning Vitals',
+          summary: 'Blood pressure 120/80 mmHg',
+          category: JournalCategory.vital,
+          recordedAt: DateTime(2026, 11, 7, 8),
+          memberId: 'self',
+        );
 
-      final entry2 = JournalEntry(
-        id: 'entry-2',
-        title: 'Evening Vitals',
-        summary: 'Blood pressure 118/76 mmHg',
-        category: JournalCategory.vital,
-        recordedAt: DateTime(2026, 11, 7, 20),
-        memberId: 'self',
-      );
+        final entry2 = JournalEntry(
+          id: 'entry-2',
+          title: 'Evening Vitals',
+          summary: 'Blood pressure 118/76 mmHg',
+          category: JournalCategory.vital,
+          recordedAt: DateTime(2026, 11, 7, 20),
+          memberId: 'self',
+        );
 
-      await repository.addEntry(entry1);
-      await repository.addEntry(entry2);
+        await repository.addEntry(entry1);
+        await repository.addEntry(entry2);
 
-      final entries = await repository.getEntries();
-      expect(entries.length, 2);
-      // Verify descending chronological order
-      expect(entries.first.id, 'entry-2');
-      expect(entries.last.id, 'entry-1');
-    });
+        final entries = await repository.getEntries();
+        expect(entries.length, 2);
+        // Verify descending chronological order
+        expect(entries.first.id, 'entry-2');
+        expect(entries.last.id, 'entry-1');
+      },
+    );
 
     test('filters entries by memberId', () async {
       final selfEntry = JournalEntry(

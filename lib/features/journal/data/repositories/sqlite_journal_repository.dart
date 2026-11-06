@@ -1,5 +1,6 @@
 import 'package:sqlite3/common.dart' as sqlite;
 import 'package:sqlite_async/sqlite_async.dart';
+
 import '../../domain/models/journal_entry.dart';
 import '../../domain/repositories/journal_repository.dart';
 
@@ -23,13 +24,11 @@ class SqliteJournalRepository implements JournalRepository {
         [memberId],
       );
     } else {
-      results = await db.getAll(
-        '''
+      results = await db.getAll('''
         SELECT id, title, summary, category, recorded_at, member_id, is_verified_on_device
         FROM journal_entries
         ORDER BY recorded_at DESC
-        ''',
-      );
+        ''');
     }
 
     return results.map(_rowToEntry).toList(growable: false);

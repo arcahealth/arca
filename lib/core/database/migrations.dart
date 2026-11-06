@@ -46,10 +46,13 @@ class ArcaDatabaseMigrations {
         ''');
 
         // Seed default 'Self' profile
-        await tx.execute('''
+        await tx.execute(
+          '''
           INSERT INTO profiles (id, name, relationship, created_at)
           VALUES ('self', 'Me (Primary)', 'self', ?);
-        ''', [DateTime.now().millisecondsSinceEpoch]);
+        ''',
+          [DateTime.now().millisecondsSinceEpoch],
+        );
       }),
     );
 

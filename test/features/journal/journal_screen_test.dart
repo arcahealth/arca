@@ -27,7 +27,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Arca Journal'), findsOneWidget);
-      expect(find.text('On-Device Family Medical Vault'), findsOneWidget);
+      expect(find.textContaining('Longitudinal Family Vault'), findsOneWidget);
       expect(find.text('Resting Heart Rate & HRV Baseline'), findsOneWidget);
       expect(find.text('VITAL'), findsOneWidget);
     });
