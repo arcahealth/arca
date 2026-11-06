@@ -10,7 +10,7 @@ Arca is an offline-first, privacy-focused health tracking companion and longitud
 
 - **Zero-Friction Ingestion & Sync**: Automated background aggregation of daily vitals and clinical metrics from Apple HealthKit and Google Health Connect, plus manual logging for visits, active medications, and symptoms.
 - **On-Device Document Intelligence**: Local document transformation of paper lab reports and prescriptions into structured data using local OCR and quantized models—processed strictly on-device.
-- **Multi-Member Family Archive**: Permanent, longitudinal health vault supporting distinct profiles (e.g., self, children, aging parents) with structured multi-year chronological trends.
+- **Multi-Member Family Archive**: Permanent, longitudinal health vault supporting distinct profiles (e.g., self, children, aging parents) with structured multi-year chronological trends and seamless vault switching.
 - **Extreme Simplicity & Trust**: Clean journal interface with absolute data sovereignty—no remote account requirements, zero server-side telemetry, and total user ownership of exports and local backups.
 
 ---
@@ -18,9 +18,9 @@ Arca is an offline-first, privacy-focused health tracking companion and longitud
 ## Architectural Principles
 
 1. **Decoupled Foundation UI**: Arca avoids monolithic Material and Cupertino framework APIs. Built atop core Flutter primitives (`WidgetsApp`, basic widgets, and custom design tokens for typography, spacing, and colors), shielding the app from future framework decoupling migration debt.
-2. **Deterministic State Transitions**: Built with `flutter_bloc` for explicit event-driven state handling, testable pipelines, and clear clinical auditability.
+2. **Deterministic State Transitions**: Built with `flutter_bloc` for explicit event-driven state handling, testable pipelines, and clear clinical auditability across family profiles.
 3. **Dart 3 Sealed Navigation**: Uses `kaisel` for type-safe routing powered by Dart 3 sealed classes, exhaustive pattern matching, and a stack-as-state model rather than URL strings or code generation.
-4. **On-Device Relational Storage**: Local encrypted SQLite database backed by `sqlite_async` (omitting deprecated `sqlite3_flutter_libs`) with background isolate execution for responsive clinical queries.
+4. **On-Device Relational Storage**: Local encrypted SQLite database backed by `sqlite_async` (omitting deprecated `sqlite3_flutter_libs`) with background isolate execution and schema migrations for responsive clinical queries.
 
 ---
 
@@ -42,13 +42,18 @@ arca/
 │   │   ├── router.dart
 │   │   └── routes.dart
 │   ├── core/                      # Shared design system, database, and utilities
+│   │   ├── database/              # DatabaseManager, migrations, SQLite connection pool
 │   │   └── design_system/         # Tokens (colors, typography, spacing) and basic widgets
 │   └── features/
+│       ├── profiles/              # Multi-member family archive & vault switcher
+│       │   ├── domain/            # Profile models and repository contract
+│       │   ├── data/              # SqliteProfileRepository & in-memory test fakes
+│       │   └── presentation/      # ProfileBloc & MemberSwitcherBar
 │       └── journal/               # Clinical journal feature
 │           ├── domain/            # Models (JournalEntry) and repository interface
-│           ├── data/              # In-memory and SQLite repository implementations
+│           ├── data/              # SqliteJournalRepository & in-memory test fakes
 │           └── presentation/      # JournalBloc, JournalScreen, and RecordDetailScreen
-└── test/                          # Unit, widget, and accessibility test suites
+└── test/                          # Unit, SQLite integration, widget, and accessibility test suites
 ```
 
 ---
@@ -90,7 +95,7 @@ flutter analyze --fatal-infos --fatal-warnings
 ### Run Tests
 
 ```bash
-# Run entire test suite (unit, navigation codec, widget, and accessibility)
+# Run entire test suite (unit, SQLite, route codec, widget, and accessibility)
 flutter test
 ```
 
