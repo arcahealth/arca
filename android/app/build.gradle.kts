@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "health.arca.arca"
+    namespace = "health.arca.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

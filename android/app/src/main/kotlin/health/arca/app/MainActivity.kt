@@ -1,4 +1,4 @@
-package health.arca.arca
+package health.arca.app
 
 import io.flutter.embedding.android.FlutterActivity
 
