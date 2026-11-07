@@ -10,6 +10,26 @@ void main() {
       expect(uri.path, '/');
     });
 
+    test('encodes WelcomeRoute to /welcome', () {
+      final uri = codec.encode([const WelcomeRoute()]);
+      expect(uri.path, '/welcome');
+    });
+
+    test('encodes SetupWizardRoute to /setup', () {
+      final uri = codec.encode([const SetupWizardRoute()]);
+      expect(uri.path, '/setup');
+    });
+
+    test('encodes ModelDownloadRoute to /model-download', () {
+      final uri = codec.encode([const ModelDownloadRoute()]);
+      expect(uri.path, '/model-download');
+    });
+
+    test('encodes VaultSelectionRoute to /vaults', () {
+      final uri = codec.encode([const VaultSelectionRoute()]);
+      expect(uri.path, '/vaults');
+    });
+
     test('encodes RecordDetailRoute to /records/:id', () {
       final uri = codec.encode([
         const JournalRoute(),
@@ -23,6 +43,34 @@ void main() {
       expect(stack, isNotNull);
       expect(stack!.length, 1);
       expect(stack.first, isA<JournalRoute>());
+    });
+
+    test('decodes /welcome to [WelcomeRoute()]', () {
+      final stack = codec.decode(Uri.parse('/welcome'));
+      expect(stack, isNotNull);
+      expect(stack!.length, 1);
+      expect(stack.first, isA<WelcomeRoute>());
+    });
+
+    test('decodes /setup to [SetupWizardRoute()]', () {
+      final stack = codec.decode(Uri.parse('/setup'));
+      expect(stack, isNotNull);
+      expect(stack!.length, 1);
+      expect(stack.first, isA<SetupWizardRoute>());
+    });
+
+    test('decodes /model-download to [ModelDownloadRoute()]', () {
+      final stack = codec.decode(Uri.parse('/model-download'));
+      expect(stack, isNotNull);
+      expect(stack!.length, 1);
+      expect(stack.first, isA<ModelDownloadRoute>());
+    });
+
+    test('decodes /vaults to [VaultSelectionRoute()]', () {
+      final stack = codec.decode(Uri.parse('/vaults'));
+      expect(stack, isNotNull);
+      expect(stack!.length, 1);
+      expect(stack.first, isA<VaultSelectionRoute>());
     });
 
     test('decodes deep link /records/vital-123 to multi-frame stack', () {

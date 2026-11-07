@@ -1,6 +1,57 @@
 # Plan
 
 ## Done
+- [x] Interface-Driven Dependency Injection Architecture
+  - Requirements:
+    - Enforce abstract interfaces (`abstract interface class`) over concrete implementations across all constructors, screens, BLoCs, and services.
+    - Provide services and repositories by interface type in `MultiRepositoryProvider`.
+    - Extract `DatabaseService` interface for SQLite database lifecycle and migrations.
+    - Guarantee full mockability and test isolation across unit and widget tests.
+  - Sub-steps:
+    - [x] Create `DatabaseService` interface and make `DatabaseManager` implement it.
+    - [x] Add `void dispose()` to `VaultRepository` interface.
+    - [x] Update `RecordDetailScreen` to accept optional `JournalRepository` interface with `context.read<JournalRepository>()` fallback.
+    - [x] Inject `DatabaseService` and interfaces into `ArcaApp` and wire production entrypoint in `lib/main.dart`.
+    - [x] Add `database_service_test.dart` and refactor tests to declare interface types (46 total tests).
+    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+- [x] Feature Module Decoupling & Isolation Architecture
+  - Requirements:
+    - Eliminate broad container modules; enforce dedicated single-purpose feature modules (`welcome`, `setup_wizard`, `model_downloader`, `vaults`, `journal`).
+    - Enforce zero cross-feature imports (`lib/features/A` never imports `lib/features/B`).
+    - Move cross-cutting domain entities and repositories into `lib/core/` (`lib/core/vault/`, `lib/core/onboarding/`, `lib/core/model_downloader/`).
+    - Decouple screens from navigation routers: screens expose constructor callbacks (`onStartSetup`, `onSkip`, `onBack`, `onComplete`, `onVaultSelected`, `onRecordSelected`), leaving `lib/app/router.dart` as the sole route orchestrator.
+    - Inter-module reactivity via core repository broadcast streams (`vaultsStream`, `activeVaultIdStream`, `progressStream`).
+  - Sub-steps:
+    - [x] Migrate core domain entities and repository interfaces with broadcast stream controllers to `lib/core/`.
+    - [x] Refactor feature modules to be self-contained with constructor callbacks and zero cross-module imports.
+    - [x] Update `lib/app/router.dart` and `lib/app/routes.dart` to wire all constructor callbacks.
+    - [x] Build comprehensive automated test suite (44 unit, widget, and orchestration tests).
+    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+- [x] Onboarding & Setup Wizard UX Flow with Vault Guard & AI Capability Downloader
+  - Requirements:
+    - First-launch welcome screen introducing Arca's on-device privacy guarantee and clinical vault concept.
+    - Multi-step setup wizard:
+      - Step 1: Health Vault / Profile setup (optional; create one or multiple family vaults with name, relationship, blood type, allergies, DOB, or skip).
+      - Step 2: On-device AI capabilities selection (optional; selectable cards for OCR Lab Parser, Speech/Dictation ASR, Clinical Entity Recognition with download sizes).
+    - Completion step: Marks onboarding done in persistent preferences so it won't show again.
+    - AI Capabilities Download screen: Shown immediately after setup only if at least one AI capability was selected (otherwise skipped). Supports foreground progress viewing or background downloading with non-intrusive status indicator on Dashboard.
+    - Route Guard & Vault Resolver:
+      - 0 Vaults available -> Redirect to Vault Selection screen in empty state ("No vaults found. Tap to create a vault"). Creating vault sets it as active and redirects to Dashboard.
+      - 1 Vault available -> Automatically set as active and navigate to Dashboard.
+      - >1 Vaults available -> Navigate to Vault Selection screen for user to choose which vault to open.
+    - Terminology shift: Establish "Health Vault" (or "Vault") as the core multi-member container and "Clinical Timeline / Records" for chronological health events, transitioning away from personal diary connotations of "Journal".
+  - Sub-steps:
+    - [x] Create foundation UI components: `ArcaTextField` and `ArcaProgressBar` in `lib/core/design_system/widgets/`.
+    - [x] Create `OnboardingRepository` contract and implementations (`SharedPrefsOnboardingRepository`, `InMemoryOnboardingRepository`).
+    - [x] Create `AiCapability` models and `AiDownloadBloc` managing state and simulated background download tasks.
+    - [x] Create `OnboardingBloc` to manage wizard state transitions.
+    - [x] Implement screens: `WelcomeScreen`, `SetupWizardScreen`, `AiDownloadScreen`, `VaultSelectionScreen`.
+    - [x] Add `AiDownloadIndicatorBar` widget for persistent non-intrusive dashboard notifications.
+    - [x] Update `AppRoute` sealed class hierarchy, `AppStackCodec`, and `createAppRouter` with exhaustive pattern matching.
+    - [x] Wire dependencies and route guard in `lib/app/app.dart`.
+    - [x] Update `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
+    - [x] Write comprehensive unit, widget, and accessibility tests for the onboarding flow and route guards (51 total tests).
+    - [x] Full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
 - [x] Initialized Flutter project for Arca targeting Android & iOS (`health.arca.app`)
 - [x] Recorded baseline architectural choices in `docs/decisions.md`
 - [x] Decoupled Foundation Design System: Design tokens (`ArcaColors`, `ArcaSpacing`, `ArcaRadii`, `ArcaTypography`) and basic primitives (`ArcaScaffold`, `ArcaHeader`, `ArcaButton`, `ArcaCard`, `ArcaBadge`) built strictly on `package:flutter/widgets.dart`

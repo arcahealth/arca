@@ -1,5 +1,77 @@
 # Decisions
 
+## 2026-11-08: Interface-Driven Dependency Injection across Repositories, Services, Constructors, and BLoCs
+
+- **Status:** agreed
+- **Request:** Ensure dependencies (repositories and services) are provided, injected, and consumed as abstract interfaces rather than concrete implementations across screens, constructors, BLoCs, and service boundaries to guarantee testability and mockability.
+- **Scope:** Architecture, DI, composition root (`lib/app/`), core domain interfaces (`lib/core/`), and test harnesses.
+- **Choices:**
+  - **Interface-First Injection:**
+    - All constructors (screens, BLoCs, router config, composition root) accept abstract interfaces (`abstract interface class`), never concrete classes (`Sqlite*`, `InMemory*`, `SharedPrefs*`, or `DatabaseManager`).
+    - Interfaces utilized: `JournalRepository`, `VaultRepository`, `OnboardingRepository`, `ModelDownloaderRepository`, and `DatabaseService`.
+  - **Provider Typing:**
+    - `MultiRepositoryProvider` explicitly registers dependencies under their interface types:
+      - `RepositoryProvider<JournalRepository>.value`
+      - `RepositoryProvider<VaultRepository>.value`
+      - `RepositoryProvider<OnboardingRepository>.value`
+      - `RepositoryProvider<ModelDownloaderRepository>.value`
+      - `RepositoryProvider<DatabaseService>.value`
+    - Resolving dependencies via `context.read<T>()` retrieves the interface contract.
+  - **Service Abstractions:**
+    - Extracted `DatabaseService` interface for SQLite database lifecycle and migrations (`DatabaseManager implements DatabaseService`).
+  - **Testability & Mocking:**
+    - Tests declare variables as interface contracts (`final VaultRepository`, `final JournalRepository`, `final DatabaseService`), allowing drop-in substitution of test doubles, in-memory fakes, or mocks.
+
+---
+
+## 2026-11-08: Feature Module Isolation, Zero Cross-Feature Imports, Callback-Driven Route Orchestration, and Core Broadcast Streams
+
+- **Status:** agreed
+- **Request:** Restructure onboarding, setup wizard, AI downloader, and vault management into strictly isolated, self-contained feature modules. Remove ambiguous catch-all modules. Forbid cross-module feature dependencies and routing side-effects from UI screens.
+- **Scope:** Architecture refactoring across `lib/features/`, `lib/core/`, and `lib/app/`.
+- **Choices:**
+  - **Zero Cross-Feature Imports:**
+    - Feature modules (`welcome`, `setup_wizard`, `model_downloader`, `vaults`, `journal`) must never import each other (`import '../../features/B'` is strictly disallowed).
+    - Shared domain contracts, repositories, and models are colocated in `lib/core/` (`lib/core/vault/`, `lib/core/onboarding/`, `lib/core/model_downloader/`).
+  - **Callback-Driven Route Orchestration:**
+    - Presentation screens must never import `AppRoute`, `routes.dart`, or `package:kaisel/kaisel.dart`.
+    - Screens express user navigation intent exclusively via constructor callbacks (`onStartSetup`, `onSkip`, `onBack`, `onComplete`, `onVaultSelected`, `onRecordSelected`).
+    - The router (`lib/app/router.dart`) is the single orchestration layer that wires callbacks to route pushes, pops, and route-guard redirections.
+    - *Benefits:* Eliminates module leakage, decouples UI from navigation framework, and enables completely isolated widget and accessibility testing without router mocking.
+  - **Reactive Data Sharing via Broadcast Streams:**
+    - Shared domain state (e.g. active vault switching, dynamic vault list changes, and background AI model download progress) is exposed by core repositories using broadcast streams (`StreamController.broadcast()`).
+    - Feature BLoCs subscribe to these streams on initialization, reacting immediately to background updates across the application without tight coupling or peer BLoC communication.
+
+---
+
+## 2026-11-08: Onboarding & Setup Wizard Flow, Terminology ("Vault" vs "Journal"), and AI Capability Downloader
+
+- **Status:** agreed
+- **Request:** Introduce first-launch onboarding, setup wizard for multi-member vaults and on-device AI capabilities, post-setup AI model download flow with background resumption, and a route guard redirecting empty or multi-vault states. Address naming clarification between "Journal" and "Vault".
+- **Scope:** Feature implementation (Onboarding, Setup Wizard, AI Capabilities Downloader, Vault Selection, and Route Guards).
+- **Choices:**
+  - **Terminology Shift ("Vault" & "Clinical Records" over "Journal"):**
+    - "Journal" connotes personal lifestyle diaries, travel notes, or casual logs, failing to communicate medical rigor, clinical confidentiality, and sovereign custody.
+    - We adopt **"Health Vault"** (or simply **"Vault"**) as the primary container for a profile's encrypted medical records. Vault strongly communicates data security, encryption, and portable export/import boundaries.
+    - Chronological data inside a Vault is designated as **"Clinical Records"** or **"Health Timeline"**.
+  - **Onboarding UX & Setup Wizard Architecture:**
+    - First Launch: Routes to `WelcomeRoute`. Users can start guided setup or quick skip.
+    - Wizard Step 1 (Vault Setup): Allows creating 0, 1, or multiple vaults with name, relationship, and optional medical details (blood type, allergies, DOB).
+    - Wizard Step 2 (On-Device AI Capabilities): Selectable list of edge AI models (Lab OCR, Whisper Dictation ASR, Clinical NER) with download size estimates. Skipping or selecting none bypasses download.
+    - Onboarding Completion: Sets persistent flag `has_completed_onboarding` in `SharedPreferences`.
+  - **AI Capabilities Download Lifecycle:**
+    - Shown in the same first-launch session only if $\ge 1$ capabilities are selected.
+    - Users can monitor downloads or tap "Continue to Dashboard" immediately to run downloads in the background.
+    - A non-intrusive status indicator bar is placed at the top of the dashboard when background downloads are active, with state persisted so terminated downloads resume on next session.
+  - **Route Guard & Initial Route Decision Matrix:**
+    - `!hasCompletedOnboarding` $\rightarrow$ `WelcomeRoute`
+    - `hasCompletedOnboarding` with:
+      - 0 Vaults available $\rightarrow$ `VaultSelectionRoute` in Empty State mode (prompts vault creation before accessing dashboard).
+      - 1 Vault available $\rightarrow$ `JournalRoute` (Dashboard) with that vault automatically active.
+      - $>1$ Vaults available $\rightarrow$ `VaultSelectionRoute` (in selection mode, allowing the user to select their active vault or switch anytime).
+
+---
+
 ## 2026-11-07: Project Foundation and Architectural Choices
 
 - **Status:** agreed

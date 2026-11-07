@@ -2,54 +2,70 @@
 
 ## Current Shape & Feature Layout
 
-Arca is structured around a feature-first layered architecture. Code is partitioned by domain capabilities inside `lib/features/<name>/`, supported by shared cross-cutting infrastructure in `lib/core/` and unified at the composition root in `lib/app/`.
+Arca is structured around self-contained, isolated feature modules supported by shared domain infrastructure in `lib/core/` and unified at the composition root in `lib/app/`.
+
+Cross-module imports between features are strictly forbidden (`lib/features/A` must NEVER import `lib/features/B`). Data sharing occurs exclusively via core repositories, and route transitions are completely decoupled from presentation screens using constructor callbacks wired at the router.
 
 ```
 lib/
-├── main.dart                      # Low-level application entry point
-├── app/                           # Composition root
+├── main.dart                      # Low-level application entry point with onboarding bootstrap
+├── app/                           # Composition root & route orchestrator
 │   ├── app.dart                   # ArcaApp: MultiRepositoryProvider + MultiBlocProvider + WidgetsApp.router
-│   ├── router.dart                # createAppRouter: KaiselRouterConfig with sealed routes
-│   └── routes.dart                # Sealed AppRoute (JournalRoute, RecordDetailRoute) & AppStackCodec
-├── core/
-│   ├── database/                  # On-device SQLite infrastructure
-│   │   ├── database_manager.dart  # Connection pool, path resolution, and lifecycle
-│   │   └── migrations.dart        # ArcaDatabaseMigrations: profiles, journal_entries, indexes
-│   └── design_system/             # Foundation UI (Decoupled from Material/Cupertino)
-│       ├── tokens/                # Colors, Spacing, Radii, Typography
-│       └── widgets/               # ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge
-└── features/
-    ├── profiles/                  # Multi-member family archive & vault switcher
-    │   ├── domain/                # Profile model (self, child, parent, etc.) & ProfileRepository
-    │   ├── data/                  # SqliteProfileRepository & InMemoryProfileRepository
-    │   └── presentation/          # ProfileBloc & MemberSwitcherBar
-    └── journal/                   # Primary medical journal & clinical vault
-        ├── domain/                # Pure Dart models (JournalEntry, JournalCategory) & JournalRepository
-        ├── data/                  # SqliteJournalRepository & InMemoryJournalRepository
-        └── presentation/          # JournalBloc, JournalScreen, and RecordDetailScreen
+│   ├── router.dart                # createAppRouter: Wires constructor callbacks, route pushes/pops & guards
+│   └── routes.dart                # Sealed AppRoute (Welcome, SetupWizard, ModelDownload, VaultSelection, Journal, RecordDetail) & AppStackCodec
+├── core/                          # Shared domain entities, repository contracts & infrastructure
+│   ├── database/                  # On-device SQLite infrastructure (DatabaseManager, ArcaDatabaseMigrations)
+│   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
+│   ├── onboarding/                # OnboardingRepository, SharedPrefsOnboardingRepository, InMemoryOnboardingRepository
+│   ├── model_downloader/          # AiModelCapability, ModelDownloadState, ModelDownloaderRepository (broadcast progressStream)
+│   └── vault/                     # Vault, VaultRelationship, VaultRepository (broadcast vaultsStream & activeVaultIdStream)
+└── features/                      # Isolated, self-contained feature modules (Zero cross-feature imports)
+    ├── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen with onStartSetup & onSkip callbacks)
+    ├── setup_wizard/              # Multi-step vault creation & AI selection wizard (SetupWizardBloc & SetupWizardScreen with onBack, onSkip, onComplete)
+    ├── model_downloader/          # On-device AI downloads & status (ModelDownloaderBloc, ModelDownloadScreen, ModelDownloadIndicatorBar)
+    ├── vaults/                    # Vault management & switching (VaultBloc, VaultSelectionScreen, VaultSwitcherBar)
+    └── journal/                   # Primary medical journal & clinical records timeline (JournalBloc, JournalScreen, RecordDetailScreen)
 ```
 
 ---
 
-## Seams & Layer Boundaries
+## Seams, Layer Boundaries & Decoupling Principles
+
+### 1. Zero Cross-Feature Imports
+- Features are completely self-contained. `lib/features/<name>/` can only import `package:flutter/widgets.dart`, third-party packages, and `package:arca/core/...`.
+- No feature may import another feature (`import '../../features/other/...'` is strictly forbidden).
+
+### 2. Decoupled Route Orchestration via Constructor Callbacks
+- Presentation screens never import `AppRoute`, `routes.dart`, or `package:kaisel/kaisel.dart`.
+- Screens express navigation intent exclusively through constructor callbacks (`onStartSetup`, `onSkip`, `onBack`, `onComplete`, `onVaultSelected`, `onRecordSelected`).
+- The router in `lib/app/router.dart` is the sole orchestrator wiring these callbacks to `context.push()` / `context.pop()`, preventing navigation leakage and enabling isolated widget testing.
+
+### 3. Reactive Cross-Module Data Sharing via Core Broadcast Streams
+- When multiple features need to observe shared domain state (such as active vault changes or model download progress), core repositories expose broadcast streams (`StreamController.broadcast()`).
+- Feature BLoCs subscribe to these repository streams, achieving reactive synchronization without inter-BLoC dependencies.
+
+### 4. Interface-Driven Dependency Injection
+- Screens, BLoCs, router parameters, and service consumers accept abstract interfaces (`abstract interface class`), never concrete implementations.
+- Repositories (`JournalRepository`, `VaultRepository`, `OnboardingRepository`, `ModelDownloaderRepository`) and services (`DatabaseService`) are registered in `MultiRepositoryProvider` by their interface types.
+- Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
 | Layer | Responsibility | Imports Permitted | Outgoing Boundary / Seam |
 | --- | --- | --- | --- |
-| **Domain** | Clinical business logic, models, repository interfaces | Pure Dart only (`dart:core`, `dart:async`) | No dependencies on UI, database drivers, or platform SDKs. |
-| **Data** | Persistence engines (`sqlite_async`), file I/O, device health sensor sync | Domain interfaces, database drivers, platform channels | Implements domain repository interfaces. Converts database rows to immutable domain models. |
-| **Presentation** | State management (`flutter_bloc`), screen composition, user interaction | Domain models, design system, Flutter `widgets.dart` | Translates user events to BLoC events; renders view state snapshots. Strictly free of direct database calls. |
-| **Core (Design & DB)** | Visual tokens, layout primitives, and on-device SQLite database connection pool | Flutter `widgets.dart`, `dart:ui`, `sqlite_async` | Independent of feature business logic. No `package:flutter/material.dart` or `package:flutter/cupertino.dart`. |
-| **Composition Root (`lib/app`)**| Service creation, dependency injection, and router wiring | Core, Features, and Navigation | The single location where concrete repository implementations and BLoCs are instantiated. |
+| **Domain (`lib/core/<domain>`)** | Core business logic, models, repository interfaces | Pure Dart only (`dart:core`, `dart:async`) | No dependencies on UI or platform SDKs. Shared across features. |
+| **Data (`lib/core/<domain>` or `features/*/data`)** | Persistence engines (`sqlite_async`, `shared_preferences`) | Domain interfaces, database drivers | Implements domain repository interfaces with broadcast stream notifications. |
+| **Presentation (`features/*/presentation`)** | State management (`flutter_bloc`), screen composition | Design system, Flutter `widgets.dart`, core domain | Translates user events to BLoC events; fires constructor callbacks for navigation. |
+| **Core Design System** | Visual tokens, layout primitives, accessible widgets | Flutter `widgets.dart`, `dart:ui` | Independent of feature business logic. Zero Material/Cupertino framework imports. |
+| **Composition Root (`lib/app`)** | Dependency injection, router wiring & route guards | Core, Features, and Navigation | Injects concrete repositories and wires callbacks to router actions. |
 
 ### Dependency Direction
 
 ```
-Presentation ──► Domain ◄── Data
-     │              ▲         │
-     ▼              │         ▼
-Core (Design)       │    Core (Database)
-     ▲              │         ▲
-     └─────── Composition Root ┘
+Feature Presentation ──► Core Domain / Repositories ◄── Core Data
+         │                         ▲                         │
+         ▼                         │                         ▼
+Core (Design System)               │                  Core (Database)
+         ▲                         │                         ▲
+         └───────────────── Composition Root ────────────────┘
 ```
 
 - High-level policy (Domain) does not depend on low-level detail (Data, UI).
@@ -62,10 +78,14 @@ Core (Design)       │    Core (Database)
 
 Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 - **Routes as Values**: Routes are immutable sealed classes extending `KaiselRoute`:
-  - `JournalRoute()`: Primary timeline
+  - `WelcomeRoute()`: First-launch greeting & privacy value pillars
+  - `SetupWizardRoute()`: Multi-step vault and edge AI capability setup
+  - `AiDownloadRoute(selectedCapabilityIds)`: First-session AI model download progress
+  - `VaultSelectionRoute()`: Vault switcher & empty-vault route guard
+  - `JournalRoute()`: Primary timeline & health vault dashboard
   - `RecordDetailRoute(recordId)`: Clinical detail view
 - **Exhaustive Pattern Matching**: The screen builder in `lib/app/router.dart` uses a Dart 3 `switch` expression over the sealed route hierarchy, guaranteeing at compile-time that every route is handled.
-- **Deep Linking**: `AppStackCodec` implements `KaiselStackCodec<AppRoute>`, decoding incoming deep links (`/records/:id`) into a multi-frame stack (`[JournalRoute(), RecordDetailRoute(id)]`) to preserve natural back navigation.
+- **Deep Linking**: `AppStackCodec` implements `KaiselStackCodec<AppRoute>`, decoding incoming deep links (`/records/:id`, `/welcome`, `/setup`, `/ai-download`, `/vaults`) into a multi-frame stack (`[JournalRoute(), RecordDetailRoute(id)]`) to preserve natural back navigation.
 
 ---
 

@@ -2,13 +2,14 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/features/journal/data/repositories/in_memory_journal_repository.dart';
 import 'package:arca/features/journal/domain/models/journal_entry.dart';
+import 'package:arca/features/journal/domain/repositories/journal_repository.dart';
 import 'package:arca/features/journal/presentation/bloc/journal_bloc.dart';
 import 'package:arca/features/journal/presentation/bloc/journal_event.dart';
 import 'package:arca/features/journal/presentation/bloc/journal_state.dart';
 
 void main() {
   group('JournalBloc', () {
-    late InMemoryJournalRepository repository;
+    late JournalRepository repository;
     final testEntry = JournalEntry(
       id: 'test-1',
       title: 'Lab Blood Panel',

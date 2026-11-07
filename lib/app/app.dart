@@ -2,34 +2,49 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kaisel/kaisel.dart';
 
+import '../core/database/database_service.dart';
 import '../core/design_system/tokens/tokens.dart';
+import '../core/model_downloader/repositories/in_memory_model_downloader_repository.dart';
+import '../core/model_downloader/repositories/model_downloader_repository.dart';
+import '../core/onboarding/repositories/in_memory_onboarding_repository.dart';
+import '../core/onboarding/repositories/onboarding_repository.dart';
+import '../core/vault/repositories/in_memory_vault_repository.dart';
+import '../core/vault/repositories/vault_repository.dart';
 import '../features/journal/data/repositories/in_memory_journal_repository.dart';
 import '../features/journal/domain/repositories/journal_repository.dart';
 import '../features/journal/presentation/bloc/journal_bloc.dart';
 import '../features/journal/presentation/bloc/journal_event.dart';
-import '../features/profiles/data/repositories/in_memory_profile_repository.dart';
-import '../features/profiles/domain/repositories/profile_repository.dart';
-import '../features/profiles/presentation/bloc/profile_bloc.dart';
-import '../features/profiles/presentation/bloc/profile_event.dart';
+import '../features/model_downloader/presentation/bloc/model_downloader_bloc.dart';
+import '../features/setup_wizard/presentation/bloc/setup_wizard_bloc.dart';
+import '../features/vaults/presentation/bloc/vault_bloc.dart';
+import '../features/vaults/presentation/bloc/vault_event.dart';
 import 'router.dart';
 import 'routes.dart';
 
 /// Composition root for Arca.
 ///
-/// Injects domain repositories and BLoCs at the edge and wraps the app with
-/// a decoupled [WidgetsApp.router], deliberately avoiding monolithic Material
-/// and Cupertino framework dependencies.
+/// Injects core domain repositories and feature BLoCs at the application edge.
 class ArcaApp extends StatefulWidget {
   const ArcaApp({
     super.key,
     this.journalRepository,
+    this.vaultRepository,
     this.profileRepository,
+    this.onboardingRepository,
+    this.modelDownloaderRepository,
+    this.databaseService,
     this.routerConfig,
+    this.initialRoute,
   });
 
   final JournalRepository? journalRepository;
-  final ProfileRepository? profileRepository;
+  final VaultRepository? vaultRepository;
+  final VaultRepository? profileRepository;
+  final OnboardingRepository? onboardingRepository;
+  final ModelDownloaderRepository? modelDownloaderRepository;
+  final DatabaseService? databaseService;
   final KaiselRouterConfig<AppRoute>? routerConfig;
+  final AppRoute? initialRoute;
 
   @override
   State<ArcaApp> createState() => _ArcaAppState();
@@ -37,38 +52,75 @@ class ArcaApp extends StatefulWidget {
 
 class _ArcaAppState extends State<ArcaApp> {
   late final JournalRepository _journalRepository;
-  late final ProfileRepository _profileRepository;
+  late final VaultRepository _vaultRepository;
+  late final OnboardingRepository _onboardingRepository;
+  late final ModelDownloaderRepository _modelDownloaderRepository;
+  late final DatabaseService? _databaseService;
   late final KaiselRouterConfig<AppRoute> _routerConfig;
 
   @override
   void initState() {
     super.initState();
+    _databaseService = widget.databaseService;
     _journalRepository =
         widget.journalRepository ?? InMemoryJournalRepository();
-    _profileRepository =
-        widget.profileRepository ?? InMemoryProfileRepository();
+    _vaultRepository =
+        widget.vaultRepository ??
+        widget.profileRepository ??
+        InMemoryVaultRepository();
+    _onboardingRepository =
+        widget.onboardingRepository ??
+        InMemoryOnboardingRepository(hasCompletedOnboarding: true);
+    _modelDownloaderRepository =
+        widget.modelDownloaderRepository ?? InMemoryModelDownloaderRepository();
+
     _routerConfig =
-        widget.routerConfig ?? createAppRouter(repository: _journalRepository);
+        widget.routerConfig ??
+        createAppRouter(
+          repository: _journalRepository,
+          vaultRepository: _vaultRepository,
+          onboardingRepository: _onboardingRepository,
+          initial: widget.initialRoute ?? const JournalRoute(),
+        );
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        if (_databaseService != null)
+          RepositoryProvider<DatabaseService>.value(value: _databaseService),
         RepositoryProvider<JournalRepository>.value(value: _journalRepository),
-        RepositoryProvider<ProfileRepository>.value(value: _profileRepository),
+        RepositoryProvider<VaultRepository>.value(value: _vaultRepository),
+        RepositoryProvider<OnboardingRepository>.value(
+          value: _onboardingRepository,
+        ),
+        RepositoryProvider<ModelDownloaderRepository>.value(
+          value: _modelDownloaderRepository,
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
-          BlocProvider<ProfileBloc>(
+          BlocProvider<VaultBloc>(
             create: (_) =>
-                ProfileBloc(repository: _profileRepository)
-                  ..add(const ProfileLoadRequested()),
+                VaultBloc(repository: _vaultRepository)
+                  ..add(const VaultLoadRequested()),
           ),
           BlocProvider<JournalBloc>(
             create: (_) =>
                 JournalBloc(repository: _journalRepository)
                   ..add(const JournalLoadRequested()),
+          ),
+          BlocProvider<SetupWizardBloc>(
+            create: (_) => SetupWizardBloc(
+              vaultRepository: _vaultRepository,
+              onboardingRepository: _onboardingRepository,
+              modelDownloaderRepository: _modelDownloaderRepository,
+            ),
+          ),
+          BlocProvider<ModelDownloaderBloc>(
+            create: (_) =>
+                ModelDownloaderBloc(repository: _modelDownloaderRepository),
           ),
         ],
         child: WidgetsApp.router(

@@ -3,10 +3,11 @@ import 'package:arca/app/app.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/features/journal/data/repositories/in_memory_journal_repository.dart';
 import 'package:arca/features/journal/domain/models/journal_entry.dart';
+import 'package:arca/features/journal/domain/repositories/journal_repository.dart';
 
 void main() {
   group('JournalScreen Widget Tests', () {
-    late InMemoryJournalRepository fakeRepository;
+    late JournalRepository fakeRepository;
     final testEntry = JournalEntry(
       id: 'entry-test-1',
       title: 'Resting Heart Rate & HRV Baseline',

@@ -36,24 +36,24 @@ arca/
 │   ├── architecture.md            # Detailed system architecture, seams, and module tree
 │   └── plan.md                    # Active roadmap and implementation checklist
 ├── lib/
-│   ├── main.dart                  # Application entry point
+│   ├── main.dart                  # Application entry point with onboarding bootstrap
 │   ├── app/                       # Composition root, router setup, and sealed routes
-│   │   ├── app.dart
-│   │   ├── router.dart
-│   │   └── routes.dart
-│   ├── core/                      # Shared design system, database, and utilities
+│   │   ├── app.dart               # MultiRepositoryProvider + MultiBlocProvider + WidgetsApp.router
+│   │   ├── router.dart            # createAppRouter: Wires constructor callbacks & route guards
+│   │   └── routes.dart            # Sealed AppRoute hierarchy & AppStackCodec
+│   ├── core/                      # Shared design system, database, and domain infrastructure
 │   │   ├── database/              # DatabaseManager, migrations, SQLite connection pool
-│   │   └── design_system/         # Tokens (colors, typography, spacing) and basic widgets
-│   └── features/
-│       ├── profiles/              # Multi-member family archive & vault switcher
-│       │   ├── domain/            # Profile models and repository contract
-│       │   ├── data/              # SqliteProfileRepository & in-memory test fakes
-│       │   └── presentation/      # ProfileBloc & MemberSwitcherBar
-│       └── journal/               # Clinical journal feature
-│           ├── domain/            # Models (JournalEntry) and repository interface
-│           ├── data/              # SqliteJournalRepository & in-memory test fakes
-│           └── presentation/      # JournalBloc, JournalScreen, and RecordDetailScreen
-└── test/                          # Unit, SQLite integration, widget, and accessibility test suites
+│   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
+│   │   ├── onboarding/            # OnboardingRepository (SharedPrefs & InMemory)
+│   │   ├── model_downloader/      # AiModelCapability, ModelDownloaderRepository (broadcast stream)
+│   │   └── vault/                 # Vault, VaultRelationship, VaultRepository (broadcast streams)
+│   └── features/                  # Self-contained feature modules (Zero cross-feature imports)
+│       ├── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
+│       ├── setup_wizard/          # Multi-step vault & AI selection wizard (SetupWizardScreen)
+│       ├── model_downloader/      # Edge AI model download screen & persistent indicator bar
+│       ├── vaults/                # Health vault switcher bar & selection screen (VaultSelectionScreen)
+│       └── journal/               # Clinical journal and health vault timeline feature (JournalScreen)
+└── test/                          # Unit, SQLite integration, widget, and orchestration tests (46 tests)
 ```
 
 ---

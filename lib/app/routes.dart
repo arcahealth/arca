@@ -8,7 +8,44 @@ sealed class AppRoute extends KaiselRoute {
   const AppRoute();
 }
 
-/// Primary journal timeline route.
+/// First-launch welcome screen introducing Arca.
+final class WelcomeRoute extends AppRoute {
+  const WelcomeRoute();
+
+  @override
+  List<Object?> get props => const [];
+}
+
+/// Setup wizard route for configuring initial Health Vaults and AI capabilities.
+final class SetupWizardRoute extends AppRoute {
+  const SetupWizardRoute();
+
+  @override
+  List<Object?> get props => const [];
+}
+
+/// On-device AI capability download progress screen.
+final class ModelDownloadRoute extends AppRoute {
+  const ModelDownloadRoute({this.selectedCapabilityIds = const []});
+
+  final List<String> selectedCapabilityIds;
+
+  @override
+  List<Object?> get props => [selectedCapabilityIds];
+}
+
+/// Compatibility alias.
+typedef AiDownloadRoute = ModelDownloadRoute;
+
+/// Vault switcher and empty-vault creation guard screen.
+final class VaultSelectionRoute extends AppRoute {
+  const VaultSelectionRoute();
+
+  @override
+  List<Object?> get props => const [];
+}
+
+/// Primary clinical dashboard and health vault timeline route.
 final class JournalRoute extends AppRoute {
   const JournalRoute();
 
@@ -34,6 +71,10 @@ class AppStackCodec extends KaiselStackCodec<AppRoute> {
   Uri encode(List<AppRoute> stack) {
     if (stack.isEmpty) return Uri(path: '/');
     return switch (stack.last) {
+      WelcomeRoute() => Uri(path: '/welcome'),
+      SetupWizardRoute() => Uri(path: '/setup'),
+      ModelDownloadRoute() => Uri(path: '/model-download'),
+      VaultSelectionRoute() => Uri(path: '/vaults'),
       JournalRoute() => Uri(path: '/'),
       RecordDetailRoute(:final recordId) => Uri(path: '/records/$recordId'),
     };
@@ -44,6 +85,10 @@ class AppStackCodec extends KaiselStackCodec<AppRoute> {
     final segments = uri.pathSegments;
     return switch (segments) {
       [] || [''] => const [JournalRoute()],
+      ['welcome'] => const [WelcomeRoute()],
+      ['setup'] => const [SetupWizardRoute()],
+      ['model-download'] || ['ai-download'] => const [ModelDownloadRoute()],
+      ['vaults'] => const [VaultSelectionRoute()],
       ['records', final id] => [const JournalRoute(), RecordDetailRoute(id)],
       _ => null,
     };

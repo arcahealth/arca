@@ -6,12 +6,13 @@ import 'package:sqlite_async/sqlite_async.dart';
 import 'package:arca/core/database/migrations.dart';
 import 'package:arca/features/journal/data/repositories/sqlite_journal_repository.dart';
 import 'package:arca/features/journal/domain/models/journal_entry.dart';
+import 'package:arca/features/journal/domain/repositories/journal_repository.dart';
 
 void main() {
   group('SqliteJournalRepository Tests', () {
     late Directory tempDir;
     late SqliteDatabase db;
-    late SqliteJournalRepository repository;
+    late JournalRepository repository;
 
     setUp(() async {
       tempDir = Directory.systemTemp.createTempSync('arca_db_test_');

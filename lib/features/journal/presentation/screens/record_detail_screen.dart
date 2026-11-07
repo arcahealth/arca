@@ -1,23 +1,30 @@
 import 'package:flutter/widgets.dart';
-import 'package:kaisel/kaisel.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/design_system/arca_design_system.dart';
 import '../../domain/models/journal_entry.dart';
 import '../../domain/repositories/journal_repository.dart';
 
 /// Detail screen displaying full diagnostic metadata and on-device clinical audit status.
+///
+/// Self-contained: forwards back navigation via constructor callback [onBack].
+/// Resolves [JournalRepository] interface via constructor injection or [RepositoryProvider].
 class RecordDetailScreen extends StatelessWidget {
   const RecordDetailScreen({
     required this.recordId,
-    required this.repository,
+    this.repository,
     super.key,
+    this.onBack,
   });
 
   final String recordId;
-  final JournalRepository repository;
+  final JournalRepository? repository;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
+    final repo = repository ?? context.read<JournalRepository>();
+
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Clinical Record Detail',
@@ -26,11 +33,11 @@ class RecordDetailScreen extends StatelessWidget {
           label: '← Back',
           variant: ArcaButtonVariant.ghost,
           semanticsLabel: 'Navigate back to journal timeline',
-          onPressed: () => context.pop(),
+          onPressed: onBack,
         ),
       ),
       body: FutureBuilder<JournalEntry?>(
-        future: repository.getEntryById(recordId),
+        future: repo.getEntryById(recordId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -57,10 +64,7 @@ class RecordDetailScreen extends StatelessWidget {
                     style: ArcaTypography.bodyMedium,
                   ),
                   const SizedBox(height: ArcaSpacing.lg),
-                  ArcaButton(
-                    label: 'Return to Timeline',
-                    onPressed: () => context.pop(),
-                  ),
+                  ArcaButton(label: 'Return to Timeline', onPressed: onBack),
                 ],
               ),
             );
