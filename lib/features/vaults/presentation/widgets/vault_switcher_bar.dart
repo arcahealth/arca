@@ -7,20 +7,13 @@ import '../../../../core/vault/models/vault.dart';
 ///
 /// Complies with mobile accessibility guidelines: 48x48 dp minimum tap targets,
 /// keyboard focus highlight, and semantic roles.
-class VaultSwitcherBar extends StatelessWidget {
-  const VaultSwitcherBar({
-    required this.vaults,
-    required this.activeVault,
-    required this.onVaultSelected,
-    super.key,
-    this.onAddVault,
-  });
-
-  final List<Vault> vaults;
-  final Vault activeVault;
-  final ValueChanged<String> onVaultSelected;
-  final VoidCallback? onAddVault;
-
+class const VaultSwitcherBar({
+  required final List<Vault> vaults,
+  required final Vault activeVault,
+  required final ValueChanged<String> onVaultSelected,
+  super.key,
+  final VoidCallback? onAddVault,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -35,7 +28,7 @@ class VaultSwitcherBar extends StatelessWidget {
         ),
       ),
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+        scrollDirection: .horizontal,
         child: Row(
           children: [
             for (final vault in vaults) ...[
@@ -46,7 +39,7 @@ class VaultSwitcherBar extends StatelessWidget {
               const SizedBox(width: ArcaSpacing.xs),
               ArcaButton(
                 label: '+ Add Member',
-                variant: ArcaButtonVariant.ghost,
+                variant: .ghost,
                 semanticsLabel: 'Add new family member vault',
                 onPressed: onAddVault,
               ),
@@ -72,7 +65,7 @@ class VaultSwitcherBar extends StatelessWidget {
       label: 'Switch to ${vault.name} (${vault.relationship.name})',
       child: GestureDetector(
         onTap: () => onVaultSelected(vault.id),
-        behavior: HitTestBehavior.opaque,
+        behavior: .opaque,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 48.0, minWidth: 48.0),
           child: AnimatedContainer(
@@ -86,22 +79,22 @@ class VaultSwitcherBar extends StatelessWidget {
               borderRadius: ArcaRadii.pill,
               border: Border.all(color: borderColor, width: 1.0),
             ),
-            alignment: Alignment.center,
+            alignment: .center,
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: .min,
               children: [
                 Text(
                   vault.name,
                   style: ArcaTypography.caption.copyWith(
                     color: textColor,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                    fontWeight: isActive ? .w700 : .w600,
                   ),
                 ),
                 if (!isActive) ...[
                   const SizedBox(width: ArcaSpacing.xxs),
                   ArcaBadge(
                     label: vault.relationship.name.toUpperCase(),
-                    variant: ArcaBadgeVariant.neutral,
+                    variant: .neutral,
                   ),
                 ],
               ],
@@ -109,32 +102,6 @@ class VaultSwitcherBar extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Backwards compatibility wrapper for tests.
-class MemberSwitcherBar extends StatelessWidget {
-  const MemberSwitcherBar({
-    required this.profiles,
-    required this.activeProfile,
-    required this.onProfileSelected,
-    super.key,
-    this.onAddProfile,
-  });
-
-  final List<Vault> profiles;
-  final Vault activeProfile;
-  final ValueChanged<String> onProfileSelected;
-  final VoidCallback? onAddProfile;
-
-  @override
-  Widget build(BuildContext context) {
-    return VaultSwitcherBar(
-      vaults: profiles,
-      activeVault: activeProfile,
-      onVaultSelected: onProfileSelected,
-      onAddVault: onAddProfile,
     );
   }
 }

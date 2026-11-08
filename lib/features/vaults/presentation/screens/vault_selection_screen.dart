@@ -12,16 +12,11 @@ import '../bloc/vault_state.dart';
 ///
 /// Self-contained: forwards user selections and creations via constructor callbacks
 /// [onVaultSelected] and [onVaultCreated] without cross-module dependencies.
-class VaultSelectionScreen extends StatefulWidget {
-  const VaultSelectionScreen({
-    super.key,
-    this.onVaultSelected,
-    this.onVaultCreated,
-  });
-
-  final ValueChanged<String>? onVaultSelected;
-  final ValueChanged<Vault>? onVaultCreated;
-
+class const VaultSelectionScreen({
+  super.key,
+  final ValueChanged<String>? onVaultSelected,
+  final ValueChanged<Vault>? onVaultCreated,
+}) extends StatefulWidget {
   @override
   State<VaultSelectionScreen> createState() => _VaultSelectionScreenState();
 }
@@ -30,7 +25,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _bloodTypeController = TextEditingController();
   final TextEditingController _allergiesController = TextEditingController();
-  VaultRelationship _selectedRelationship = VaultRelationship.self;
+  VaultRelationship _selectedRelationship = .self;
   bool _isCreatingInline = false;
 
   @override
@@ -101,7 +96,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
 
   Widget _buildEmptyStateForm(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: .stretch,
       children: [
         Container(
           padding: const EdgeInsets.all(ArcaSpacing.md),
@@ -113,7 +108,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
             ),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               const Text('⚠️', style: TextStyle(fontSize: 20)),
               const SizedBox(width: ArcaSpacing.sm),
@@ -122,7 +117,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
                   'Arca is an offline-first clinical vault. The application requires at least one health vault to store records, lab results, and vitals.',
                   style: ArcaTypography.caption.copyWith(
                     color: ArcaColors.warning,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: .w600,
                     height: 1.3,
                   ),
                 ),
@@ -133,7 +128,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
         const SizedBox(height: ArcaSpacing.lg),
         ArcaCard(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: .stretch,
             children: [
               const Text(
                 'Create Your First Health Vault',
@@ -149,7 +144,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
               const SizedBox(height: ArcaSpacing.md),
               ArcaTextField(
                 controller: _nameController,
-                label: 'Vault / Profile Name *',
+                label: 'Vault Name *',
                 hintText: 'e.g. Me (Primary), Sarah, Alex',
               ),
               const SizedBox(height: ArcaSpacing.sm),
@@ -157,7 +152,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
                 'Relationship',
                 style: ArcaTypography.caption.copyWith(
                   color: ArcaColors.textSecondary,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: .w600,
                 ),
               ),
               const SizedBox(height: ArcaSpacing.xxs),
@@ -190,7 +185,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
                             color: _selectedRelationship == rel
                                 ? ArcaColors.textInverse
                                 : ArcaColors.textPrimary,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: .w600,
                           ),
                         ),
                       ),
@@ -212,7 +207,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
               const SizedBox(height: ArcaSpacing.lg),
               ArcaButton(
                 label: 'Create & Open Vault →',
-                variant: ArcaButtonVariant.primary,
+                variant: .primary,
                 semanticsLabel:
                     'Create initial health vault and enter dashboard',
                 onPressed: () => _createAndOpenVault(context),
@@ -226,7 +221,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
 
   Widget _buildVaultList(BuildContext context, List<Vault> vaults) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: .stretch,
       children: [
         const Text('Available Health Vaults', style: ArcaTypography.titleLarge),
         const SizedBox(height: ArcaSpacing.xxs),
@@ -245,23 +240,23 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: ArcaColors.primarySubtle,
                     borderRadius: ArcaRadii.md,
                   ),
-                  alignment: Alignment.center,
+                  alignment: .center,
                   child: Text(
                     vault.name.isNotEmpty ? vault.name[0].toUpperCase() : 'V',
                     style: ArcaTypography.titleMedium.copyWith(
                       color: ArcaColors.primary,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: .bold,
                     ),
                   ),
                 ),
                 const SizedBox(width: ArcaSpacing.md),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Row(
                         children: [
@@ -269,13 +264,13 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
                             child: Text(
                               vault.name,
                               style: ArcaTypography.titleMedium,
-                              overflow: TextOverflow.ellipsis,
+                              overflow: .ellipsis,
                             ),
                           ),
                           const SizedBox(width: ArcaSpacing.xs),
                           ArcaBadge(
                             label: vault.relationship.name.toUpperCase(),
-                            variant: ArcaBadgeVariant.info,
+                            variant: .info,
                           ),
                         ],
                       ),
@@ -299,7 +294,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
                   'Open →',
                   style: TextStyle(
                     color: ArcaColors.primary,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: .w600,
                   ),
                 ),
               ],
@@ -311,7 +306,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
         if (!_isCreatingInline)
           ArcaButton(
             label: '+ Create Additional Vault',
-            variant: ArcaButtonVariant.secondary,
+            variant: .secondary,
             semanticsLabel: 'Create another family vault',
             onPressed: () => setState(() => _isCreatingInline = true),
           )
@@ -319,7 +314,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
           ArcaCard(
             backgroundColor: ArcaColors.surfaceElevated,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: .stretch,
               children: [
                 const Text(
                   'Add New Family Vault',
@@ -343,7 +338,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
                     Expanded(
                       child: ArcaButton(
                         label: 'Cancel',
-                        variant: ArcaButtonVariant.ghost,
+                        variant: .ghost,
                         onPressed: () =>
                             setState(() => _isCreatingInline = false),
                       ),
@@ -352,7 +347,7 @@ class _VaultSelectionScreenState extends State<VaultSelectionScreen> {
                     Expanded(
                       child: ArcaButton(
                         label: 'Save Vault',
-                        variant: ArcaButtonVariant.primary,
+                        variant: .primary,
                         onPressed: () {
                           _createAndOpenVault(context);
                           setState(() => _isCreatingInline = false);

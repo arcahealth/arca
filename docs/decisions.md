@@ -1,5 +1,55 @@
 # Decisions
 
+## 2026-11-08: Complete Removal of Legacy Profile Aliases and Redirections
+
+- **Status:** agreed
+- **Request:** Remove all backwards-compatibility aliases, getters, constructor parameters, and function redirections relating to `profile`/`profiles`.
+- **Scope:** `lib/core/vault/`, `lib/features/vaults/`, `lib/app/`, `docs/`.
+- **Choices:**
+  - **Eliminate Model & Type Aliases:**
+    - Removed `typedef Profile = Vault;` and `typedef ProfileRelationship = VaultRelationship;` from `lib/core/vault/models/vault.dart`.
+    - Removed `typedef ProfileRepository = VaultRepository;`, `typedef InMemoryProfileRepository`, and `typedef SqliteProfileRepository`.
+    - Removed `typedef ProfileBloc`, `typedef ProfileEvent` (and event subclasses), and `typedef ProfileState` (and state subclasses).
+    - Removed `class MemberSwitcherBar` compatibility wrapper.
+  - **Eliminate Method & Getter Redirections:**
+    - Removed `getProfiles()`, `getProfileById()`, `addProfile()`, `getActiveProfileId()`, and `setActiveProfileId()` from `VaultRepository`, `InMemoryVaultRepository`, and `SqliteVaultRepository`.
+    - Removed `profiles` and `activeProfile` compatibility getters from `VaultLoaded`.
+    - Removed `profileRepository` constructor parameter and fallback from `ArcaApp`.
+    - Simplified UI labels in `VaultSelectionScreen` (`'Vault Name *'`).
+
+---
+
+## 2026-11-08: Direct Dependency Simplification: Rely Solely on `sqlite_async`
+
+- **Status:** agreed
+- **Request:** Clarify why both `sqlite3` and `sqlite_async` were specified in `pubspec.yaml`, remove redundant direct dependencies, and clean up test suite references in documentation.
+- **Scope:** `pubspec.yaml`, `README.md`, `docs/architecture.md`, repository implementations in `lib/core/vault/` and `lib/features/journal/`.
+- **Choices:**
+  - **Eliminate Redundant Direct `sqlite3` Dependency:**
+    - `sqlite_async` already brings in `sqlite3` transitively as its underlying engine and provides connection pooling, migrations, and isolate-backed async transaction semantics.
+    - Repositories (`SqliteVaultRepository`, `SqliteJournalRepository`) parse rows using `Map<String, dynamic>` semantics (which `Row` natively implements) and type inference, eliminating the need for `import 'package:sqlite3/common.dart'` or declaring `sqlite3` in `dependencies:`.
+    - Removed `sqlite3: ^3.9.0` from `pubspec.yaml`.
+  - **Documentation Alignment:**
+    - Corrected test suite description and count in `README.md` to reflect the 46 genuine application tests (removing outdated DS&A test suite references).
+
+---
+
+## 2026-11-08: Dart 3.13 Primary Constructors, Dot-Shorthands, and Canonical `collection` & `async` Packages
+
+- **Status:** agreed
+- **Request:** Modernize the codebase with Dart 3.13 primary constructor syntax and Dart 3.10+ dot-shorthands across domain entities, routes, BLoCs, and UI widgets per Rule 12 of `mobile-conventions`. Add official packages for collections (`collection`) and async/stream primitives (`async`). Avoid unnecessary third-party utility packages.
+- **Scope:** Repository-wide modernization across `lib/`, `pubspec.yaml`, `test/`.
+- **Choices:**
+  - **Syntax Modernization:**
+    - Domain models (`Vault`, `JournalEntry`, `AiModelCapability`), BLoC states/events, sealed routes (`AppRoute`), and widgets (`ArcaScaffold`, `ArcaHeader`, `ArcaButton`, `ArcaCard`, `ArcaBadge`, `ArcaTextField`, `ArcaProgressBar`, screens) migrated to Dart 3.13 primary constructor syntax (`class const Foo(...)`, `class Bar(...)`) and semicolon bodies.
+    - Adopted leading dot-shorthands (`.primary`, `.ghost`, `.vital`, `.self`, `.stretch`, `.opaque`, `.center`, `.w600`, etc.) eliminating redundant type and enum prefixes.
+  - **Canonical Collection & Async Packages:**
+    - Added `collection: ^1.19.1` (Canonical Dart collection utilities, priority queues: `PriorityQueue`, `HeapPriorityQueue`, `QueueList`, deep equality: `ListEquality`, `SetEquality`, binary search: `binarySearch`).
+    - Added `async: ^2.13.0` (`StreamGroup`, `StreamSplitter`, `CancelableOperation`, `AsyncCache`, `RestartableTimer`).
+    - Excluded external third-party collections/DS&A packages (`more`, `data_structures`) to adhere to minimal external dependency footprint while relying strictly on official Dart SDK-supported packages.
+
+---
+
 ## 2026-11-08: Interface-Driven Dependency Injection across Repositories, Services, Constructors, and BLoCs
 
 - **Status:** agreed

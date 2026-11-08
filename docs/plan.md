@@ -1,6 +1,47 @@
 # Plan
 
 ## Done
+- [x] Legacy Profile Aliases & Redirections Removal
+  - Requirements:
+    - Eliminate all backwards-compatibility aliases, typedefs, wrappers, and method redirections relating to `profile`.
+    - Clean up composition root (`ArcaApp`), state getters, and selection screen labels.
+  - Sub-steps:
+    - [x] Remove `Profile` and `ProfileRelationship` typedefs from `lib/core/vault/models/vault.dart`.
+    - [x] Remove profile redirection methods and typedefs from `VaultRepository`, `InMemoryVaultRepository`, and `SqliteVaultRepository`.
+    - [x] Remove `ProfileBloc`, `ProfileEvent`, and `ProfileState` aliases and compatibility getters from BLoC.
+    - [x] Remove `MemberSwitcherBar` compatibility wrapper and `ArcaApp.profileRepository`.
+    - [x] Update `docs/architecture.md`, `docs/decisions.md`, and `README.md`.
+    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+- [x] Dependency Simplification: Rely Solely on `sqlite_async` & Clean Up Documentation
+  - Requirements:
+    - Remove redundant direct `sqlite3` dependency from `pubspec.yaml`, relying directly on `sqlite_async` (which transitively embeds `sqlite3`).
+    - Remove direct `sqlite3/common.dart` imports from repository implementations by leveraging `Map<String, dynamic>` semantics.
+    - Synchronize `README.md` to remove legacy DS&A test references and update test counts to 46.
+  - Sub-steps:
+    - [x] Refactor `SqliteVaultRepository` and `SqliteJournalRepository` to eliminate direct `package:sqlite3` imports.
+    - [x] Remove `sqlite3` from `pubspec.yaml` and update `pubspec.lock`.
+    - [x] Update `README.md`, `docs/architecture.md`, and `docs/decisions.md`.
+    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+- [x] Dart 3.13 Primary Constructors & Dot-Shorthands Modernization
+  - Requirements:
+    - Migrate domain models, entities, routes, BLoC states/events, and widgets to use Dart 3.13 primary constructor syntax (`class Foo(...)`, `class const Bar(...)`, semicolon bodies).
+    - Adopt dot-shorthands across enum accesses, switch cases, and widget arguments (`textDirection: .ltr`, `.center`, `.start`, `.vital`, `.primary`, etc.).
+    - Maintain 100% backward behavioral compatibility and pass all existing and new tests.
+  - Sub-steps:
+    - [x] Modernize domain entities and models in `lib/core/` (`Vault`, `ClinicalRecord`, `AiModelCapability`, `ModelDownloadState`).
+    - [x] Modernize router, sealed routes, and composition root in `lib/app/`.
+    - [x] Modernize design system foundation widgets (`ArcaScaffold`, `ArcaHeader`, `ArcaButton`, `ArcaCard`, `ArcaBadge`, `ArcaTextField`, `ArcaProgressBar`).
+    - [x] Modernize feature presentation screens (`WelcomeScreen`, `SetupWizardScreen`, `VaultSelectionScreen`, `VaultSwitcherBar`, `ModelDownloadScreen`, `JournalScreen`, `RecordDetailScreen`).
+    - [x] Modernize BLoC events and states across all feature modules.
+    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+- [x] Canonical Packages: `collection` & `async` Integration
+  - Requirements:
+    - Add `collection: ^1.19.1` and `async: ^2.13.0` to `pubspec.yaml` for collection algorithms, priority queues, and stream/async operations across Arca.
+    - Leverage canonical collection utilities and async primitives where needed in application state and repositories without introducing unneeded third-party libraries.
+  - Sub-steps:
+    - [x] Update `pubspec.yaml` with `collection` and `async` and run `flutter pub get`.
+    - [x] Update `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
+    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
 - [x] Interface-Driven Dependency Injection Architecture
   - Requirements:
     - Enforce abstract interfaces (`abstract interface class`) over concrete implementations across all constructors, screens, BLoCs, and services.

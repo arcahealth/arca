@@ -95,11 +95,12 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 | --- | --- | --- |
 | `flutter_bloc` | `^9.1.1` | Predictable, event-driven unidirectional state management for clinical records. |
 | `kaisel` | `^1.1.0` | Dart 3 native navigation using sealed classes and stack-as-state model. |
-| `sqlite_async` | `^0.14.8` | High-performance asynchronous SQLite database engine with background isolate execution. |
-| `sqlite3` | `^3.9.0` | Direct SQLite Dart bindings (replacing deprecated `sqlite3_flutter_libs`). |
+| `collection` | `^1.19.1` | Official Dart collection utilities: `PriorityQueue`, `HeapPriorityQueue`, `binarySearch`, `ListEquality`, `SetEquality`. |
+| `async` | `^2.13.0` | Asynchronous operations, stream groups/splitters, cancelable operations, and async caches. |
+| `sqlite_async` | `^0.14.8` | High-performance asynchronous SQLite database engine with background isolate execution (transitively manages native `sqlite3` bindings). |
 | `path_provider` | `^2.1.6` | Locates local app support directory for the encrypted SQLite database file. |
 | `path` | `^1.9.1` | Cross-platform file path manipulation. |
-| `shared_preferences` | `^2.5.6` | Lightweight key-value persistence for active profile selection. |
+| `shared_preferences` | `^2.5.6` | Lightweight key-value persistence for active vault selection. |
 | `flutter_lints` | `^6.0.0` | Standard Dart/Flutter static analysis rule set. |
 | `bloc_test` | `^10.0.0` | Streamlined unit testing for BLoC state transitions. |
 | `flutter_test` | SDK | Widget and accessibility harness for UI validation. |
@@ -110,7 +111,7 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 
 - **Shared (Dart / Flutter)**:
   - Clinical domain entities and validation rules
-  - Journal & profile state machines and diagnostic event handlers
+  - Journal & vault state machines and diagnostic event handlers
   - Encryption, indexes, and SQLite schema migrations
   - Custom foundation design system and screen rendering
 - **Native Platform (Android / iOS)**:
@@ -124,8 +125,8 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 
 ```bash
 # Inner loop: verify single touched feature
-flutter analyze lib/features/profiles
-flutter test test/features/profiles/profile_bloc_test.dart
+flutter analyze lib/features/vaults
+flutter test test/features/vaults/vault_bloc_test.dart
 
 # Outer gate: full check
 dart format --output=none --set-exit-if-changed .

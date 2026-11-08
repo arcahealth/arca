@@ -17,7 +17,10 @@ void main() {
 
       repo.queueDownloads([AiModelCapabilityType.ocr]);
 
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+      final deadline = DateTime.now().add(const Duration(seconds: 2));
+      while (!bloc.state.allCompleted && DateTime.now().isBefore(deadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
 
       expect(bloc.state.allCompleted, isTrue);
 

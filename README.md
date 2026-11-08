@@ -22,6 +22,8 @@ Arca is an offline-first, privacy-focused health tracking companion and longitud
 3. **Dart 3 Sealed Navigation**: Uses `kaisel` for type-safe routing powered by Dart 3 sealed classes, exhaustive pattern matching, and a stack-as-state model rather than URL strings or code generation.
 4. **On-Device Relational Storage**: Local encrypted SQLite database backed by `sqlite_async` (omitting deprecated `sqlite3_flutter_libs`) with background isolate execution and schema migrations for responsive clinical queries.
 
+5. **Modern Language Idioms & Collections/Async Baseline**: Built with Dart 3.13 primary constructors and dot-shorthands across domain entities, routes, and widgets. Backed by canonical packages (`collection` and `async`) for priority queues, binary search, deep equality, and cancelable asynchronous pipelines.
+
 ---
 
 ## Project Structure
@@ -53,7 +55,7 @@ arca/
 │       ├── model_downloader/      # Edge AI model download screen & persistent indicator bar
 │       ├── vaults/                # Health vault switcher bar & selection screen (VaultSelectionScreen)
 │       └── journal/               # Clinical journal and health vault timeline feature (JournalScreen)
-└── test/                          # Unit, SQLite integration, widget, and orchestration tests (46 tests)
+└── test/                          # Unit, SQLite, router, widget, and accessibility tests (46 tests)
 ```
 
 ---

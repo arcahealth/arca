@@ -117,6 +117,3 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
     return super.close();
   }
 }
-
-/// Compatibility alias.
-typedef ProfileBloc = VaultBloc;
