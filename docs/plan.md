@@ -1,6 +1,21 @@
 # Plan
 
 ## Done
+- [x] AI Model Domain Simplification & Generic DownloadProgress
+  - Requirements:
+    - Replace bloated capability enum with lean `AIKind` (`ocr`, `asr`).
+    - Introduce generic `DownloadStatus` (`queued`, `downloading`, `paused`, `ready`, `failed`).
+    - Define generic `DownloadProgress<T extends Object>` with non-nullable target `T target`.
+    - Provide `AIModel` data class decoupled from static embedded catalogs.
+    - Consolidate state into `ModelDownloaderService` directly exposing `Map<AIKind, DownloadProgress<AIKind>>` and `downloadsStream`.
+  - Sub-steps:
+    - [x] Create `lib/core/model_downloader/models/ai_model.dart` with `AIKind`, `DownloadStatus`, `DownloadProgress<T>`, and `AIModel`.
+    - [x] Remove old `lib/core/model_downloader/models/ai_model_capability.dart`.
+    - [x] Refactor `ModelDownloaderService` and `InMemoryModelDownloaderService` to manage and emit `downloads`.
+    - [x] Update `ModelDownloaderBloc`, `ModelDownloaderUIState`, and `SetupWizardBloc`.
+    - [x] Modernize UI in `SetupWizardScreen` and `ModelDownloadScreen`.
+    - [x] Update and verify all unit and widget tests (46/46 passed).
+    - [x] Sync `docs/architecture.md`, `docs/decisions.md`, `README.md`, and `docs/plan.md`.
 - [x] Model Downloader Service Architectural Refactoring
   - Requirements:
     - Transition `ModelDownloaderRepository` to `ModelDownloaderService` per mobile convention Rule 19 ("a repository when it is data, a service when it is behavior").

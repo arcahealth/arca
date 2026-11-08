@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:arca/core/model_downloader/models/ai_model_capability.dart';
+import 'package:arca/core/model_downloader/models/ai_model.dart';
 import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
 import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
 import 'package:arca/features/model_downloader/presentation/bloc/model_downloader_bloc.dart';
@@ -15,7 +15,7 @@ void main() {
       final bloc = ModelDownloaderBloc(service: service);
       expect(bloc.state.isDownloading, isFalse);
 
-      service.queueDownloads([AiModelCapabilityType.ocr]);
+      service.queueDownloads([AIKind.ocr]);
 
       final deadline = DateTime.now().add(const Duration(seconds: 2));
       while (!bloc.state.allCompleted && DateTime.now().isBefore(deadline)) {

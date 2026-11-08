@@ -28,10 +28,10 @@ class SetupWizardBloc extends Bloc<SetupWizardEvent, SetupWizardState> {
     });
     on<SetupWizardAiCapabilityToggled>((event, emit) {
       final updated = Set.of(state.selectedAiCapabilities);
-      if (updated.contains(event.type)) {
-        updated.remove(event.type);
+      if (updated.contains(event.kind)) {
+        updated.remove(event.kind);
       } else {
-        updated.add(event.type);
+        updated.add(event.kind);
       }
       emit(state.copyWith(selectedAiCapabilities: updated));
     });

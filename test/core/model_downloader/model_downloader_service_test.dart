@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:arca/core/model_downloader/models/ai_model_capability.dart';
+import 'package:arca/core/model_downloader/models/ai_model.dart';
 import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
 import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
 
@@ -11,18 +11,16 @@ void main() {
         tickStep: 0.5,
       );
 
-      final emissions = <ModelDownloadState>[];
-      final sub = service.progressStream.listen(emissions.add);
+      final emissions = <Map<AIKind, DownloadProgress<AIKind>>>[];
+      final sub = service.downloadsStream.listen(emissions.add);
 
-      service.queueDownloads([AiModelCapabilityType.ocr]);
+      service.queueDownloads([AIKind.ocr]);
 
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
       expect(emissions, isNotEmpty);
-      expect(
-        service.currentState.capabilities[AiModelCapabilityType.ocr]?.status,
-        AiModelStatus.ready,
-      );
+      expect(service.downloads[AIKind.ocr]?.status, DownloadStatus.ready);
+      expect(service.downloads[AIKind.ocr]?.progress, 1.0);
 
       await sub.cancel();
       service.dispose();

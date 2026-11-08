@@ -9,12 +9,12 @@ import 'model_downloader_state.dart';
 class ModelDownloaderBloc
     extends Bloc<ModelDownloaderEvent, ModelDownloaderUIState> {
   ModelDownloaderBloc({required this.service})
-    : super(ModelDownloaderUIState(downloadState: service.currentState)) {
+    : super(ModelDownloaderUIState(downloads: service.downloads)) {
     on<ModelDownloaderStarted>(_onStarted);
     on<ModelDownloaderStateUpdated>(_onStateUpdated);
 
-    _subscription = service.progressStream.listen((state) {
-      add(ModelDownloaderStateUpdated(state));
+    _subscription = service.downloadsStream.listen((downloads) {
+      add(ModelDownloaderStateUpdated(downloads));
     });
   }
 
@@ -25,14 +25,14 @@ class ModelDownloaderBloc
     ModelDownloaderStarted event,
     Emitter<ModelDownloaderUIState> emit,
   ) {
-    emit(ModelDownloaderUIState(downloadState: service.currentState));
+    emit(ModelDownloaderUIState(downloads: service.downloads));
   }
 
   void _onStateUpdated(
     ModelDownloaderStateUpdated event,
     Emitter<ModelDownloaderUIState> emit,
   ) {
-    emit(ModelDownloaderUIState(downloadState: event.state));
+    emit(ModelDownloaderUIState(downloads: event.downloads));
   }
 
   @override

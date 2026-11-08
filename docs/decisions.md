@@ -1,5 +1,23 @@
 # Decisions
 
+## 2026-11-08: AI Model Domain Simplification & Generic DownloadProgress
+
+- **Status:** agreed
+- **Request:** Modernize the model downloader domain models:
+  - Rename capability enum to `AIKind` and remove `ner` (leaving `ocr` and `asr`).
+  - Make `DownloadStatus` generic (`queued`, `downloading`, `paused`, `ready`, `failed`) and drop non-generic states like `notInstalled`.
+  - Make `DownloadProgress<T extends Object>` generic with a non-nullable target.
+  - Decouple `AIModel` metadata from hardcoded static catalog definitions.
+  - Collapse artificial `ModelDownloadTask` / `ModelDownloadState` separation into `ModelDownloaderService` which directly owns and exposes the download state.
+- **Scope:** `lib/core/model_downloader/`, `lib/features/model_downloader/`, `lib/features/setup_wizard/`, `test/`, `docs/`.
+- **Choices:**
+  - **Lean Discriminant (`AIKind`):** Replaced bloated enum with lean `AIKind { ocr, asr }` carrying no metadata strings.
+  - **Generic `DownloadProgress<T extends Object>`:** Unbound from specific AI model types, generic over any non-nullable download target (`target: T`), tracking `status` and `progress`.
+  - **Decoupled `AIModel` Data Class:** Representing model metadata (`id`, `kind`, `name`, `description`, `estimatedSize`) independently of static catalogs, allowing mock or upstream sourcing.
+  - **Service-Owned Download State:** Eliminated redundant `ModelDownloadTask` and `ModelDownloadState` classes; `ModelDownloaderService` directly exposes `downloads` (`Map<AIKind, DownloadProgress<AIKind>>`) and streams updates via `downloadsStream`.
+
+---
+
 ## 2026-11-08: Refactor `ModelDownloaderRepository` to `ModelDownloaderService`
 
 - **Status:** agreed

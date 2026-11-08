@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/design_system/arca_design_system.dart';
-import '../../../../core/model_downloader/models/ai_model_capability.dart';
+import '../../../../core/model_downloader/models/ai_model.dart';
 import '../../../../core/vault/models/vault.dart';
 import '../bloc/setup_wizard_bloc.dart';
 import '../bloc/setup_wizard_event.dart';
@@ -370,11 +370,11 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
           ),
         ),
         const SizedBox(height: ArcaSpacing.lg),
-        for (final cap in AiModelCapabilityType.values) ...[
+        for (final model in defaultAIModels) ...[
           _buildCapabilityCard(
             context: context,
-            type: cap,
-            isSelected: state.selectedAiCapabilities.contains(cap),
+            model: model,
+            isSelected: state.selectedAiCapabilities.contains(model.kind),
           ),
           const SizedBox(height: ArcaSpacing.sm),
         ],
@@ -409,7 +409,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
 
   Widget _buildCapabilityCard({
     required BuildContext context,
-    required AiModelCapabilityType type,
+    required AIModel model,
     required bool isSelected,
   }) {
     return ArcaCard(
@@ -418,7 +418,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
           ? ArcaColors.primarySubtle.withValues(alpha: 0.15)
           : ArcaColors.surface,
       onTap: () => context.read<SetupWizardBloc>().add(
-        SetupWizardAiCapabilityToggled(type),
+        SetupWizardAiCapabilityToggled(model.kind),
       ),
       child: Row(
         crossAxisAlignment: .start,
@@ -456,7 +456,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                   children: [
                     Flexible(
                       child: Text(
-                        type.name,
+                        model.name,
                         style: ArcaTypography.titleMedium.copyWith(
                           fontSize: 15,
                         ),
@@ -464,14 +464,14 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                     ),
                     const SizedBox(width: ArcaSpacing.xs),
                     ArcaBadge(
-                      label: type.estimatedSize,
+                      label: model.estimatedSize,
                       variant: isSelected ? .info : .neutral,
                     ),
                   ],
                 ),
                 const SizedBox(height: ArcaSpacing.xxs),
                 Text(
-                  type.description,
+                  model.description,
                   style: ArcaTypography.caption.copyWith(
                     color: ArcaColors.textSecondary,
                     height: 1.3,

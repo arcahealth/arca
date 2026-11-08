@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../models/ai_model_capability.dart';
+import '../models/ai_model.dart';
 import 'model_downloader_service.dart';
 
 /// In-memory implementation of [ModelDownloaderService] with broadcast stream updates.
@@ -8,109 +8,114 @@ class InMemoryModelDownloaderService implements ModelDownloaderService {
   InMemoryModelDownloaderService({
     this.tickInterval = const Duration(milliseconds: 200),
     this.tickStep = 0.25,
-    ModelDownloadState? initialState,
-  }) : _state = initialState ?? const ModelDownloadState();
+    Map<AIKind, DownloadProgress<AIKind>>? initialDownloads,
+  }) : _downloads = initialDownloads != null ? Map.from(initialDownloads) : {};
 
   final Duration tickInterval;
   final double tickStep;
-  ModelDownloadState _state;
+  final Map<AIKind, DownloadProgress<AIKind>> _downloads;
 
-  final StreamController<ModelDownloadState> _progressController =
-      StreamController<ModelDownloadState>.broadcast();
-  final Map<AiModelCapabilityType, Timer> _timers = {};
-
-  @override
-  Stream<ModelDownloadState> get progressStream => _progressController.stream;
+  final StreamController<Map<AIKind, DownloadProgress<AIKind>>>
+  _downloadsController =
+      StreamController<Map<AIKind, DownloadProgress<AIKind>>>.broadcast();
+  final Map<AIKind, Timer> _timers = {};
 
   @override
-  ModelDownloadState get currentState => _state;
+  Map<AIKind, DownloadProgress<AIKind>> get downloads =>
+      Map.unmodifiable(_downloads);
 
   @override
-  void queueDownloads(List<AiModelCapabilityType> types) {
-    final updated = Map<AiModelCapabilityType, AiModelCapability>.from(
-      _state.capabilities,
+  Stream<Map<AIKind, DownloadProgress<AIKind>>> get downloadsStream =>
+      _downloadsController.stream;
+
+  @override
+  bool get isDownloading => _downloads.values.any(
+    (d) => d.status == .downloading || d.status == .queued,
+  );
+
+  @override
+  bool get allCompleted =>
+      _downloads.isNotEmpty &&
+      _downloads.values.every((d) => d.status == .ready);
+
+  @override
+  double get totalProgress {
+    if (_downloads.isEmpty) return 0.0;
+    final total = _downloads.values.fold<double>(
+      0.0,
+      (acc, d) => acc + d.progress,
     );
-    for (final type in types) {
-      updated[type] = AiModelCapability(
-        type: type,
+    return total / _downloads.length;
+  }
+
+  @override
+  void queueDownloads(List<AIKind> kinds) {
+    for (final kind in kinds) {
+      _downloads[kind] = DownloadProgress<AIKind>(
+        target: kind,
         status: .downloading,
         progress: 0.05,
       );
-      _startSimulatedDownload(type);
+      _startSimulatedDownload(kind);
     }
-    _emitState(_state.copyWith(capabilities: updated));
+    _emit();
   }
 
   @override
-  void pauseDownload(AiModelCapabilityType type) {
-    _timers[type]?.cancel();
-    _timers.remove(type);
-    final updated = Map<AiModelCapabilityType, AiModelCapability>.from(
-      _state.capabilities,
-    );
-    final current = updated[type];
+  void pauseDownload(AIKind kind) {
+    _timers[kind]?.cancel();
+    _timers.remove(kind);
+    final current = _downloads[kind];
     if (current != null) {
-      updated[type] = current.copyWith(status: .paused);
-      _emitState(_state.copyWith(capabilities: updated));
+      _downloads[kind] = current.copyWith(status: .paused);
+      _emit();
     }
   }
 
   @override
-  void resumeDownload(AiModelCapabilityType type) {
-    final updated = Map<AiModelCapabilityType, AiModelCapability>.from(
-      _state.capabilities,
-    );
-    final current = updated[type];
+  void resumeDownload(AIKind kind) {
+    final current = _downloads[kind];
     if (current != null) {
-      updated[type] = current.copyWith(status: .downloading);
-      _emitState(_state.copyWith(capabilities: updated));
-      _startSimulatedDownload(type);
+      _downloads[kind] = current.copyWith(status: .downloading);
+      _emit();
+      _startSimulatedDownload(kind);
     }
   }
 
-  void _startSimulatedDownload(AiModelCapabilityType type) {
-    _timers[type]?.cancel();
+  void _startSimulatedDownload(AIKind kind) {
+    _timers[kind]?.cancel();
     if (tickInterval == Duration.zero) {
-      _finishDownload(type);
+      _finishDownload(kind);
       return;
     }
 
-    _timers[type] = Timer.periodic(tickInterval, (timer) {
-      final cap = _state.capabilities[type];
-      final currentProgress = cap?.progress ?? 0.0;
+    _timers[kind] = Timer.periodic(tickInterval, (timer) {
+      final current = _downloads[kind];
+      final currentProgress = current?.progress ?? 0.0;
       final nextProgress = currentProgress + tickStep;
       if (nextProgress >= 1.0) {
         timer.cancel();
-        _timers.remove(type);
-        _finishDownload(type);
+        _timers.remove(kind);
+        _finishDownload(kind);
       } else {
-        final updated = Map<AiModelCapabilityType, AiModelCapability>.from(
-          _state.capabilities,
-        );
-        updated[type] = (cap ?? AiModelCapability(type: type)).copyWith(
-          status: .downloading,
-          progress: nextProgress,
-        );
-        _emitState(_state.copyWith(capabilities: updated));
+        _downloads[kind] = (current ?? DownloadProgress<AIKind>(target: kind))
+            .copyWith(status: .downloading, progress: nextProgress);
+        _emit();
       }
     });
   }
 
-  void _finishDownload(AiModelCapabilityType type) {
-    final updated = Map<AiModelCapabilityType, AiModelCapability>.from(
-      _state.capabilities,
-    );
-    final current = updated[type];
+  void _finishDownload(AIKind kind) {
+    final current = _downloads[kind];
     if (current != null) {
-      updated[type] = current.copyWith(status: .ready, progress: 1.0);
-      _emitState(_state.copyWith(capabilities: updated));
+      _downloads[kind] = current.copyWith(status: .ready, progress: 1.0);
+      _emit();
     }
   }
 
-  void _emitState(ModelDownloadState next) {
-    _state = next;
-    if (!_progressController.isClosed) {
-      _progressController.add(next);
+  void _emit() {
+    if (!_downloadsController.isClosed) {
+      _downloadsController.add(Map.unmodifiable(_downloads));
     }
   }
 
@@ -120,6 +125,6 @@ class InMemoryModelDownloaderService implements ModelDownloaderService {
       timer.cancel();
     }
     _timers.clear();
-    _progressController.close();
+    _downloadsController.close();
   }
 }

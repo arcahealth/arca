@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/design_system/arca_design_system.dart';
-import '../../../../core/model_downloader/models/ai_model_capability.dart';
+import '../../../../core/model_downloader/models/ai_model.dart';
 import '../bloc/model_downloader_bloc.dart';
 import '../bloc/model_downloader_state.dart';
 
@@ -67,10 +67,10 @@ class const ModelDownloadScreen({
                   style: ArcaTypography.titleMedium,
                 ),
                 const SizedBox(height: ArcaSpacing.sm),
-                for (final type in AiModelCapabilityType.values)
+                for (final model in defaultAIModels)
                   if (selectedCapabilityIds.isEmpty ||
-                      selectedCapabilityIds.contains(type.id)) ...[
-                    _buildCapabilityItem(type, state.capabilities[type]),
+                      selectedCapabilityIds.contains(model.id)) ...[
+                    _buildCapabilityItem(model, state.downloads[model.kind]),
                     const SizedBox(height: ArcaSpacing.sm),
                   ],
                 const SizedBox(height: ArcaSpacing.md),
@@ -124,12 +124,12 @@ class const ModelDownloadScreen({
   }
 
   Widget _buildCapabilityItem(
-    AiModelCapabilityType type,
-    AiModelCapability? capability,
+    AIModel model,
+    DownloadProgress<AIKind>? progress,
   ) {
-    final status = capability?.status ?? .queued;
-    final progress = capability?.progress ?? 0.0;
-    final pct = (progress * 100).round();
+    final status = progress?.status ?? .queued;
+    final value = progress?.progress ?? 0.0;
+    final pct = (value * 100).round();
 
     final statusBadge = switch (status) {
       .ready => const ArcaBadge(label: 'READY', variant: .normal),
@@ -137,7 +137,6 @@ class const ModelDownloadScreen({
       .queued => const ArcaBadge(label: 'QUEUED', variant: .neutral),
       .paused => const ArcaBadge(label: 'PAUSED', variant: .warning),
       .failed => const ArcaBadge(label: 'ERROR', variant: .critical),
-      .notInstalled => const ArcaBadge(label: 'OFF', variant: .neutral),
     };
 
     return ArcaCard(
@@ -148,7 +147,7 @@ class const ModelDownloadScreen({
             children: [
               Expanded(
                 child: Text(
-                  type.name,
+                  model.name,
                   style: ArcaTypography.titleMedium.copyWith(fontSize: 15),
                 ),
               ),
@@ -157,16 +156,16 @@ class const ModelDownloadScreen({
           ),
           const SizedBox(height: ArcaSpacing.xxs),
           Text(
-            type.description,
+            model.description,
             style: ArcaTypography.caption.copyWith(
               color: ArcaColors.textSecondary,
             ),
           ),
           const SizedBox(height: ArcaSpacing.sm),
           ArcaProgressBar(
-            value: progress,
+            value: value,
             height: 6.0,
-            semanticsLabel: '${type.name} download progress',
+            semanticsLabel: '${model.name} download progress',
           ),
         ],
       ),
