@@ -3,23 +3,14 @@ import 'package:flutter/widgets.dart';
 import '../tokens/tokens.dart';
 
 /// Accessible, foundation-first linear progress indicator.
-class ArcaProgressBar extends StatelessWidget {
-  const ArcaProgressBar({
-    required this.value,
-    super.key,
-    this.height = 8.0,
-    this.backgroundColor = ArcaColors.surfaceElevated,
-    this.progressColor = ArcaColors.primary,
-    this.semanticsLabel,
-  });
-
-  /// Progress fraction clamped between 0.0 and 1.0.
-  final double value;
-  final double height;
-  final Color backgroundColor;
-  final Color progressColor;
-  final String? semanticsLabel;
-
+class const ArcaProgressBar({
+  required final double value,
+  super.key,
+  final double height = 8.0,
+  final Color backgroundColor = ArcaColors.surfaceElevated,
+  final Color progressColor = ArcaColors.primary,
+  final String? semanticsLabel,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final clampedValue = value.clamp(0.0, 1.0);
@@ -34,11 +25,11 @@ class ArcaProgressBar extends StatelessWidget {
           color: backgroundColor,
           borderRadius: ArcaRadii.pill,
         ),
-        clipBehavior: Clip.antiAlias,
+        clipBehavior: .antiAlias,
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Align(
-              alignment: Alignment.centerLeft,
+              alignment: .centerLeft,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 width: constraints.maxWidth * clampedValue,

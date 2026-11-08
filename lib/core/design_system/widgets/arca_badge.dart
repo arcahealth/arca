@@ -5,27 +5,22 @@ import '../tokens/tokens.dart';
 enum ArcaBadgeVariant { normal, warning, critical, info, neutral }
 
 /// Clinical indicator pill badge for lab ranges, document states, and vitals.
-class ArcaBadge extends StatelessWidget {
-  const ArcaBadge({
-    required this.label,
-    super.key,
-    this.variant = ArcaBadgeVariant.neutral,
-  });
-
-  final String label;
-  final ArcaBadgeVariant variant;
-
+class const ArcaBadge({
+  required final String label,
+  super.key,
+  final ArcaBadgeVariant variant = .neutral,
+}) extends StatelessWidget {
   (Color bg, Color text) get _colors {
     switch (variant) {
-      case ArcaBadgeVariant.normal:
+      case .normal:
         return (ArcaColors.successSubtle, ArcaColors.success);
-      case ArcaBadgeVariant.warning:
+      case .warning:
         return (ArcaColors.warningSubtle, ArcaColors.warning);
-      case ArcaBadgeVariant.critical:
+      case .critical:
         return (ArcaColors.dangerSubtle, ArcaColors.danger);
-      case ArcaBadgeVariant.info:
+      case .info:
         return (ArcaColors.infoSubtle, ArcaColors.info);
-      case ArcaBadgeVariant.neutral:
+      case .neutral:
         return (ArcaColors.surfaceElevated, ArcaColors.textSecondary);
     }
   }
@@ -46,10 +41,7 @@ class ArcaBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: ArcaTypography.caption.copyWith(
-          color: text,
-          fontWeight: FontWeight.w600,
-        ),
+        style: ArcaTypography.caption.copyWith(color: text, fontWeight: .w600),
       ),
     );
   }

@@ -6,28 +6,17 @@ import '../tokens/tokens.dart';
 ///
 /// Built strictly on Flutter's core [EditableText] and foundation primitives,
 /// avoiding dependencies on Material [TextField] or Cupertino text fields.
-class ArcaTextField extends StatefulWidget {
-  const ArcaTextField({
-    required this.controller,
-    super.key,
-    this.label,
-    this.hintText,
-    this.focusNode,
-    this.onChanged,
-    this.keyboardType,
-    this.obscureText = false,
-    this.semanticsLabel,
-  });
-
-  final TextEditingController controller;
-  final String? label;
-  final String? hintText;
-  final FocusNode? focusNode;
-  final ValueChanged<String>? onChanged;
-  final TextInputType? keyboardType;
-  final bool obscureText;
-  final String? semanticsLabel;
-
+class const ArcaTextField({
+  required final TextEditingController controller,
+  super.key,
+  final String? label,
+  final String? hintText,
+  final FocusNode? focusNode,
+  final ValueChanged<String>? onChanged,
+  final TextInputType? keyboardType,
+  final bool obscureText = false,
+  final String? semanticsLabel,
+}) extends StatefulWidget {
   @override
   State<ArcaTextField> createState() => _ArcaTextFieldState();
 }
@@ -81,28 +70,28 @@ class _ArcaTextFieldState extends State<ArcaTextField> {
       textField: true,
       label: effectiveSemantics,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: .start,
+        mainAxisSize: .min,
         children: [
           if (widget.label != null) ...[
             Text(
               widget.label!,
               style: ArcaTypography.caption.copyWith(
                 color: ArcaColors.textSecondary,
-                fontWeight: FontWeight.w600,
+                fontWeight: .w600,
               ),
             ),
             const SizedBox(height: ArcaSpacing.xxs),
           ],
           GestureDetector(
             onTap: () => _effectiveFocusNode.requestFocus(),
-            behavior: HitTestBehavior.opaque,
+            behavior: .opaque,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               constraints: const BoxConstraints(minHeight: 48.0),
               padding: const EdgeInsets.symmetric(
                 horizontal: ArcaSpacing.md,
-                vertical: ArcaSpacing.xs,
+                vertical: ArcaSpacing.sm,
               ),
               decoration: BoxDecoration(
                 color: ArcaColors.surface,
@@ -112,32 +101,36 @@ class _ArcaTextFieldState extends State<ArcaTextField> {
                   width: _isFocused ? 1.5 : 1.0,
                 ),
               ),
-              alignment: Alignment.centerLeft,
               child: Stack(
-                alignment: Alignment.centerLeft,
+                alignment: .centerLeft,
                 children: [
-                  if (widget.hintText != null && widget.controller.text.isEmpty)
-                    Text(
-                      widget.hintText!,
-                      style: ArcaTypography.bodyMedium.copyWith(
-                        color: ArcaColors.textMuted,
-                      ),
-                    ),
                   EditableText(
                     controller: widget.controller,
                     focusNode: _effectiveFocusNode,
-                    style: ArcaTypography.bodyMedium.copyWith(
-                      color: ArcaColors.textPrimary,
-                    ),
+                    style: ArcaTypography.bodyLarge,
                     cursorColor: ArcaColors.primary,
                     backgroundCursorColor: ArcaColors.surfaceElevated,
                     keyboardType: widget.keyboardType,
                     obscureText: widget.obscureText,
-                    onChanged: (val) {
-                      setState(() {});
-                      widget.onChanged?.call(val);
-                    },
+                    onChanged: widget.onChanged,
                   ),
+                  if (widget.hintText != null)
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: widget.controller,
+                      builder: (context, value, _) {
+                        if (value.text.isNotEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return IgnorePointer(
+                          child: Text(
+                            widget.hintText!,
+                            style: ArcaTypography.bodyLarge.copyWith(
+                              color: ArcaColors.textMuted,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                 ],
               ),
             ),

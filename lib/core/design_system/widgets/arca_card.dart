@@ -3,22 +3,14 @@ import 'package:flutter/widgets.dart';
 import '../tokens/tokens.dart';
 
 /// Surface card for clinical records, vitals summaries, and family member cards.
-class ArcaCard extends StatelessWidget {
-  const ArcaCard({
-    required this.child,
-    super.key,
-    this.padding = const EdgeInsets.all(ArcaSpacing.md),
-    this.backgroundColor = ArcaColors.surface,
-    this.borderColor = ArcaColors.border,
-    this.onTap,
-  });
-
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-  final Color backgroundColor;
-  final Color borderColor;
-  final VoidCallback? onTap;
-
+class const ArcaCard({
+  required final Widget child,
+  super.key,
+  final EdgeInsetsGeometry padding = const EdgeInsets.all(ArcaSpacing.md),
+  final Color backgroundColor = ArcaColors.surface,
+  final Color borderColor = ArcaColors.border,
+  final VoidCallback? onTap,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardContent = Container(
@@ -34,7 +26,7 @@ class ArcaCard extends StatelessWidget {
     if (onTap != null) {
       return GestureDetector(
         onTap: onTap,
-        behavior: HitTestBehavior.opaque,
+        behavior: .opaque,
         child: cardContent,
       );
     }

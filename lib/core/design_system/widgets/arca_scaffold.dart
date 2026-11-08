@@ -6,27 +6,20 @@ import '../tokens/tokens.dart';
 ///
 /// Provides a consistent background surface, safe area insets handling,
 /// and optional header pinning without dependencies on Material Scaffold.
-class ArcaScaffold extends StatelessWidget {
-  const ArcaScaffold({
-    required this.body,
-    super.key,
-    this.header,
-    this.backgroundColor = ArcaColors.background,
-    this.bottomBar,
-  });
-
-  final Widget body;
-  final Widget? header;
-  final Widget? bottomBar;
-  final Color backgroundColor;
-
+class const ArcaScaffold({
+  required final Widget body,
+  super.key,
+  final Widget? header,
+  final Color backgroundColor = ArcaColors.background,
+  final Widget? bottomBar,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
       color: backgroundColor,
       child: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: .stretch,
           children: [
             ?header,
             Expanded(child: body),

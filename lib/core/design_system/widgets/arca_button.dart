@@ -8,24 +8,15 @@ enum ArcaButtonVariant { primary, secondary, ghost }
 ///
 /// Complies with mobile accessibility guidelines: enforces a minimum 48x48 dp
 /// tap target, supports keyboard focus, and embeds accessibility semantics.
-class ArcaButton extends StatefulWidget {
-  const ArcaButton({
-    required this.label,
-    required this.onPressed,
-    super.key,
-    this.variant = ArcaButtonVariant.primary,
-    this.icon,
-    this.isLoading = false,
-    this.semanticsLabel,
-  });
-
-  final String label;
-  final VoidCallback? onPressed;
-  final ArcaButtonVariant variant;
-  final Widget? icon;
-  final bool isLoading;
-  final String? semanticsLabel;
-
+class const ArcaButton({
+  required final String label,
+  required final VoidCallback? onPressed,
+  super.key,
+  final ArcaButtonVariant variant = .primary,
+  final Widget? icon,
+  final bool isLoading = false,
+  final String? semanticsLabel,
+}) extends StatefulWidget {
   @override
   State<ArcaButton> createState() => _ArcaButtonState();
 }
@@ -39,15 +30,15 @@ class _ArcaButtonState extends State<ArcaButton> {
   Color get _backgroundColor {
     if (!_isEnabled) return ArcaColors.surfaceElevated.withValues(alpha: 0.4);
     switch (widget.variant) {
-      case ArcaButtonVariant.primary:
+      case .primary:
         if (_isPressed) return ArcaColors.primarySubtle;
         if (_isHovered) return ArcaColors.primaryHover;
         return ArcaColors.primary;
-      case ArcaButtonVariant.secondary:
+      case .secondary:
         if (_isPressed) return ArcaColors.surfaceElevated;
         if (_isHovered) return ArcaColors.surfaceElevated;
         return ArcaColors.surface;
-      case ArcaButtonVariant.ghost:
+      case .ghost:
         if (_isPressed) return ArcaColors.surface;
         if (_isHovered) return ArcaColors.surfaceSubtle;
         return const Color(0x00000000);
@@ -57,16 +48,16 @@ class _ArcaButtonState extends State<ArcaButton> {
   Color get _textColor {
     if (!_isEnabled) return ArcaColors.textMuted;
     switch (widget.variant) {
-      case ArcaButtonVariant.primary:
+      case .primary:
         return ArcaColors.textInverse;
-      case ArcaButtonVariant.secondary:
-      case ArcaButtonVariant.ghost:
+      case .secondary:
+      case .ghost:
         return ArcaColors.textPrimary;
     }
   }
 
   Border? get _border {
-    if (widget.variant == ArcaButtonVariant.secondary) {
+    if (widget.variant == .secondary) {
       return Border.all(
         color: _isEnabled ? ArcaColors.border : ArcaColors.borderSubtle,
         width: 1.0,
@@ -97,43 +88,46 @@ class _ArcaButtonState extends State<ArcaButton> {
               ? (_) => setState(() => _isPressed = false)
               : null,
           onTapCancel: () => setState(() => _isPressed = false),
-          behavior: HitTestBehavior.opaque,
-          child: ConstrainedBox(
+          behavior: .opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
             constraints: const BoxConstraints(minHeight: 48.0, minWidth: 48.0),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
-              padding: const EdgeInsets.symmetric(
-                horizontal: ArcaSpacing.md,
-                vertical: ArcaSpacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: _backgroundColor,
-                borderRadius: ArcaRadii.md,
-                border: _border,
-              ),
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (widget.icon != null) ...[
-                      widget.icon!,
-                      const SizedBox(width: ArcaSpacing.xs),
-                    ],
-                    Flexible(
-                      child: Text(
-                        widget.label,
-                        style: ArcaTypography.button.copyWith(
-                          color: _textColor,
+            padding: const EdgeInsets.symmetric(
+              horizontal: ArcaSpacing.md,
+              vertical: ArcaSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: _backgroundColor,
+              borderRadius: ArcaRadii.md,
+              border: _border,
+            ),
+            child: Center(
+              child: widget.isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Text('...', style: ArcaTypography.button),
+                    )
+                  : Row(
+                      mainAxisSize: .min,
+                      mainAxisAlignment: .center,
+                      children: [
+                        if (widget.icon != null) ...[
+                          widget.icon!,
+                          const SizedBox(width: ArcaSpacing.xs),
+                        ],
+                        Flexible(
+                          child: Text(
+                            widget.label,
+                            style: ArcaTypography.button.copyWith(
+                              color: _textColor,
+                            ),
+                            maxLines: 1,
+                            overflow: .ellipsis,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
             ),
           ),
         ),

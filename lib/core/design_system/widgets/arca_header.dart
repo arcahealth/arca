@@ -3,20 +3,13 @@ import 'package:flutter/widgets.dart';
 import '../tokens/tokens.dart';
 
 /// Clean, accessible header bar for Arca screens.
-class ArcaHeader extends StatelessWidget {
-  const ArcaHeader({
-    required this.title,
-    super.key,
-    this.subtitle,
-    this.leading,
-    this.trailing,
-  });
-
-  final String title;
-  final String? subtitle;
-  final Widget? leading;
-  final Widget? trailing;
-
+class const ArcaHeader({
+  required final String title,
+  super.key,
+  final String? subtitle,
+  final Widget? leading,
+  final Widget? trailing,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -37,8 +30,8 @@ class ArcaHeader extends StatelessWidget {
           final isStacked = constraints.maxWidth < 420 || textScale > 13.0;
           if (isStacked && trailing != null) {
             return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: .stretch,
+              mainAxisSize: .min,
               children: [
                 Row(
                   children: [
@@ -48,14 +41,14 @@ class ArcaHeader extends StatelessWidget {
                     ],
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: .start,
+                        mainAxisSize: .min,
                         children: [
                           Text(
                             title,
                             style: ArcaTypography.titleMedium,
                             maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            overflow: .ellipsis,
                           ),
                           if (subtitle != null) ...[
                             const SizedBox(height: ArcaSpacing.xxs),
@@ -63,7 +56,7 @@ class ArcaHeader extends StatelessWidget {
                               subtitle!,
                               style: ArcaTypography.caption,
                               maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              overflow: .ellipsis,
                             ),
                           ],
                         ],
@@ -72,7 +65,7 @@ class ArcaHeader extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: ArcaSpacing.xs),
-                Align(alignment: Alignment.centerRight, child: trailing!),
+                Align(alignment: .centerRight, child: trailing!),
               ],
             );
           }
@@ -85,31 +78,28 @@ class ArcaHeader extends StatelessWidget {
               ],
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: .start,
+                  mainAxisSize: .min,
                   children: [
                     Text(
                       title,
                       style: ArcaTypography.titleMedium,
                       maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: .ellipsis,
                     ),
                     if (subtitle != null) ...[
                       const SizedBox(height: ArcaSpacing.xxs),
                       Text(
                         subtitle!,
                         style: ArcaTypography.caption,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        overflow: .ellipsis,
                       ),
                     ],
                   ],
                 ),
               ),
-              if (trailing != null) ...[
-                const SizedBox(width: ArcaSpacing.sm),
-                Flexible(flex: 0, child: trailing!),
-              ],
+              ?trailing,
             ],
           );
         },
