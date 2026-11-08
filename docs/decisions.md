@@ -1,15 +1,30 @@
 # Decisions
 
-## 2026-11-08: Generic Downloader Service Architecture (`DownloaderService<K, T>`)
+## 2026-11-08: Align Downloader Contract to `DownloadService<K, T>` and Lifecycle Methods
 
 - **Status:** agreed
-- **Request:** Refactor the model-specific downloader module (`lib/core/model_downloader/`) into a generic, multi-purpose `downloader` module (`lib/core/downloader/`) featuring `DownloaderService<K extends Object, T extends Object>` and `DownloadManager<K extends Object, T extends Object>`, where `K` is the tracking map key and `T` is the payload encapsulated in `DownloadProgress<T>`.
+- **Request:**
+  - Align root noun across interface and implementation: rename `DownloaderService` to `DownloadService<K, T>` in `lib/core/downloader/services/download_service.dart`, matching `DownloadManager` and Arca's established `DatabaseService` / `DatabaseManager` pattern.
+  - Simplify lifecycle method names to concise primitives: `queue()`, `pause()`, and `resume()`.
+  - Fix default key mapper in `DownloadManager` to safely cast argument value `target as R`.
+- **Scope:** `lib/core/downloader/`, `lib/app/`, `lib/features/`, `test/`, `docs/`.
+- **Choices:**
+  - **Symmetric Architecture:** Both interface (`DownloadService`) and implementation (`DownloadManager`) share the `Download*` root stem.
+  - **Lean API Surface:** Replaced verbose domain-qualified method names (`queueDownloads`, `pauseDownload`, `resumeDownload`) with clean, generic verbs (`queue`, `pause`, `resume`).
+  - **Primary Initializer Cleanliness:** Cleaned up `DownloadManager` declaring parameters and scope in Dart 3.13.
+
+---
+
+## 2026-11-08: Generic Downloader Service Architecture (`DownloadService<K, T>`)
+
+- **Status:** agreed
+- **Request:** Refactor the model-specific downloader module (`lib/core/model_downloader/`) into a generic, multi-purpose `downloader` module (`lib/core/downloader/`) featuring `DownloadService<K extends Object, T extends Object>` and `DownloadManager<K extends Object, T extends Object>`, where `K` is the tracking map key and `T` is the payload encapsulated in `DownloadProgress<T>`.
 - **Scope:** `lib/core/downloader/`, `lib/app/`, `lib/features/model_downloader/`, `lib/features/setup_wizard/`, `test/`, `docs/`.
 - **Choices:**
-  - **Type-Safe Generic Contract (`DownloaderService<K extends Object, T extends Object>`):** Constrained both key `K` and payload `T` to non-nullable `Object`. Exposes reactive state via `downloads` (`Map<K, DownloadProgress<T>>`) and `downloadsStream`.
+  - **Type-Safe Generic Contract (`DownloadService<K extends Object, T extends Object>`):** Constrained both key `K` and payload `T` to non-nullable `Object`. Exposes reactive state via `downloads` (`Map<K, DownloadProgress<T>>`) and `downloadsStream`.
   - **Reusable `DownloadManager<K, T>`:** Provides a general-purpose download orchestrator with configurable `keyOf: K Function(T)` (defaulting to identity cast when `K == T`), handling enqueueing, pausing, resuming, and progress tracking across diverse targets (models, images, assets).
   - **Complete Decoupling of Core Domain:** Moved domain definitions (`AIKind`, `AIModel`) to `lib/core/ai/`, leaving `lib/core/downloader/` fully independent of AI concepts.
-  - **Composition & Injection:** `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc` inject and consume `DownloaderService<AIKind, AIKind>`.
+  - **Composition & Injection:** `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc` inject and consume `DownloadService<AIKind, AIKind>`.
 
 ---
 

@@ -48,7 +48,7 @@ arca/
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
 │   │   ├── onboarding/            # OnboardingRepository (SharedPrefs & InMemory)
 │   │   ├── ai/                    # Core AI domain models (AIKind, AIModel)
-│   │   ├── downloader/            # DownloadProgress<T>, DownloadStatus, DownloaderService<K, T>, DownloadManager<K, T>
+│   │   ├── downloader/            # DownloadProgress<T>, DownloadStatus, DownloadService<K, T>, DownloadManager<K, T>
 │   │   └── vault/                 # Vault, VaultRelationship, VaultRepository (broadcast streams)
 │   └── features/                  # Self-contained feature modules (Zero cross-feature imports)
 │       ├── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
@@ -56,7 +56,7 @@ arca/
 │       ├── model_downloader/      # Edge AI model download screen & persistent indicator bar
 │       ├── vaults/                # Health vault switcher bar & selection screen (VaultSelectionScreen)
 │       └── journal/               # Clinical journal and health vault timeline feature (JournalScreen)
-└── test/                          # Unit, SQLite, router, widget, and accessibility tests (47 tests)
+└── test/                          # Unit, SQLite, router, widget, and accessibility tests (48 tests)
 ```
 
 ---

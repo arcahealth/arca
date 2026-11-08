@@ -4,7 +4,7 @@ import '../models/download_progress.dart';
 ///
 /// [K] is the unique key type for tracking downloads in the map.
 /// [T] is the non-nullable target payload/item wrapped by [DownloadProgress].
-abstract interface class DownloaderService<K extends Object, T extends Object> {
+abstract interface class DownloadService<K extends Object, T extends Object> {
   /// Map of currently tracked downloads keyed by [K].
   Map<K, DownloadProgress<T>> get downloads;
 
@@ -21,13 +21,13 @@ abstract interface class DownloaderService<K extends Object, T extends Object> {
   double get totalProgress;
 
   /// Queues specified target items for download.
-  void queueDownloads(List<T> items);
+  void queue(List<T> items);
 
   /// Pauses an active download identified by [key].
-  void pauseDownload(K key);
+  void pause(K key);
 
   /// Resumes a paused download identified by [key].
-  void resumeDownload(K key);
+  void resume(K key);
 
   /// Releases stream controllers and timer resources.
   void dispose();

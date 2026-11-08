@@ -5,7 +5,7 @@ import 'package:arca/app/routes.dart';
 import 'package:arca/core/ai/models/ai_model.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/downloader/services/download_manager.dart';
-import 'package:arca/core/downloader/services/downloader_service.dart';
+import 'package:arca/core/downloader/services/download_service.dart';
 import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/core/vault/repositories/in_memory_vault_repository.dart';
@@ -25,7 +25,7 @@ void main() {
         );
         final OnboardingRepository onboardingRepo =
             InMemoryOnboardingRepository(hasCompletedOnboarding: false);
-        final DownloaderService<AIKind, AIKind> modelService =
+        final DownloadService<AIKind, AIKind> modelService =
             DownloadManager<AIKind, AIKind>();
         addTearDown(vaultRepo.dispose);
         addTearDown(modelService.dispose);

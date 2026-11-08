@@ -2,7 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/core/ai/models/ai_model.dart';
 import 'package:arca/core/downloader/services/download_manager.dart';
-import 'package:arca/core/downloader/services/downloader_service.dart';
+import 'package:arca/core/downloader/services/download_service.dart';
 import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/core/vault/models/vault.dart';
@@ -16,7 +16,7 @@ void main() {
   group('SetupWizardBloc Tests', () {
     late VaultRepository vaultRepository;
     late OnboardingRepository onboardingRepository;
-    late DownloaderService<AIKind, AIKind> modelDownloadService;
+    late DownloadService<AIKind, AIKind> modelDownloadService;
 
     setUp(() {
       vaultRepository = InMemoryVaultRepository(initialVaults: []);

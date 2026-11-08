@@ -1,20 +1,34 @@
 # Plan
 
 ## Done
-- [x] Generic Downloader Service Architecture (`DownloaderService<K, T>`)
+- [x] Align Downloader Contract to `DownloadService<K, T>` and Concise Verbs
+  - Requirements:
+    - Align interface and implementation names to `DownloadService<K, T>` and `DownloadManager<K, T>`.
+    - Rename `queueDownloads`, `pauseDownload`, `resumeDownload` to `queue`, `pause`, `resume`.
+    - Fix `_defaultKeyOf` value casting bug (`target as R`).
+    - Clean up Dart 3.13 primary constructor and scoping in `DownloadManager`.
+    - Update all feature BLoCs, screens, tests, and documentation.
+  - Sub-steps:
+    - [x] Rename `downloader_service.dart` to `download_service.dart` and `DownloaderService` to `DownloadService`.
+    - [x] Update `DownloadManager` declaring parameters and fix `_defaultKeyOf`.
+    - [x] Update `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc`.
+    - [x] Rename `downloader_service_test.dart` to `download_service_test.dart` and add pause/resume tests.
+    - [x] Update all feature test suites (48/48 passed).
+    - [x] Sync `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
+- [x] Generic Downloader Service Architecture (`DownloadService<K, T>`)
   - Requirements:
     - Refactor `lib/core/model_downloader` into generic `lib/core/downloader/`.
-    - Provide `DownloaderService<K extends Object, T extends Object>` and `DownloadManager<K extends Object, T extends Object>`.
+    - Provide `DownloadService<K extends Object, T extends Object>` and `DownloadManager<K extends Object, T extends Object>`.
     - Maintain `DownloadProgress<T extends Object>` with non-nullable target payload.
-    - Wire `DownloaderService<AIKind, AIKind>` through `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc`.
+    - Wire `DownloadService<AIKind, AIKind>` through `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc`.
     - Update all unit and widget tests, passing the full verification gate.
   - Sub-steps:
     - [x] Create `lib/core/downloader/models/download_progress.dart` (`DownloadStatus`, `DownloadProgress<T>`).
-    - [x] Create `lib/core/downloader/services/downloader_service.dart` (`DownloaderService<K, T>`).
+    - [x] Create `lib/core/downloader/services/download_service.dart` (`DownloadService<K, T>`).
     - [x] Create `lib/core/downloader/services/download_manager.dart` (`DownloadManager<K, T>`).
     - [x] Delete `lib/core/model_downloader/`.
-    - [x] Update `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc` to inject `DownloaderService<AIKind, AIKind>`.
-    - [x] Update all test suites and verify 46/46 passed.
+    - [x] Update `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc` to inject `DownloadService<AIKind, AIKind>`.
+    - [x] Update all test suites and verify 48/48 passed.
     - [x] Update `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
 - [x] Core AI Domain Separation from Model Downloader
   - Requirements:

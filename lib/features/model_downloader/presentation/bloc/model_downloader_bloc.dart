@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/ai/models/ai_model.dart';
-import '../../../../core/downloader/services/downloader_service.dart';
+import '../../../../core/downloader/services/download_service.dart';
 import 'model_downloader_event.dart';
 import 'model_downloader_state.dart';
 
@@ -19,7 +19,7 @@ class ModelDownloaderBloc
     });
   }
 
-  final DownloaderService<AIKind, AIKind> service;
+  final DownloadService<AIKind, AIKind> service;
   StreamSubscription? _subscription;
 
   void _onStarted(

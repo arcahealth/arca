@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/core/ai/models/ai_model.dart';
 import 'package:arca/core/downloader/models/download_progress.dart';
 import 'package:arca/core/downloader/services/download_manager.dart';
-import 'package:arca/core/downloader/services/downloader_service.dart';
+import 'package:arca/core/downloader/services/download_service.dart';
 import 'package:arca/features/model_downloader/presentation/bloc/model_downloader_bloc.dart';
 import 'package:arca/features/model_downloader/presentation/screens/model_download_screen.dart';
 import 'package:arca/features/model_downloader/presentation/widgets/model_download_indicator_bar.dart';
@@ -18,7 +18,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
-      final DownloaderService<AIKind, AIKind> service =
+      final DownloadService<AIKind, AIKind> service =
           DownloadManager<AIKind, AIKind>(
             initialDownloads: const {
               AIKind.ocr: DownloadProgress<AIKind>(
@@ -61,7 +61,7 @@ void main() {
     testWidgets(
       'ModelDownloadIndicatorBar renders when active and calls onTap',
       (tester) async {
-        final DownloaderService<AIKind, AIKind> service =
+        final DownloadService<AIKind, AIKind> service =
             DownloadManager<AIKind, AIKind>(
               initialDownloads: const {
                 AIKind.ocr: DownloadProgress<AIKind>(

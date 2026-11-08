@@ -6,7 +6,7 @@ import '../core/ai/models/ai_model.dart';
 import '../core/database/database_service.dart';
 import '../core/design_system/tokens/tokens.dart';
 import '../core/downloader/services/download_manager.dart';
-import '../core/downloader/services/downloader_service.dart';
+import '../core/downloader/services/download_service.dart';
 import '../core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import '../core/onboarding/repositories/onboarding_repository.dart';
 import '../core/vault/repositories/in_memory_vault_repository.dart';
@@ -30,7 +30,7 @@ class const ArcaApp({
   final JournalRepository? journalRepository,
   final VaultRepository? vaultRepository,
   final OnboardingRepository? onboardingRepository,
-  final DownloaderService<AIKind, AIKind>? modelDownloadService,
+  final DownloadService<AIKind, AIKind>? modelDownloadService,
   final DatabaseService? databaseService,
   final KaiselRouterConfig<AppRoute>? routerConfig,
   final AppRoute? initialRoute,
@@ -43,7 +43,7 @@ class _ArcaAppState extends State<ArcaApp> {
   late final JournalRepository _journalRepository;
   late final VaultRepository _vaultRepository;
   late final OnboardingRepository _onboardingRepository;
-  late final DownloaderService<AIKind, AIKind> _modelDownloadService;
+  late final DownloadService<AIKind, AIKind> _modelDownloadService;
   late final DatabaseService? _databaseService;
   late final KaiselRouterConfig<AppRoute> _routerConfig;
 
@@ -81,7 +81,7 @@ class _ArcaAppState extends State<ArcaApp> {
         RepositoryProvider<OnboardingRepository>.value(
           value: _onboardingRepository,
         ),
-        RepositoryProvider<DownloaderService<AIKind, AIKind>>.value(
+        RepositoryProvider<DownloadService<AIKind, AIKind>>.value(
           value: _modelDownloadService,
         ),
       ],

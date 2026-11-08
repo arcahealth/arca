@@ -1,30 +1,28 @@
 import 'dart:async';
 
 import '../models/download_progress.dart';
-import 'downloader_service.dart';
+import 'download_service.dart';
 
-/// Generic implementation of [DownloaderService] managing download lifecycles and broadcast streams.
-class DownloadManager<K extends Object, T extends Object>
-    implements DownloaderService<K, T> {
-  DownloadManager({
-    K Function(T target)? keyOf,
-    this.tickInterval = const Duration(milliseconds: 200),
-    this.tickStep = 0.25,
-    Map<K, DownloadProgress<T>>? initialDownloads,
-  }) : keyOf = keyOf ?? ((T target) => target as K),
-       _downloads = initialDownloads != null ? Map.from(initialDownloads) : {};
+R _defaultKeyOf<R, T>(T target) => target as R;
 
-  final K Function(T target) keyOf;
-  final Duration tickInterval;
-  final double tickStep;
-  final Map<K, DownloadProgress<T>> _downloads;
+/// Generic implementation of [DownloadService] managing download lifecycles and broadcast streams.
+class DownloadManager<K extends Object, T extends Object>({
+  K Function(T target)? keyOf,
+  final Duration tickInterval = const Duration(milliseconds: 200),
+  final double tickStep = 0.25,
+  Map<K, DownloadProgress<T>>? initialDownloads,
+}) implements DownloadService<K, T> {
+  final K Function(T target) keyOf = keyOf ?? _defaultKeyOf;
+  final Map<K, DownloadProgress<T>> _downloads = Map.from(
+    initialDownloads ?? const {},
+  );
 
   final StreamController<Map<K, DownloadProgress<T>>> _downloadsController =
       StreamController<Map<K, DownloadProgress<T>>>.broadcast();
   final Map<K, Timer> _timers = {};
 
   @override
-  Map<K, DownloadProgress<T>> get downloads => Map.unmodifiable(_downloads);
+  Map<K, DownloadProgress<T>> get downloads => .unmodifiable(_downloads);
 
   @override
   Stream<Map<K, DownloadProgress<T>>> get downloadsStream =>
@@ -51,7 +49,7 @@ class DownloadManager<K extends Object, T extends Object>
   }
 
   @override
-  void queueDownloads(List<T> items) {
+  void queue(List<T> items) {
     for (final item in items) {
       final key = keyOf(item);
       _downloads[key] = DownloadProgress<T>(
@@ -65,7 +63,7 @@ class DownloadManager<K extends Object, T extends Object>
   }
 
   @override
-  void pauseDownload(K key) {
+  void pause(K key) {
     _timers[key]?.cancel();
     _timers.remove(key);
     final current = _downloads[key];
@@ -76,7 +74,7 @@ class DownloadManager<K extends Object, T extends Object>
   }
 
   @override
-  void resumeDownload(K key) {
+  void resume(K key) {
     final current = _downloads[key];
     if (current != null) {
       _downloads[key] = current.copyWith(status: .downloading);
