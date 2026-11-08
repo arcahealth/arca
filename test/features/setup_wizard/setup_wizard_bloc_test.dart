@@ -1,6 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:arca/core/model_downloader/models/ai_model.dart';
+import 'package:arca/core/ai/models/ai_model.dart';
 import 'package:arca/core/model_downloader/services/model_download_manager.dart';
 import 'package:arca/core/model_downloader/services/model_download_service.dart';
 import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
@@ -62,22 +62,22 @@ void main() {
       ),
       seed: () => SetupWizardState(vaultDrafts: [testVault]),
       act: (bloc) {
-        bloc.add(const SetupWizardAiCapabilityToggled(ModelKind.ocr));
+        bloc.add(const SetupWizardAiCapabilityToggled(AIKind.ocr));
         bloc.add(const SetupWizardFinishedRequested());
       },
       expect: () => [
         SetupWizardState(
           vaultDrafts: [testVault],
-          selectedAiCapabilities: const {ModelKind.asr},
+          selectedAiCapabilities: const {AIKind.asr},
         ),
         SetupWizardState(
           vaultDrafts: [testVault],
-          selectedAiCapabilities: const {ModelKind.asr},
+          selectedAiCapabilities: const {AIKind.asr},
           isSaving: true,
         ),
         SetupWizardState(
           vaultDrafts: [testVault],
-          selectedAiCapabilities: const {ModelKind.asr},
+          selectedAiCapabilities: const {AIKind.asr},
           isSaving: false,
           isFinished: true,
         ),

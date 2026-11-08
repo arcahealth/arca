@@ -17,7 +17,8 @@ lib/
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseManager, ArcaDatabaseMigrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
 │   ├── onboarding/                # OnboardingRepository, SharedPrefsOnboardingRepository, InMemoryOnboardingRepository
-│   ├── model_downloader/          # ModelKind, DownloadStatus, DownloadProgress<T>, AIModel, ModelDownloadService, ModelDownloadManager (broadcast downloadsStream)
+│   ├── ai/                        # Core AI domain entities (AIKind, AIModel)
+│   ├── model_downloader/          # DownloadStatus, DownloadProgress<T>, ModelDownloadService, ModelDownloadManager (broadcast downloadsStream)
 │   └── vault/                     # Vault, VaultRelationship, VaultRepository (broadcast vaultsStream & activeVaultIdStream)
 └── features/                      # Isolated, self-contained feature modules (Zero cross-feature imports)
     ├── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen with onStartSetup & onSkip callbacks)

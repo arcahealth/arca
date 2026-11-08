@@ -2,7 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/design_system/arca_design_system.dart';
-import '../../../../core/model_downloader/models/ai_model.dart';
+import '../../../../core/ai/models/ai_model.dart';
+import '../../../../core/model_downloader/models/download_progress.dart';
 import '../bloc/model_downloader_bloc.dart';
 import '../bloc/model_downloader_state.dart';
 
@@ -125,7 +126,7 @@ class const ModelDownloadScreen({
 
   Widget _buildCapabilityItem(
     AIModel model,
-    DownloadProgress<ModelKind>? progress,
+    DownloadProgress<AIKind>? progress,
   ) {
     final status = progress?.status ?? .queued;
     final value = progress?.progress ?? 0.0;

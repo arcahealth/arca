@@ -1,7 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:arca/core/model_downloader/models/ai_model.dart';
+import 'package:arca/core/ai/models/ai_model.dart';
+import 'package:arca/core/model_downloader/models/download_progress.dart';
 import 'package:arca/core/model_downloader/services/model_download_manager.dart';
 import 'package:arca/core/model_downloader/services/model_download_service.dart';
 import 'package:arca/features/model_downloader/presentation/bloc/model_downloader_bloc.dart';
@@ -19,8 +20,8 @@ void main() {
 
       final ModelDownloadService service = ModelDownloadManager(
         initialDownloads: const {
-          ModelKind.ocr: DownloadProgress<ModelKind>(
-            target: ModelKind.ocr,
+          AIKind.ocr: DownloadProgress<AIKind>(
+            target: AIKind.ocr,
             status: DownloadStatus.downloading,
             progress: 0.5,
           ),
@@ -61,8 +62,8 @@ void main() {
       (tester) async {
         final ModelDownloadService service = ModelDownloadManager(
           initialDownloads: const {
-            ModelKind.ocr: DownloadProgress<ModelKind>(
-              target: ModelKind.ocr,
+            AIKind.ocr: DownloadProgress<AIKind>(
+              target: AIKind.ocr,
               status: DownloadStatus.downloading,
               progress: 0.45,
             ),

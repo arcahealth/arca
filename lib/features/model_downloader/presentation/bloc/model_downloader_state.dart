@@ -1,9 +1,10 @@
 import 'package:collection/collection.dart';
 
-import '../../../../core/model_downloader/models/ai_model.dart';
+import '../../../../core/ai/models/ai_model.dart';
+import '../../../../core/model_downloader/models/download_progress.dart';
 
 final class const ModelDownloaderUIState({
-  final Map<ModelKind, DownloadProgress<ModelKind>> downloads = const {},
+  final Map<AIKind, DownloadProgress<AIKind>> downloads = const {},
 }) {
   bool get isDownloading => downloads.values.any(
     (d) => d.status == .downloading || d.status == .queued,
@@ -26,14 +27,12 @@ final class const ModelDownloaderUIState({
       identical(this, other) ||
       other is ModelDownloaderUIState &&
           runtimeType == other.runtimeType &&
-          const MapEquality<ModelKind, DownloadProgress<ModelKind>>().equals(
+          const MapEquality<AIKind, DownloadProgress<AIKind>>().equals(
             downloads,
             other.downloads,
           );
 
   @override
   int get hashCode =>
-      const MapEquality<ModelKind, DownloadProgress<ModelKind>>().hash(
-        downloads,
-      );
+      const MapEquality<AIKind, DownloadProgress<AIKind>>().hash(downloads);
 }

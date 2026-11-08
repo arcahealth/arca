@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-11-08: Extract Core AI Domain Models to `lib/core/ai/`
+
+- **Status:** agreed
+- **Request:** Relocate `AIKind` and `AIModel` out of `lib/core/model_downloader` into `lib/core/ai/models/ai_model.dart`, as on-device AI models are core domain concepts rather than downloader-specific concerns.
+- **Scope:** `lib/core/ai/`, `lib/core/model_downloader/`, `lib/features/`, `test/`, `docs/`.
+- **Choices:**
+  - **Decoupled Core AI Domain:** Established `lib/core/ai/models/ai_model.dart` for domain entities (`AIKind`, `AIModel`, `defaultAIModels`).
+  - **Downloader Primitive Scoping:** Retained generic `DownloadStatus` and `DownloadProgress<T extends Object>` in `lib/core/model_downloader/models/download_progress.dart`.
+
+---
+
 ## 2026-11-08: Rename to `ModelKind` and Adopt `ModelDownloadManager`
 
 - **Status:** agreed

@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/design_system/arca_design_system.dart';
-import '../../../../core/model_downloader/models/ai_model.dart';
+import '../../../../core/ai/models/ai_model.dart';
 import '../../../../core/vault/models/vault.dart';
 import '../bloc/setup_wizard_bloc.dart';
 import '../bloc/setup_wizard_event.dart';

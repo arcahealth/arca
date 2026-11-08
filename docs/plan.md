@@ -1,6 +1,18 @@
 # Plan
 
 ## Done
+- [x] Core AI Domain Separation from Model Downloader
+  - Requirements:
+    - Relocate `AIKind` and `AIModel` to `lib/core/ai/models/ai_model.dart`.
+    - Retain generic `DownloadProgress<T>` and `DownloadStatus` in `lib/core/model_downloader/models/download_progress.dart`.
+    - Update all feature BLoCs, screens, tests, and documentation.
+  - Sub-steps:
+    - [x] Create `lib/core/ai/models/ai_model.dart`.
+    - [x] Create `lib/core/model_downloader/models/download_progress.dart`.
+    - [x] Remove old `lib/core/model_downloader/models/ai_model.dart`.
+    - [x] Update `ModelDownloadService`, `ModelDownloadManager`, `SetupWizardBloc`, and `ModelDownloaderBloc`.
+    - [x] Update all test suites and pass full verification gate (46/46 passed).
+    - [x] Sync `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
 - [x] ModelKind and ModelDownloadManager Architecture Alignment
   - Requirements:
     - Rename `AIKind` to `ModelKind` for consistency.
