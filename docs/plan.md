@@ -1,6 +1,19 @@
 # Plan
 
 ## Done
+- [x] Model Downloader Service Architectural Refactoring
+  - Requirements:
+    - Transition `ModelDownloaderRepository` to `ModelDownloaderService` per mobile convention Rule 19 ("a repository when it is data, a service when it is behavior").
+    - Relocate contracts and implementations from `repositories/` to `services/`.
+    - Update all feature BLoCs (`ModelDownloaderBloc`, `SetupWizardBloc`), composition root (`ArcaApp`), and test suites.
+  - Sub-steps:
+    - [x] Create `lib/core/model_downloader/services/model_downloader_service.dart`.
+    - [x] Create `lib/core/model_downloader/services/in_memory_model_downloader_service.dart`.
+    - [x] Remove old `lib/core/model_downloader/repositories/` directory and files.
+    - [x] Update `ModelDownloaderBloc`, `SetupWizardBloc`, and `ArcaApp`.
+    - [x] Migrate and rename test suites to test services.
+    - [x] Update `docs/architecture.md`, `docs/decisions.md`, `README.md`, and `docs/plan.md`.
+    - [x] Pass full verification gate (`analyze_files`, tests).
 - [x] Legacy Profile Aliases & Redirections Removal
   - Requirements:
     - Eliminate all backwards-compatibility aliases, typedefs, wrappers, and method redirections relating to `profile`.

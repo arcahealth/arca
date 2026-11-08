@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/model_downloader/repositories/model_downloader_repository.dart';
+import '../../../../core/model_downloader/services/model_downloader_service.dart';
 import '../../../../core/onboarding/repositories/onboarding_repository.dart';
 import '../../../../core/vault/repositories/vault_repository.dart';
 import 'setup_wizard_event.dart';
@@ -10,7 +10,7 @@ class SetupWizardBloc extends Bloc<SetupWizardEvent, SetupWizardState> {
   SetupWizardBloc({
     required this.vaultRepository,
     required this.onboardingRepository,
-    required this.modelDownloaderRepository,
+    required this.modelDownloaderService,
   }) : super(const SetupWizardState()) {
     on<SetupWizardStarted>((event, emit) => emit(const SetupWizardState()));
     on<SetupWizardStepChanged>((event, emit) {
@@ -40,7 +40,7 @@ class SetupWizardBloc extends Bloc<SetupWizardEvent, SetupWizardState> {
 
   final VaultRepository vaultRepository;
   final OnboardingRepository onboardingRepository;
-  final ModelDownloaderRepository modelDownloaderRepository;
+  final ModelDownloaderService modelDownloaderService;
 
   Future<void> _onFinishedRequested(
     SetupWizardFinishedRequested event,
@@ -56,7 +56,7 @@ class SetupWizardBloc extends Bloc<SetupWizardEvent, SetupWizardState> {
       }
 
       if (state.selectedAiCapabilities.isNotEmpty) {
-        modelDownloaderRepository.queueDownloads(
+        modelDownloaderService.queueDownloads(
           state.selectedAiCapabilities.toList(),
         );
       }

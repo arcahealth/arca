@@ -1,7 +1,7 @@
 import '../models/ai_model_capability.dart';
 
-/// Core repository managing edge AI neural weight downloads with reactive broadcast streams.
-abstract interface class ModelDownloaderRepository {
+/// Core service managing edge AI neural weight downloads with reactive broadcast streams.
+abstract interface class ModelDownloaderService {
   /// Broadcast stream emitting model download progress updates across features.
   Stream<ModelDownloadState> get progressStream;
 

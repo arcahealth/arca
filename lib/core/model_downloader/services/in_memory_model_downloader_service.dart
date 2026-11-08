@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import '../models/ai_model_capability.dart';
-import 'model_downloader_repository.dart';
+import 'model_downloader_service.dart';
 
-/// In-memory implementation of [ModelDownloaderRepository] with broadcast stream updates.
-class InMemoryModelDownloaderRepository implements ModelDownloaderRepository {
-  InMemoryModelDownloaderRepository({
+/// In-memory implementation of [ModelDownloaderService] with broadcast stream updates.
+class InMemoryModelDownloaderService implements ModelDownloaderService {
+  InMemoryModelDownloaderService({
     this.tickInterval = const Duration(milliseconds: 200),
     this.tickStep = 0.25,
     ModelDownloadState? initialState,

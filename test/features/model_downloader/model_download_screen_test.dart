@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/core/model_downloader/models/ai_model_capability.dart';
-import 'package:arca/core/model_downloader/repositories/in_memory_model_downloader_repository.dart';
-import 'package:arca/core/model_downloader/repositories/model_downloader_repository.dart';
+import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
+import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
 import 'package:arca/features/model_downloader/presentation/bloc/model_downloader_bloc.dart';
 import 'package:arca/features/model_downloader/presentation/screens/model_download_screen.dart';
 import 'package:arca/features/model_downloader/presentation/widgets/model_download_indicator_bar.dart';
@@ -17,7 +17,7 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
-      final ModelDownloaderRepository repo = InMemoryModelDownloaderRepository(
+      final ModelDownloaderService service = InMemoryModelDownloaderService(
         initialState: const ModelDownloadState(
           capabilities: {
             AiModelCapabilityType.ocr: AiModelCapability(
@@ -35,7 +35,7 @@ void main() {
         Directionality(
           textDirection: TextDirection.ltr,
           child: BlocProvider<ModelDownloaderBloc>(
-            create: (_) => ModelDownloaderBloc(repository: repo),
+            create: (_) => ModelDownloaderBloc(service: service),
             child: ModelDownloadScreen(
               selectedCapabilityIds: const ['ocr'],
               onContinue: () => continueCalled = true,
@@ -55,24 +55,23 @@ void main() {
       await tester.tap(continueButton);
       expect(continueCalled, isTrue);
 
-      repo.dispose();
+      service.dispose();
     });
 
     testWidgets(
       'ModelDownloadIndicatorBar renders when active and calls onTap',
       (tester) async {
-        final ModelDownloaderRepository repo =
-            InMemoryModelDownloaderRepository(
-              initialState: const ModelDownloadState(
-                capabilities: {
-                  AiModelCapabilityType.ocr: AiModelCapability(
-                    type: AiModelCapabilityType.ocr,
-                    status: AiModelStatus.downloading,
-                    progress: 0.45,
-                  ),
-                },
+        final ModelDownloaderService service = InMemoryModelDownloaderService(
+          initialState: const ModelDownloadState(
+            capabilities: {
+              AiModelCapabilityType.ocr: AiModelCapability(
+                type: AiModelCapabilityType.ocr,
+                status: AiModelStatus.downloading,
+                progress: 0.45,
               ),
-            );
+            },
+          ),
+        );
 
         var tapped = false;
 
@@ -80,7 +79,7 @@ void main() {
           Directionality(
             textDirection: TextDirection.ltr,
             child: BlocProvider<ModelDownloaderBloc>(
-              create: (_) => ModelDownloaderBloc(repository: repo),
+              create: (_) => ModelDownloaderBloc(service: service),
               child: ModelDownloadIndicatorBar(onTap: () => tapped = true),
             ),
           ),
@@ -91,7 +90,7 @@ void main() {
         await tester.tap(find.byType(ModelDownloadIndicatorBar));
         expect(tapped, isTrue);
 
-        repo.dispose();
+        service.dispose();
       },
     );
   });

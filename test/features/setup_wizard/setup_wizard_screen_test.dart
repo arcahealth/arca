@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
-import 'package:arca/core/model_downloader/repositories/in_memory_model_downloader_repository.dart';
-import 'package:arca/core/model_downloader/repositories/model_downloader_repository.dart';
+import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
+import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
 import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/core/vault/repositories/in_memory_vault_repository.dart';
@@ -25,10 +25,10 @@ void main() {
         );
         final OnboardingRepository onboardingRepo =
             InMemoryOnboardingRepository();
-        final ModelDownloaderRepository modelRepo =
-            InMemoryModelDownloaderRepository(tickInterval: Duration.zero);
+        final ModelDownloaderService modelService =
+            InMemoryModelDownloaderService(tickInterval: Duration.zero);
         addTearDown(vaultRepo.dispose);
-        addTearDown(modelRepo.dispose);
+        addTearDown(modelService.dispose);
 
         var completed = false;
         var hasAi = false;
@@ -41,7 +41,7 @@ void main() {
               create: (_) => SetupWizardBloc(
                 vaultRepository: vaultRepo,
                 onboardingRepository: onboardingRepo,
-                modelDownloaderRepository: modelRepo,
+                modelDownloaderService: modelService,
               ),
               child: SetupWizardScreen(
                 onComplete:

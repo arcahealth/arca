@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/app/app.dart';
 import 'package:arca/app/routes.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
-import 'package:arca/core/model_downloader/repositories/in_memory_model_downloader_repository.dart';
-import 'package:arca/core/model_downloader/repositories/model_downloader_repository.dart';
+import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
+import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
 import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/core/vault/repositories/in_memory_vault_repository.dart';
@@ -24,16 +24,16 @@ void main() {
         );
         final OnboardingRepository onboardingRepo =
             InMemoryOnboardingRepository(hasCompletedOnboarding: false);
-        final ModelDownloaderRepository modelRepo =
-            InMemoryModelDownloaderRepository();
+        final ModelDownloaderService modelService =
+            InMemoryModelDownloaderService();
         addTearDown(vaultRepo.dispose);
-        addTearDown(modelRepo.dispose);
+        addTearDown(modelService.dispose);
 
         await tester.pumpWidget(
           ArcaApp(
             vaultRepository: vaultRepo,
             onboardingRepository: onboardingRepo,
-            modelDownloaderRepository: modelRepo,
+            modelDownloaderService: modelService,
             initialRoute: const WelcomeRoute(),
           ),
         );

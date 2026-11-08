@@ -4,8 +4,8 @@ import 'package:kaisel/kaisel.dart';
 
 import '../core/database/database_service.dart';
 import '../core/design_system/tokens/tokens.dart';
-import '../core/model_downloader/repositories/in_memory_model_downloader_repository.dart';
-import '../core/model_downloader/repositories/model_downloader_repository.dart';
+import '../core/model_downloader/services/in_memory_model_downloader_service.dart';
+import '../core/model_downloader/services/model_downloader_service.dart';
 import '../core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import '../core/onboarding/repositories/onboarding_repository.dart';
 import '../core/vault/repositories/in_memory_vault_repository.dart';
@@ -29,7 +29,7 @@ class const ArcaApp({
   final JournalRepository? journalRepository,
   final VaultRepository? vaultRepository,
   final OnboardingRepository? onboardingRepository,
-  final ModelDownloaderRepository? modelDownloaderRepository,
+  final ModelDownloaderService? modelDownloaderService,
   final DatabaseService? databaseService,
   final KaiselRouterConfig<AppRoute>? routerConfig,
   final AppRoute? initialRoute,
@@ -42,7 +42,7 @@ class _ArcaAppState extends State<ArcaApp> {
   late final JournalRepository _journalRepository;
   late final VaultRepository _vaultRepository;
   late final OnboardingRepository _onboardingRepository;
-  late final ModelDownloaderRepository _modelDownloaderRepository;
+  late final ModelDownloaderService _modelDownloaderService;
   late final DatabaseService? _databaseService;
   late final KaiselRouterConfig<AppRoute> _routerConfig;
 
@@ -56,8 +56,8 @@ class _ArcaAppState extends State<ArcaApp> {
     _onboardingRepository =
         widget.onboardingRepository ??
         InMemoryOnboardingRepository(hasCompletedOnboarding: true);
-    _modelDownloaderRepository =
-        widget.modelDownloaderRepository ?? InMemoryModelDownloaderRepository();
+    _modelDownloaderService =
+        widget.modelDownloaderService ?? InMemoryModelDownloaderService();
 
     _routerConfig =
         widget.routerConfig ??
@@ -80,8 +80,8 @@ class _ArcaAppState extends State<ArcaApp> {
         RepositoryProvider<OnboardingRepository>.value(
           value: _onboardingRepository,
         ),
-        RepositoryProvider<ModelDownloaderRepository>.value(
-          value: _modelDownloaderRepository,
+        RepositoryProvider<ModelDownloaderService>.value(
+          value: _modelDownloaderService,
         ),
       ],
       child: MultiBlocProvider(
@@ -100,12 +100,12 @@ class _ArcaAppState extends State<ArcaApp> {
             create: (_) => SetupWizardBloc(
               vaultRepository: _vaultRepository,
               onboardingRepository: _onboardingRepository,
-              modelDownloaderRepository: _modelDownloaderRepository,
+              modelDownloaderService: _modelDownloaderService,
             ),
           ),
           BlocProvider<ModelDownloaderBloc>(
             create: (_) =>
-                ModelDownloaderBloc(repository: _modelDownloaderRepository),
+                ModelDownloaderBloc(service: _modelDownloaderService),
           ),
         ],
         child: WidgetsApp.router(

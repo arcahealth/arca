@@ -1,31 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/core/model_downloader/models/ai_model_capability.dart';
-import 'package:arca/core/model_downloader/repositories/in_memory_model_downloader_repository.dart';
-import 'package:arca/core/model_downloader/repositories/model_downloader_repository.dart';
+import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
+import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
 
 void main() {
-  group('ModelDownloaderRepository Tests', () {
+  group('ModelDownloaderService Tests', () {
     test('broadcasts progress updates across listeners', () async {
-      final ModelDownloaderRepository repo = InMemoryModelDownloaderRepository(
+      final ModelDownloaderService service = InMemoryModelDownloaderService(
         tickInterval: const Duration(milliseconds: 50),
         tickStep: 0.5,
       );
 
       final emissions = <ModelDownloadState>[];
-      final sub = repo.progressStream.listen(emissions.add);
+      final sub = service.progressStream.listen(emissions.add);
 
-      repo.queueDownloads([AiModelCapabilityType.ocr]);
+      service.queueDownloads([AiModelCapabilityType.ocr]);
 
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
       expect(emissions, isNotEmpty);
       expect(
-        repo.currentState.capabilities[AiModelCapabilityType.ocr]?.status,
+        service.currentState.capabilities[AiModelCapabilityType.ocr]?.status,
         AiModelStatus.ready,
       );
 
       await sub.cancel();
-      repo.dispose();
+      service.dispose();
     });
   });
 }

@@ -47,7 +47,7 @@ arca/
 │   │   ├── database/              # DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
 │   │   ├── onboarding/            # OnboardingRepository (SharedPrefs & InMemory)
-│   │   ├── model_downloader/      # AiModelCapability, ModelDownloaderRepository (broadcast stream)
+│   │   ├── model_downloader/      # AiModelCapability, ModelDownloaderService (broadcast stream)
 │   │   └── vault/                 # Vault, VaultRelationship, VaultRepository (broadcast streams)
 │   └── features/                  # Self-contained feature modules (Zero cross-feature imports)
 │       ├── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)

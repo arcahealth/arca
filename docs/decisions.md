@@ -1,5 +1,22 @@
 # Decisions
 
+## 2026-11-08: Refactor `ModelDownloaderRepository` to `ModelDownloaderService`
+
+- **Status:** agreed
+- **Request:** Transition `ModelDownloaderRepository` to `ModelDownloaderService` to accurately reflect its role as an operational background process and transient event streamer rather than an entity data store.
+- **Scope:** `lib/core/model_downloader/`, `lib/features/model_downloader/`, `lib/features/setup_wizard/`, `lib/app/`, `test/`, `docs/`.
+- **Choices:**
+  - **Service over Repository (Rule 19):** Aligned with the architectural guideline "a repository when it is data, a service when it is behavior." Model download progress, task scheduling, pausing, and resuming represent execution behavior rather than entity CRUD persistence.
+  - **Directory & Interface Restructuring:**
+    - Moved contracts and implementations from `lib/core/model_downloader/repositories/` to `lib/core/model_downloader/services/`.
+    - Renamed `ModelDownloaderRepository` -> `ModelDownloaderService`.
+    - Renamed `InMemoryModelDownloaderRepository` -> `InMemoryModelDownloaderService`.
+  - **Consumer Alignment:**
+    - Updated `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc` to inject and consume `ModelDownloaderService`.
+    - Renamed and modernized corresponding test suites.
+
+---
+
 ## 2026-11-08: Migration to `path_manager` and Encapsulated Database Migrations
 
 - **Status:** agreed
