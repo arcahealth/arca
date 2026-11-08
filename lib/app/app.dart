@@ -24,28 +24,16 @@ import 'routes.dart';
 /// Composition root for Arca.
 ///
 /// Injects core domain repositories and feature BLoCs at the application edge.
-class ArcaApp extends StatefulWidget {
-  const ArcaApp({
-    super.key,
-    this.journalRepository,
-    this.vaultRepository,
-    this.profileRepository,
-    this.onboardingRepository,
-    this.modelDownloaderRepository,
-    this.databaseService,
-    this.routerConfig,
-    this.initialRoute,
-  });
-
-  final JournalRepository? journalRepository;
-  final VaultRepository? vaultRepository;
-  final VaultRepository? profileRepository;
-  final OnboardingRepository? onboardingRepository;
-  final ModelDownloaderRepository? modelDownloaderRepository;
-  final DatabaseService? databaseService;
-  final KaiselRouterConfig<AppRoute>? routerConfig;
-  final AppRoute? initialRoute;
-
+class const ArcaApp({
+  super.key,
+  final JournalRepository? journalRepository,
+  final VaultRepository? vaultRepository,
+  final OnboardingRepository? onboardingRepository,
+  final ModelDownloaderRepository? modelDownloaderRepository,
+  final DatabaseService? databaseService,
+  final KaiselRouterConfig<AppRoute>? routerConfig,
+  final AppRoute? initialRoute,
+}) extends StatefulWidget {
   @override
   State<ArcaApp> createState() => _ArcaAppState();
 }
@@ -64,10 +52,7 @@ class _ArcaAppState extends State<ArcaApp> {
     _databaseService = widget.databaseService;
     _journalRepository =
         widget.journalRepository ?? InMemoryJournalRepository();
-    _vaultRepository =
-        widget.vaultRepository ??
-        widget.profileRepository ??
-        InMemoryVaultRepository();
+    _vaultRepository = widget.vaultRepository ?? InMemoryVaultRepository();
     _onboardingRepository =
         widget.onboardingRepository ??
         InMemoryOnboardingRepository(hasCompletedOnboarding: true);

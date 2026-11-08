@@ -23,19 +23,19 @@ class InMemoryVaultRepository implements VaultRepository {
     Vault(
       id: 'self',
       name: 'Me (Primary)',
-      relationship: VaultRelationship.self,
+      relationship: .self,
       createdAt: DateTime(2026, 1, 1),
     ),
     Vault(
       id: 'child_1',
       name: 'Leo',
-      relationship: VaultRelationship.child,
+      relationship: .child,
       createdAt: DateTime(2026, 2, 1),
     ),
     Vault(
       id: 'parent_1',
       name: 'Eleanor',
-      relationship: VaultRelationship.parent,
+      relationship: .parent,
       createdAt: DateTime(2026, 3, 1),
     ),
   ];
@@ -71,25 +71,8 @@ class InMemoryVaultRepository implements VaultRepository {
   }
 
   @override
-  Future<List<Vault>> getProfiles() => getVaults();
-
-  @override
-  Future<Vault?> getProfileById(String id) => getVaultById(id);
-
-  @override
-  Future<void> addProfile(Vault vault) => addVault(vault);
-
-  @override
-  Future<String> getActiveProfileId() => getActiveVaultId();
-
-  @override
-  Future<void> setActiveProfileId(String id) => setActiveVaultId(id);
-
-  @override
   void dispose() {
     _activeVaultController.close();
     _vaultsController.close();
   }
 }
-
-typedef InMemoryProfileRepository = InMemoryVaultRepository;

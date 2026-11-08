@@ -33,7 +33,7 @@ class InMemoryModelDownloaderRepository implements ModelDownloaderRepository {
     for (final type in types) {
       updated[type] = AiModelCapability(
         type: type,
-        status: AiModelStatus.downloading,
+        status: .downloading,
         progress: 0.05,
       );
       _startSimulatedDownload(type);
@@ -50,7 +50,7 @@ class InMemoryModelDownloaderRepository implements ModelDownloaderRepository {
     );
     final current = updated[type];
     if (current != null) {
-      updated[type] = current.copyWith(status: AiModelStatus.paused);
+      updated[type] = current.copyWith(status: .paused);
       _emitState(_state.copyWith(capabilities: updated));
     }
   }
@@ -62,7 +62,7 @@ class InMemoryModelDownloaderRepository implements ModelDownloaderRepository {
     );
     final current = updated[type];
     if (current != null) {
-      updated[type] = current.copyWith(status: AiModelStatus.downloading);
+      updated[type] = current.copyWith(status: .downloading);
       _emitState(_state.copyWith(capabilities: updated));
       _startSimulatedDownload(type);
     }
@@ -88,7 +88,7 @@ class InMemoryModelDownloaderRepository implements ModelDownloaderRepository {
           _state.capabilities,
         );
         updated[type] = (cap ?? AiModelCapability(type: type)).copyWith(
-          status: AiModelStatus.downloading,
+          status: .downloading,
           progress: nextProgress,
         );
         _emitState(_state.copyWith(capabilities: updated));
@@ -102,10 +102,7 @@ class InMemoryModelDownloaderRepository implements ModelDownloaderRepository {
     );
     final current = updated[type];
     if (current != null) {
-      updated[type] = current.copyWith(
-        status: AiModelStatus.ready,
-        progress: 1.0,
-      );
+      updated[type] = current.copyWith(status: .ready, progress: 1.0);
       _emitState(_state.copyWith(capabilities: updated));
     }
   }

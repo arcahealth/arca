@@ -25,13 +25,4 @@ abstract interface class VaultRepository {
 
   /// Closes internal stream controllers and releases listeners.
   void dispose();
-
-  /// Backward-compatibility alias for profiles.
-  Future<List<Vault>> getProfiles() => getVaults();
-  Future<Vault?> getProfileById(String id) => getVaultById(id);
-  Future<void> addProfile(Vault vault) => addVault(vault);
-  Future<String> getActiveProfileId() => getActiveVaultId();
-  Future<void> setActiveProfileId(String id) => setActiveVaultId(id);
 }
-
-typedef ProfileRepository = VaultRepository;

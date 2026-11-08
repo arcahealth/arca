@@ -9,12 +9,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  async: ^2.13.0
+  collection: ^1.19.1
   flutter_bloc: ^9.1.1
   kaisel: ^1.1.0
   path: ^1.9.1
   path_provider: ^2.1.6
   shared_preferences: ^2.5.6
-  sqlite3: ^3.9.0
   sqlite_async: ^0.14.8
 
 dev_dependencies:

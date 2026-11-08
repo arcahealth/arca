@@ -1,4 +1,9 @@
-enum AiModelCapabilityType {
+enum const AiModelCapabilityType({
+  required final String id,
+  required final String name,
+  required final String description,
+  required final String estimatedSize,
+}) {
   ocr(
     id: 'ocr',
     name: 'Clinical Lab & Prescription OCR',
@@ -16,35 +21,17 @@ enum AiModelCapabilityType {
     name: 'Medical Entity Recognition (NER)',
     description: 'Quantized on-device classifier identifying clinical entities, drug interactions, and dosage metrics.',
     estimatedSize: '32 MB',
-  );
-
-  const AiModelCapabilityType({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.estimatedSize,
-  });
-
-  final String id;
-  final String name;
-  final String description;
-  final String estimatedSize;
+  ),
 }
 
 enum AiModelStatus { notInstalled, queued, downloading, ready, paused, failed }
 
 /// Representation of an on-device AI capability and runtime model bundle.
-final class AiModelCapability {
-  const AiModelCapability({
-    required this.type,
-    this.status = AiModelStatus.notInstalled,
-    this.progress = 0.0,
-  });
-
-  final AiModelCapabilityType type;
-  final AiModelStatus status;
-  final double progress;
-
+final class const AiModelCapability({
+  required final AiModelCapabilityType type,
+  final AiModelStatus status = .notInstalled,
+  final double progress = 0.0,
+}) {
   AiModelCapability copyWith({AiModelStatus? status, double? progress}) {
     return AiModelCapability(
       type: type,
@@ -67,20 +54,16 @@ final class AiModelCapability {
 }
 
 /// Snapshot of all active and installed AI model capabilities.
-final class ModelDownloadState {
-  const ModelDownloadState({this.capabilities = const {}});
-
-  final Map<AiModelCapabilityType, AiModelCapability> capabilities;
-
+final class const ModelDownloadState({
+  final Map<AiModelCapabilityType, AiModelCapability> capabilities = const {},
+}) {
   bool get isDownloading => capabilities.values.any(
-    (c) =>
-        c.status == AiModelStatus.downloading ||
-        c.status == AiModelStatus.queued,
+    (c) => c.status == .downloading || c.status == .queued,
   );
 
   bool get allCompleted =>
       capabilities.isNotEmpty &&
-      capabilities.values.every((c) => c.status == AiModelStatus.ready);
+      capabilities.values.every((c) => c.status == .ready);
 
   double get totalProgress {
     if (capabilities.isEmpty) return 0.0;
@@ -102,16 +85,11 @@ final class ModelDownloadState {
       identical(this, other) ||
       other is ModelDownloadState &&
           runtimeType == other.runtimeType &&
-          _mapEquals(capabilities, other.capabilities);
+          capabilities.length == other.capabilities.length &&
+          capabilities.entries.every(
+            (e) => other.capabilities[e.key] == e.value,
+          );
 
   @override
   int get hashCode => Object.hashAll(capabilities.entries);
-
-  static bool _mapEquals<K, V>(Map<K, V> a, Map<K, V> b) {
-    if (a.length != b.length) return false;
-    for (final key in a.keys) {
-      if (!b.containsKey(key) || b[key] != a[key]) return false;
-    }
-    return true;
-  }
 }

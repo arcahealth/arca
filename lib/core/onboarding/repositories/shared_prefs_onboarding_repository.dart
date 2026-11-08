@@ -3,11 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'onboarding_repository.dart';
 
 /// SharedPreferences persistence for [OnboardingRepository].
-class SharedPrefsOnboardingRepository implements OnboardingRepository {
-  SharedPrefsOnboardingRepository({this.prefs});
-
-  SharedPreferences? prefs;
-
+class SharedPrefsOnboardingRepository({var SharedPreferences? prefs})
+    implements OnboardingRepository {
   static const String _prefKey = 'arca_onboarding_completed';
 
   Future<SharedPreferences> _getPrefs() async {

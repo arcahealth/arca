@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqlite3/common.dart' as sqlite;
 import 'package:sqlite_async/sqlite_async.dart';
 
 import '../models/vault.dart';
@@ -97,26 +96,11 @@ class SqliteVaultRepository implements VaultRepository {
     _activeVaultController.add(id);
   }
 
-  @override
-  Future<List<Vault>> getProfiles() => getVaults();
-
-  @override
-  Future<Vault?> getProfileById(String id) => getVaultById(id);
-
-  @override
-  Future<void> addProfile(Vault vault) => addVault(vault);
-
-  @override
-  Future<String> getActiveProfileId() => getActiveVaultId();
-
-  @override
-  Future<void> setActiveProfileId(String id) => setActiveVaultId(id);
-
-  static Vault _rowToVault(sqlite.Row row) {
+  static Vault _rowToVault(Map<String, dynamic> row) {
     final relName = row['relationship'] as String;
     final relationship = VaultRelationship.values.firstWhere(
       (r) => r.name == relName,
-      orElse: () => VaultRelationship.other,
+      orElse: () => .other,
     );
 
     return Vault(
@@ -136,5 +120,3 @@ class SqliteVaultRepository implements VaultRepository {
     _vaultsController.close();
   }
 }
-
-typedef SqliteProfileRepository = SqliteVaultRepository;
