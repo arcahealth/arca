@@ -2,10 +2,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kaisel/kaisel.dart';
 
+import '../core/ai/models/ai_model.dart';
 import '../core/database/database_service.dart';
 import '../core/design_system/tokens/tokens.dart';
-import '../core/model_downloader/services/model_download_manager.dart';
-import '../core/model_downloader/services/model_download_service.dart';
+import '../core/downloader/services/download_manager.dart';
+import '../core/downloader/services/downloader_service.dart';
 import '../core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import '../core/onboarding/repositories/onboarding_repository.dart';
 import '../core/vault/repositories/in_memory_vault_repository.dart';
@@ -29,7 +30,7 @@ class const ArcaApp({
   final JournalRepository? journalRepository,
   final VaultRepository? vaultRepository,
   final OnboardingRepository? onboardingRepository,
-  final ModelDownloadService? modelDownloadService,
+  final DownloaderService<AIKind, AIKind>? modelDownloadService,
   final DatabaseService? databaseService,
   final KaiselRouterConfig<AppRoute>? routerConfig,
   final AppRoute? initialRoute,
@@ -42,7 +43,7 @@ class _ArcaAppState extends State<ArcaApp> {
   late final JournalRepository _journalRepository;
   late final VaultRepository _vaultRepository;
   late final OnboardingRepository _onboardingRepository;
-  late final ModelDownloadService _modelDownloadService;
+  late final DownloaderService<AIKind, AIKind> _modelDownloadService;
   late final DatabaseService? _databaseService;
   late final KaiselRouterConfig<AppRoute> _routerConfig;
 
@@ -57,7 +58,7 @@ class _ArcaAppState extends State<ArcaApp> {
         widget.onboardingRepository ??
         InMemoryOnboardingRepository(hasCompletedOnboarding: true);
     _modelDownloadService =
-        widget.modelDownloadService ?? ModelDownloadManager();
+        widget.modelDownloadService ?? DownloadManager<AIKind, AIKind>();
 
     _routerConfig =
         widget.routerConfig ??
@@ -80,7 +81,7 @@ class _ArcaAppState extends State<ArcaApp> {
         RepositoryProvider<OnboardingRepository>.value(
           value: _onboardingRepository,
         ),
-        RepositoryProvider<ModelDownloadService>.value(
+        RepositoryProvider<DownloaderService<AIKind, AIKind>>.value(
           value: _modelDownloadService,
         ),
       ],

@@ -18,7 +18,7 @@ lib/
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
 │   ├── onboarding/                # OnboardingRepository, SharedPrefsOnboardingRepository, InMemoryOnboardingRepository
 │   ├── ai/                        # Core AI domain entities (AIKind, AIModel)
-│   ├── model_downloader/          # DownloadStatus, DownloadProgress<T>, ModelDownloadService, ModelDownloadManager (broadcast downloadsStream)
+│   ├── downloader/                # DownloadStatus, DownloadProgress<T>, DownloaderService<K, T>, DownloadManager<K, T> (broadcast downloadsStream)
 │   └── vault/                     # Vault, VaultRelationship, VaultRepository (broadcast vaultsStream & activeVaultIdStream)
 └── features/                      # Isolated, self-contained feature modules (Zero cross-feature imports)
     ├── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen with onStartSetup & onSkip callbacks)
@@ -47,7 +47,7 @@ lib/
 
 ### 4. Interface-Driven Dependency Injection
 - Screens, BLoCs, router parameters, and service consumers accept abstract interfaces (`abstract interface class`), never concrete implementations.
-- Repositories (`JournalRepository`, `VaultRepository`, `OnboardingRepository`) and services (`DatabaseService`, `ModelDownloadService`) are registered in `MultiRepositoryProvider` by their interface types.
+- Repositories (`JournalRepository`, `VaultRepository`, `OnboardingRepository`) and services (`DatabaseService`, `DownloaderService<AIKind, AIKind>`) are registered in `MultiRepositoryProvider` by their interface types.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
 | Layer | Responsibility | Imports Permitted | Outgoing Boundary / Seam |

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/design_system/arca_design_system.dart';
 import '../../../../core/ai/models/ai_model.dart';
-import '../../../../core/model_downloader/models/download_progress.dart';
+import '../../../../core/downloader/models/download_progress.dart';
 import '../bloc/model_downloader_bloc.dart';
 import '../bloc/model_downloader_state.dart';
 

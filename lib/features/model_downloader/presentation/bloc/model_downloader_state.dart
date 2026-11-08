@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 
 import '../../../../core/ai/models/ai_model.dart';
-import '../../../../core/model_downloader/models/download_progress.dart';
+import '../../../../core/downloader/models/download_progress.dart';
 
 final class const ModelDownloaderUIState({
   final Map<AIKind, DownloadProgress<AIKind>> downloads = const {},

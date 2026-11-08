@@ -1,5 +1,5 @@
 import '../../../../core/ai/models/ai_model.dart';
-import '../../../../core/model_downloader/models/download_progress.dart';
+import '../../../../core/downloader/models/download_progress.dart';
 
 sealed class const ModelDownloaderEvent();
 

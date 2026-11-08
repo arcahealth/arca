@@ -1,5 +1,18 @@
 # Decisions
 
+## 2026-11-08: Generic Downloader Service Architecture (`DownloaderService<K, T>`)
+
+- **Status:** agreed
+- **Request:** Refactor the model-specific downloader module (`lib/core/model_downloader/`) into a generic, multi-purpose `downloader` module (`lib/core/downloader/`) featuring `DownloaderService<K extends Object, T extends Object>` and `DownloadManager<K extends Object, T extends Object>`, where `K` is the tracking map key and `T` is the payload encapsulated in `DownloadProgress<T>`.
+- **Scope:** `lib/core/downloader/`, `lib/app/`, `lib/features/model_downloader/`, `lib/features/setup_wizard/`, `test/`, `docs/`.
+- **Choices:**
+  - **Type-Safe Generic Contract (`DownloaderService<K extends Object, T extends Object>`):** Constrained both key `K` and payload `T` to non-nullable `Object`. Exposes reactive state via `downloads` (`Map<K, DownloadProgress<T>>`) and `downloadsStream`.
+  - **Reusable `DownloadManager<K, T>`:** Provides a general-purpose download orchestrator with configurable `keyOf: K Function(T)` (defaulting to identity cast when `K == T`), handling enqueueing, pausing, resuming, and progress tracking across diverse targets (models, images, assets).
+  - **Complete Decoupling of Core Domain:** Moved domain definitions (`AIKind`, `AIModel`) to `lib/core/ai/`, leaving `lib/core/downloader/` fully independent of AI concepts.
+  - **Composition & Injection:** `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc` inject and consume `DownloaderService<AIKind, AIKind>`.
+
+---
+
 ## 2026-11-08: Extract Core AI Domain Models to `lib/core/ai/`
 
 - **Status:** agreed

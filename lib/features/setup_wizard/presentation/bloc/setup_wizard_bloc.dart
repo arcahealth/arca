@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/model_downloader/services/model_download_service.dart';
+import '../../../../core/ai/models/ai_model.dart';
+import '../../../../core/downloader/services/downloader_service.dart';
 import '../../../../core/onboarding/repositories/onboarding_repository.dart';
 import '../../../../core/vault/repositories/vault_repository.dart';
 import 'setup_wizard_event.dart';
@@ -40,7 +41,7 @@ class SetupWizardBloc extends Bloc<SetupWizardEvent, SetupWizardState> {
 
   final VaultRepository vaultRepository;
   final OnboardingRepository onboardingRepository;
-  final ModelDownloadService modelDownloadService;
+  final DownloaderService<AIKind, AIKind> modelDownloadService;
 
   Future<void> _onFinishedRequested(
     SetupWizardFinishedRequested event,

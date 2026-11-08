@@ -1,6 +1,21 @@
 # Plan
 
 ## Done
+- [x] Generic Downloader Service Architecture (`DownloaderService<K, T>`)
+  - Requirements:
+    - Refactor `lib/core/model_downloader` into generic `lib/core/downloader/`.
+    - Provide `DownloaderService<K extends Object, T extends Object>` and `DownloadManager<K extends Object, T extends Object>`.
+    - Maintain `DownloadProgress<T extends Object>` with non-nullable target payload.
+    - Wire `DownloaderService<AIKind, AIKind>` through `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc`.
+    - Update all unit and widget tests, passing the full verification gate.
+  - Sub-steps:
+    - [x] Create `lib/core/downloader/models/download_progress.dart` (`DownloadStatus`, `DownloadProgress<T>`).
+    - [x] Create `lib/core/downloader/services/downloader_service.dart` (`DownloaderService<K, T>`).
+    - [x] Create `lib/core/downloader/services/download_manager.dart` (`DownloadManager<K, T>`).
+    - [x] Delete `lib/core/model_downloader/`.
+    - [x] Update `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc` to inject `DownloaderService<AIKind, AIKind>`.
+    - [x] Update all test suites and verify 46/46 passed.
+    - [x] Update `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
 - [x] Core AI Domain Separation from Model Downloader
   - Requirements:
     - Relocate `AIKind` and `AIModel` to `lib/core/ai/models/ai_model.dart`.
