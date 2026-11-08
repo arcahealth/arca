@@ -1,15 +1,9 @@
 import '../../domain/models/journal_entry.dart';
 
-sealed class JournalEvent {
-  const JournalEvent();
-}
+sealed class const JournalEvent();
 
-final class JournalLoadRequested extends JournalEvent {
-  const JournalLoadRequested({this.memberId});
-  final String? memberId;
-}
+final class const JournalLoadRequested({final String? memberId})
+    extends JournalEvent;
 
-final class JournalEntryAdded extends JournalEvent {
-  const JournalEntryAdded(this.entry);
-  final JournalEntry entry;
-}
+final class const JournalEntryAdded(final JournalEntry entry)
+    extends JournalEvent;

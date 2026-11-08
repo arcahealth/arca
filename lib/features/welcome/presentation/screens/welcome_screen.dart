@@ -6,12 +6,11 @@ import '../../../../core/design_system/arca_design_system.dart';
 ///
 /// Completely self-contained: forwards user intents purely through constructor
 /// callbacks [onStartSetup] and [onSkip] without dependencies on other features or routes.
-class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key, this.onStartSetup, this.onSkip});
-
-  final VoidCallback? onStartSetup;
-  final VoidCallback? onSkip;
-
+class const WelcomeScreen({
+  super.key,
+  final VoidCallback? onStartSetup,
+  final VoidCallback? onSkip,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ArcaScaffold(
@@ -21,7 +20,7 @@ class WelcomeScreen extends StatelessWidget {
           vertical: ArcaSpacing.xl,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: .stretch,
           children: [
             const SizedBox(height: ArcaSpacing.xl),
             Center(
@@ -36,12 +35,12 @@ class WelcomeScreen extends StatelessWidget {
                     width: 2.0,
                   ),
                 ),
-                alignment: Alignment.center,
+                alignment: .center,
                 child: const Text(
                   'A',
                   style: TextStyle(
                     fontSize: 36,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: .bold,
                     color: ArcaColors.primary,
                   ),
                 ),
@@ -51,7 +50,7 @@ class WelcomeScreen extends StatelessWidget {
             const Text(
               'Welcome to Arca',
               style: ArcaTypography.titleLarge,
-              textAlign: TextAlign.center,
+              textAlign: .center,
             ),
             const SizedBox(height: ArcaSpacing.xs),
             Text(
@@ -59,7 +58,7 @@ class WelcomeScreen extends StatelessWidget {
               style: ArcaTypography.bodyMedium.copyWith(
                 color: ArcaColors.textSecondary,
               ),
-              textAlign: TextAlign.center,
+              textAlign: .center,
             ),
             const SizedBox(height: ArcaSpacing.xl),
             _buildFeaturePillar(
@@ -82,14 +81,14 @@ class WelcomeScreen extends StatelessWidget {
             const SizedBox(height: ArcaSpacing.xxl),
             ArcaButton(
               label: 'Start Setup Wizard →',
-              variant: ArcaButtonVariant.primary,
+              variant: .primary,
               semanticsLabel: 'Begin initial Arca setup wizard',
               onPressed: onStartSetup,
             ),
             const SizedBox(height: ArcaSpacing.sm),
             ArcaButton(
               label: 'Skip Setup & Quick Start',
-              variant: ArcaButtonVariant.ghost,
+              variant: .ghost,
               semanticsLabel: 'Skip onboarding and enter Arca',
               onPressed: onSkip,
             ),
@@ -107,13 +106,13 @@ class WelcomeScreen extends StatelessWidget {
     return ArcaCard(
       padding: const EdgeInsets.all(ArcaSpacing.md),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           Text(icon, style: const TextStyle(fontSize: 24)),
           const SizedBox(width: ArcaSpacing.md),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               children: [
                 Text(
                   title,

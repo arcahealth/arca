@@ -1,25 +1,15 @@
 enum JournalCategory { vital, visit, lab, medication }
 
 /// A clinical journal entry or biometric milestone in Arca's longitudinal vault.
-final class JournalEntry {
-  const JournalEntry({
-    required this.id,
-    required this.title,
-    required this.summary,
-    required this.category,
-    required this.recordedAt,
-    required this.memberId,
-    this.isVerifiedOnDevice = true,
-  });
-
-  final String id;
-  final String title;
-  final String summary;
-  final JournalCategory category;
-  final DateTime recordedAt;
-  final String memberId;
-  final bool isVerifiedOnDevice;
-
+final class const JournalEntry({
+  required final String id,
+  required final String title,
+  required final String summary,
+  required final JournalCategory category,
+  required final DateTime recordedAt,
+  required final String memberId,
+  final bool isVerifiedOnDevice = true,
+}) {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

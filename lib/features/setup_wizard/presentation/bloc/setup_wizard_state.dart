@@ -1,24 +1,15 @@
+import 'package:collection/collection.dart';
+
 import '../../../../core/model_downloader/models/ai_model_capability.dart';
 import '../../../../core/vault/models/vault.dart';
 
-final class SetupWizardState {
-  const SetupWizardState({
-    this.currentStep = 0,
-    this.vaultDrafts = const [],
-    this.selectedAiCapabilities = const {
-      AiModelCapabilityType.ocr,
-      AiModelCapabilityType.asr,
-    },
-    this.isSaving = false,
-    this.isFinished = false,
-  });
-
-  final int currentStep;
-  final List<Vault> vaultDrafts;
-  final Set<AiModelCapabilityType> selectedAiCapabilities;
-  final bool isSaving;
-  final bool isFinished;
-
+final class const SetupWizardState({
+  final int currentStep = 0,
+  final List<Vault> vaultDrafts = const [],
+  final Set<AiModelCapabilityType> selectedAiCapabilities = const {.ocr, .asr},
+  final bool isSaving = false,
+  final bool isFinished = false,
+}) {
   bool get hasSelectedAiCapabilities => selectedAiCapabilities.isNotEmpty;
 
   SetupWizardState copyWith({
@@ -46,28 +37,18 @@ final class SetupWizardState {
           currentStep == other.currentStep &&
           isSaving == other.isSaving &&
           isFinished == other.isFinished &&
-          _listEquals(vaultDrafts, other.vaultDrafts) &&
-          _setEquals(selectedAiCapabilities, other.selectedAiCapabilities);
+          const ListEquality<Vault>().equals(vaultDrafts, other.vaultDrafts) &&
+          const SetEquality<AiModelCapabilityType>().equals(
+            selectedAiCapabilities,
+            other.selectedAiCapabilities,
+          );
 
   @override
   int get hashCode => Object.hash(
     currentStep,
     isSaving,
     isFinished,
-    Object.hashAll(vaultDrafts),
-    Object.hashAll(selectedAiCapabilities),
+    const ListEquality<Vault>().hash(vaultDrafts),
+    const SetEquality<AiModelCapabilityType>().hash(selectedAiCapabilities),
   );
-
-  static bool _listEquals<T>(List<T> a, List<T> b) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
-
-  static bool _setEquals<T>(Set<T> a, Set<T> b) {
-    if (a.length != b.length) return false;
-    return a.containsAll(b);
-  }
 }

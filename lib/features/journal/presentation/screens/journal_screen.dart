@@ -12,22 +12,14 @@ import '../bloc/journal_state.dart';
 /// Completely self-contained: forwards user intents purely through constructor
 /// callbacks [onRecordSelected] and [onManageVaults], and accepts optional slots [topBanner]
 /// and [vaultSwitcher] without cross-feature imports or router dependencies.
-class JournalScreen extends StatelessWidget {
-  const JournalScreen({
-    super.key,
-    this.onRecordSelected,
-    this.onManageVaults,
-    this.topBanner,
-    this.vaultSwitcher,
-    this.activeMemberName,
-  });
-
-  final ValueChanged<String>? onRecordSelected;
-  final VoidCallback? onManageVaults;
-  final Widget? topBanner;
-  final Widget? vaultSwitcher;
-  final String? activeMemberName;
-
+class const JournalScreen({
+  super.key,
+  final ValueChanged<String>? onRecordSelected,
+  final VoidCallback? onManageVaults,
+  final Widget? topBanner,
+  final Widget? vaultSwitcher,
+  final String? activeMemberName,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subtitle = activeMemberName != null
@@ -40,7 +32,7 @@ class JournalScreen extends StatelessWidget {
         subtitle: subtitle,
         trailing: ArcaButton(
           label: '+ Log Vitals',
-          variant: ArcaButtonVariant.primary,
+          variant: .primary,
           semanticsLabel: 'Log new on-device biometric reading',
           onPressed: () {
             final now = DateTime.now();
@@ -49,7 +41,7 @@ class JournalScreen extends StatelessWidget {
               title: 'Blood Pressure & Pulse Log',
               summary:
                   '118/76 mmHg, 68 bpm. Resting measurement recorded manually.',
-              category: JournalCategory.vital,
+              category: .vital,
               recordedAt: now,
               memberId: 'self',
             );
@@ -58,7 +50,7 @@ class JournalScreen extends StatelessWidget {
         ),
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: .stretch,
         children: [
           ?topBanner,
           ?vaultSwitcher,
@@ -75,7 +67,7 @@ class JournalScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(ArcaSpacing.md),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisSize: .min,
                       children: [
                         const Text(
                           'Vault Access Error',
@@ -113,12 +105,11 @@ class JournalScreen extends StatelessWidget {
                               key: ValueKey(entry.id),
                               onTap: () => onRecordSelected?.call(entry.id),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: .start,
                                 children: [
                                   Wrap(
-                                    alignment: WrapAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.center,
+                                    alignment: .spaceBetween,
+                                    crossAxisAlignment: .center,
                                     runSpacing: ArcaSpacing.xxs,
                                     children: [
                                       ArcaBadge(
@@ -144,7 +135,7 @@ class JournalScreen extends StatelessWidget {
                                     entry.summary,
                                     style: ArcaTypography.bodyMedium,
                                     maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                                    overflow: .ellipsis,
                                   ),
                                 ],
                               ),
@@ -161,10 +152,10 @@ class JournalScreen extends StatelessWidget {
 
   static ArcaBadgeVariant _badgeVariantFor(JournalCategory category) {
     return switch (category) {
-      JournalCategory.vital => ArcaBadgeVariant.info,
-      JournalCategory.lab => ArcaBadgeVariant.normal,
-      JournalCategory.visit => ArcaBadgeVariant.warning,
-      JournalCategory.medication => ArcaBadgeVariant.critical,
+      .vital => .info,
+      .lab => .normal,
+      .visit => .warning,
+      .medication => .critical,
     };
   }
 

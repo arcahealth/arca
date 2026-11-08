@@ -2,7 +2,7 @@ import '../models/journal_entry.dart';
 
 /// Repository interface managing longitudinal medical records and journal entries.
 abstract interface class JournalRepository {
-  /// Fetches all journal entries for the active member profile.
+  /// Fetches all journal entries for the active member vault.
   Future<List<JournalEntry>> getEntries({String? memberId});
 
   /// Fetches a specific entry by its unique identifier.

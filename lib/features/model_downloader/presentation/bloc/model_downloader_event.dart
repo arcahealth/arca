@@ -1,14 +1,8 @@
 import '../../../../core/model_downloader/models/ai_model_capability.dart';
 
-sealed class ModelDownloaderEvent {
-  const ModelDownloaderEvent();
-}
+sealed class const ModelDownloaderEvent();
 
-final class ModelDownloaderStarted extends ModelDownloaderEvent {
-  const ModelDownloaderStarted();
-}
+final class const ModelDownloaderStarted() extends ModelDownloaderEvent;
 
-final class ModelDownloaderStateUpdated extends ModelDownloaderEvent {
-  const ModelDownloaderStateUpdated(this.state);
-  final ModelDownloadState state;
-}
+final class const ModelDownloaderStateUpdated(final ModelDownloadState state)
+    extends ModelDownloaderEvent;

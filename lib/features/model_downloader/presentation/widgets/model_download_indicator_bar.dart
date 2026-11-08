@@ -9,11 +9,8 @@ import '../bloc/model_downloader_state.dart';
 /// when background on-device AI model downloads are active.
 ///
 /// Self-contained: forwards tap action via [onTap] callback.
-class ModelDownloadIndicatorBar extends StatelessWidget {
-  const ModelDownloadIndicatorBar({super.key, this.onTap});
-
-  final VoidCallback? onTap;
-
+class const ModelDownloadIndicatorBar({super.key, final VoidCallback? onTap})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ModelDownloaderBloc, ModelDownloaderUIState>(
@@ -48,7 +45,7 @@ class ModelDownloadIndicatorBar extends StatelessWidget {
                     'All On-Device AI Capabilities Ready & Offline',
                     style: ArcaTypography.caption.copyWith(
                       color: ArcaColors.success,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: .w600,
                     ),
                   ),
                 ),
@@ -61,7 +58,7 @@ class ModelDownloadIndicatorBar extends StatelessWidget {
 
         return GestureDetector(
           onTap: onTap,
-          behavior: HitTestBehavior.opaque,
+          behavior: .opaque,
           child: Container(
             margin: const EdgeInsets.symmetric(
               horizontal: ArcaSpacing.md,
@@ -77,30 +74,27 @@ class ModelDownloadIndicatorBar extends StatelessWidget {
               border: Border.all(color: ArcaColors.border),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: .start,
+              mainAxisSize: .min,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: .spaceBetween,
                   children: [
                     Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisSize: .min,
                       children: [
                         const Text('⬇️', style: TextStyle(fontSize: 12)),
                         const SizedBox(width: ArcaSpacing.xs),
                         Text(
                           'Background AI Download ($percentage%)',
                           style: ArcaTypography.caption.copyWith(
-                            fontWeight: FontWeight.w600,
+                            fontWeight: .w600,
                             color: ArcaColors.textPrimary,
                           ),
                         ),
                       ],
                     ),
-                    const ArcaBadge(
-                      label: 'OFFLINE EDGE',
-                      variant: ArcaBadgeVariant.info,
-                    ),
+                    const ArcaBadge(label: 'OFFLINE EDGE', variant: .info),
                   ],
                 ),
                 const SizedBox(height: ArcaSpacing.xs),

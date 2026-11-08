@@ -9,16 +9,11 @@ import '../bloc/model_downloader_state.dart';
 /// Screen displaying the download of selected on-device AI capabilities during first launch.
 ///
 /// Self-contained: forwards user continuation via [onContinue] callback.
-class ModelDownloadScreen extends StatelessWidget {
-  const ModelDownloadScreen({
-    super.key,
-    this.selectedCapabilityIds = const [],
-    this.onContinue,
-  });
-
-  final List<String> selectedCapabilityIds;
-  final VoidCallback? onContinue;
-
+class const ModelDownloadScreen({
+  super.key,
+  final List<String> selectedCapabilityIds = const [],
+  final VoidCallback? onContinue,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ModelDownloaderBloc, ModelDownloaderUIState>(
@@ -35,15 +30,15 @@ class ModelDownloadScreen extends StatelessWidget {
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(ArcaSpacing.md),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: .stretch,
               children: [
                 ArcaCard(
                   backgroundColor: ArcaColors.surfaceElevated,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: .spaceBetween,
                         children: [
                           const Text(
                             'Overall Progress',
@@ -87,7 +82,7 @@ class ModelDownloadScreen extends StatelessWidget {
                     border: Border.all(color: ArcaColors.borderSubtle),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       const Text('ℹ️', style: TextStyle(fontSize: 18)),
                       const SizedBox(width: ArcaSpacing.sm),
@@ -118,7 +113,7 @@ class ModelDownloadScreen extends StatelessWidget {
               label: state.allCompleted
                   ? 'Open Health Dashboard →'
                   : 'Continue to App (Background Download) →',
-              variant: ArcaButtonVariant.primary,
+              variant: .primary,
               semanticsLabel: 'Proceed to Arca application',
               onPressed: onContinue,
             ),
@@ -132,40 +127,22 @@ class ModelDownloadScreen extends StatelessWidget {
     AiModelCapabilityType type,
     AiModelCapability? capability,
   ) {
-    final status = capability?.status ?? AiModelStatus.queued;
+    final status = capability?.status ?? .queued;
     final progress = capability?.progress ?? 0.0;
     final pct = (progress * 100).round();
 
     final statusBadge = switch (status) {
-      AiModelStatus.ready => const ArcaBadge(
-        label: 'READY',
-        variant: ArcaBadgeVariant.normal,
-      ),
-      AiModelStatus.downloading => ArcaBadge(
-        label: '$pct%',
-        variant: ArcaBadgeVariant.info,
-      ),
-      AiModelStatus.queued => const ArcaBadge(
-        label: 'QUEUED',
-        variant: ArcaBadgeVariant.neutral,
-      ),
-      AiModelStatus.paused => const ArcaBadge(
-        label: 'PAUSED',
-        variant: ArcaBadgeVariant.warning,
-      ),
-      AiModelStatus.failed => const ArcaBadge(
-        label: 'ERROR',
-        variant: ArcaBadgeVariant.critical,
-      ),
-      AiModelStatus.notInstalled => const ArcaBadge(
-        label: 'OFF',
-        variant: ArcaBadgeVariant.neutral,
-      ),
+      .ready => const ArcaBadge(label: 'READY', variant: .normal),
+      .downloading => ArcaBadge(label: '$pct%', variant: .info),
+      .queued => const ArcaBadge(label: 'QUEUED', variant: .neutral),
+      .paused => const ArcaBadge(label: 'PAUSED', variant: .warning),
+      .failed => const ArcaBadge(label: 'ERROR', variant: .critical),
+      .notInstalled => const ArcaBadge(label: 'OFF', variant: .neutral),
     };
 
     return ArcaCard(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           Row(
             children: [

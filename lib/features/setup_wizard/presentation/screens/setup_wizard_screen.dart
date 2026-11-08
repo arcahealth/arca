@@ -13,22 +13,16 @@ import '../bloc/setup_wizard_state.dart';
 ///
 /// Self-contained: receives constructor callbacks [onBack], [onSkip], and [onComplete]
 /// to communicate user actions to the router orchestrator without cross-module leaks.
-class SetupWizardScreen extends StatefulWidget {
-  const SetupWizardScreen({
-    super.key,
-    this.onBack,
-    this.onSkip,
-    this.onComplete,
-  });
-
-  final VoidCallback? onBack;
-  final VoidCallback? onSkip;
+class const SetupWizardScreen({
+  super.key,
+  final VoidCallback? onBack,
+  final VoidCallback? onSkip,
   final void Function({
     required bool hasSelectedAiModels,
     required int vaultCount,
   })?
-  onComplete;
-
+  onComplete,
+}) extends StatefulWidget {
   @override
   State<SetupWizardScreen> createState() => _SetupWizardScreenState();
 }
@@ -39,7 +33,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
   final TextEditingController _bloodTypeController = TextEditingController();
   final TextEditingController _allergiesController = TextEditingController();
 
-  VaultRelationship _selectedRelationship = VaultRelationship.self;
+  VaultRelationship _selectedRelationship = .self;
 
   @override
   void dispose() {
@@ -78,7 +72,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
     _bloodTypeController.clear();
     _allergiesController.clear();
     setState(() {
-      _selectedRelationship = VaultRelationship.child;
+      _selectedRelationship = .child;
     });
   }
 
@@ -104,7 +98,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                 : 'Step 2 of 2: Select privacy-first local models',
             leading: ArcaButton(
               label: '← Back',
-              variant: ArcaButtonVariant.ghost,
+              variant: .ghost,
               semanticsLabel: 'Navigate to previous step',
               onPressed: () {
                 if (isStepOne) {
@@ -118,7 +112,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
             ),
             trailing: ArcaButton(
               label: 'Skip',
-              variant: ArcaButtonVariant.ghost,
+              variant: .ghost,
               semanticsLabel: 'Skip setup step',
               onPressed: widget.onSkip,
             ),
@@ -143,7 +137,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                   Expanded(
                     child: ArcaButton(
                       label: '← Back',
-                      variant: ArcaButtonVariant.secondary,
+                      variant: .secondary,
                       onPressed: () => context.read<SetupWizardBloc>().add(
                         const SetupWizardStepChanged(0),
                       ),
@@ -155,7 +149,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                   flex: 2,
                   child: ArcaButton(
                     label: isStepOne ? 'Next: AI Setup →' : 'Complete Setup ✓',
-                    variant: ArcaButtonVariant.primary,
+                    variant: .primary,
                     isLoading: state.isSaving,
                     onPressed: () {
                       if (isStepOne) {
@@ -183,7 +177,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
 
   Widget _buildVaultStep(BuildContext context, SetupWizardState state) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: .stretch,
       children: [
         const Text(
           'Personal & Family Health Vaults',
@@ -200,7 +194,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
         if (state.vaultDrafts.isNotEmpty) ...[
           Text(
             'Configured Vaults (${state.vaultDrafts.length})',
-            style: ArcaTypography.caption.copyWith(fontWeight: FontWeight.w600),
+            style: ArcaTypography.caption.copyWith(fontWeight: .w600),
           ),
           const SizedBox(height: ArcaSpacing.xs),
           for (final vault in state.vaultDrafts)
@@ -215,7 +209,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: .start,
                         children: [
                           Row(
                             children: [
@@ -228,7 +222,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                               const SizedBox(width: ArcaSpacing.xs),
                               ArcaBadge(
                                 label: vault.relationship.name.toUpperCase(),
-                                variant: ArcaBadgeVariant.info,
+                                variant: .info,
                               ),
                             ],
                           ),
@@ -250,7 +244,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                     ),
                     ArcaButton(
                       label: 'Remove',
-                      variant: ArcaButtonVariant.ghost,
+                      variant: .ghost,
                       semanticsLabel: 'Remove ${vault.name} vault',
                       onPressed: () => context.read<SetupWizardBloc>().add(
                         SetupWizardVaultDraftRemoved(vault.id),
@@ -264,7 +258,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
         ],
         ArcaCard(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: .stretch,
             children: [
               Text(
                 state.vaultDrafts.isEmpty
@@ -283,7 +277,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                 'Relationship',
                 style: ArcaTypography.caption.copyWith(
                   color: ArcaColors.textSecondary,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: .w600,
                 ),
               ),
               const SizedBox(height: ArcaSpacing.xxs),
@@ -316,7 +310,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                             color: _selectedRelationship == rel
                                 ? ArcaColors.textInverse
                                 : ArcaColors.textPrimary,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: .w600,
                           ),
                         ),
                       ),
@@ -352,7 +346,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
               const SizedBox(height: ArcaSpacing.md),
               ArcaButton(
                 label: '+ Add to Vault List',
-                variant: ArcaButtonVariant.secondary,
+                variant: .secondary,
                 semanticsLabel: 'Add vault to setup list',
                 onPressed: () => _addVaultDraft(context),
               ),
@@ -365,7 +359,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
 
   Widget _buildAiStep(BuildContext context, SetupWizardState state) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: .stretch,
       children: [
         const Text('Edge AI Capabilities', style: ArcaTypography.titleLarge),
         const SizedBox(height: ArcaSpacing.xxs),
@@ -393,7 +387,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
             border: Border.all(color: ArcaColors.border),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               const Text('🔒', style: TextStyle(fontSize: 20)),
               const SizedBox(width: ArcaSpacing.sm),
@@ -427,7 +421,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
         SetupWizardAiCapabilityToggled(type),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: [
           Container(
             width: 24,
@@ -440,14 +434,14 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                 width: 1.5,
               ),
             ),
-            alignment: Alignment.center,
+            alignment: .center,
             child: isSelected
                 ? const Text(
                     '✓',
                     style: TextStyle(
                       color: ArcaColors.textInverse,
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: .bold,
                     ),
                   )
                 : null,
@@ -455,10 +449,10 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
           const SizedBox(width: ArcaSpacing.md),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: .start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: .spaceBetween,
                   children: [
                     Flexible(
                       child: Text(
@@ -471,9 +465,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                     const SizedBox(width: ArcaSpacing.xs),
                     ArcaBadge(
                       label: type.estimatedSize,
-                      variant: isSelected
-                          ? ArcaBadgeVariant.info
-                          : ArcaBadgeVariant.neutral,
+                      variant: isSelected ? .info : .neutral,
                     ),
                   ],
                 ),

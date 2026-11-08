@@ -1,35 +1,28 @@
-import 'package:sqlite3/common.dart' as sqlite;
 import 'package:sqlite_async/sqlite_async.dart';
 
 import '../../domain/models/journal_entry.dart';
 import '../../domain/repositories/journal_repository.dart';
 
 /// On-device SQLite implementation of [JournalRepository] backed by [SqliteDatabase].
-class SqliteJournalRepository implements JournalRepository {
-  const SqliteJournalRepository({required this.db});
-
-  final SqliteDatabase db;
-
+class const SqliteJournalRepository({required final SqliteDatabase db})
+    implements JournalRepository {
   @override
   Future<List<JournalEntry>> getEntries({String? memberId}) async {
-    final sqlite.ResultSet results;
-    if (memberId != null) {
-      results = await db.getAll(
-        '''
+    final results = memberId != null
+        ? await db.getAll(
+            '''
         SELECT id, title, summary, category, recorded_at, member_id, is_verified_on_device
         FROM journal_entries
         WHERE member_id = ?
         ORDER BY recorded_at DESC
         ''',
-        [memberId],
-      );
-    } else {
-      results = await db.getAll('''
+            [memberId],
+          )
+        : await db.getAll('''
         SELECT id, title, summary, category, recorded_at, member_id, is_verified_on_device
         FROM journal_entries
         ORDER BY recorded_at DESC
         ''');
-    }
 
     return results.map(_rowToEntry).toList(growable: false);
   }
@@ -69,11 +62,11 @@ class SqliteJournalRepository implements JournalRepository {
     );
   }
 
-  static JournalEntry _rowToEntry(sqlite.Row row) {
+  static JournalEntry _rowToEntry(Map<String, dynamic> row) {
     final categoryName = row['category'] as String;
     final category = JournalCategory.values.firstWhere(
       (c) => c.name == categoryName,
-      orElse: () => JournalCategory.vital,
+      orElse: () => .vital,
     );
 
     return JournalEntry(

@@ -1,34 +1,21 @@
 import '../../../../core/model_downloader/models/ai_model_capability.dart';
 import '../../../../core/vault/models/vault.dart';
 
-sealed class SetupWizardEvent {
-  const SetupWizardEvent();
-}
+sealed class const SetupWizardEvent();
 
-final class SetupWizardStarted extends SetupWizardEvent {
-  const SetupWizardStarted();
-}
+final class const SetupWizardStarted() extends SetupWizardEvent;
 
-final class SetupWizardStepChanged extends SetupWizardEvent {
-  const SetupWizardStepChanged(this.stepIndex);
-  final int stepIndex;
-}
+final class const SetupWizardStepChanged(final int stepIndex)
+    extends SetupWizardEvent;
 
-final class SetupWizardVaultDraftAdded extends SetupWizardEvent {
-  const SetupWizardVaultDraftAdded(this.vault);
-  final Vault vault;
-}
+final class const SetupWizardVaultDraftAdded(final Vault vault)
+    extends SetupWizardEvent;
 
-final class SetupWizardVaultDraftRemoved extends SetupWizardEvent {
-  const SetupWizardVaultDraftRemoved(this.vaultId);
-  final String vaultId;
-}
+final class const SetupWizardVaultDraftRemoved(final String vaultId)
+    extends SetupWizardEvent;
 
-final class SetupWizardAiCapabilityToggled extends SetupWizardEvent {
-  const SetupWizardAiCapabilityToggled(this.type);
-  final AiModelCapabilityType type;
-}
+final class const SetupWizardAiCapabilityToggled(
+  final AiModelCapabilityType type,
+) extends SetupWizardEvent;
 
-final class SetupWizardFinishedRequested extends SetupWizardEvent {
-  const SetupWizardFinishedRequested();
-}
+final class const SetupWizardFinishedRequested() extends SetupWizardEvent;

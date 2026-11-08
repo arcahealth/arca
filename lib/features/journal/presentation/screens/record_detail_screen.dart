@@ -9,18 +9,12 @@ import '../../domain/repositories/journal_repository.dart';
 ///
 /// Self-contained: forwards back navigation via constructor callback [onBack].
 /// Resolves [JournalRepository] interface via constructor injection or [RepositoryProvider].
-class RecordDetailScreen extends StatelessWidget {
-  const RecordDetailScreen({
-    required this.recordId,
-    this.repository,
-    super.key,
-    this.onBack,
-  });
-
-  final String recordId;
-  final JournalRepository? repository;
-  final VoidCallback? onBack;
-
+class const RecordDetailScreen({
+  required final String recordId,
+  super.key,
+  final JournalRepository? repository,
+  final VoidCallback? onBack,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final repo = repository ?? context.read<JournalRepository>();
@@ -31,7 +25,7 @@ class RecordDetailScreen extends StatelessWidget {
         subtitle: 'Processed entirely on-device',
         leading: ArcaButton(
           label: '← Back',
-          variant: ArcaButtonVariant.ghost,
+          variant: .ghost,
           semanticsLabel: 'Navigate back to journal timeline',
           onPressed: onBack,
         ),
@@ -52,7 +46,7 @@ class RecordDetailScreen extends StatelessWidget {
           if (entry == null) {
             return Center(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: .min,
                 children: [
                   const Text(
                     'Record Not Found',
@@ -73,19 +67,19 @@ class RecordDetailScreen extends StatelessWidget {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(ArcaSpacing.md),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: .stretch,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: .spaceBetween,
                   children: [
                     ArcaBadge(
                       label: entry.category.name.toUpperCase(),
-                      variant: ArcaBadgeVariant.info,
+                      variant: .info,
                     ),
                     if (entry.isVerifiedOnDevice)
                       const ArcaBadge(
                         label: 'VERIFIED ON-DEVICE',
-                        variant: ArcaBadgeVariant.normal,
+                        variant: .normal,
                       ),
                   ],
                 ),
@@ -99,7 +93,7 @@ class RecordDetailScreen extends StatelessWidget {
                 const SizedBox(height: ArcaSpacing.lg),
                 ArcaCard(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       const Text(
                         'Clinical Findings & Summary',
@@ -115,7 +109,7 @@ class RecordDetailScreen extends StatelessWidget {
                   backgroundColor: ArcaColors.surfaceSubtle,
                   borderColor: ArcaColors.borderSubtle,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: .start,
                     children: [
                       Text(
                         'Data Sovereignty Guarantee',
