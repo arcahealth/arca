@@ -125,7 +125,7 @@ class const ModelDownloadScreen({
 
   Widget _buildCapabilityItem(
     AIModel model,
-    DownloadProgress<AIKind>? progress,
+    DownloadProgress<ModelKind>? progress,
   ) {
     final status = progress?.status ?? .queued;
     final value = progress?.progress ?? 0.0;

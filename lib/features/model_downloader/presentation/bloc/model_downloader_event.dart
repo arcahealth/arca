@@ -5,5 +5,5 @@ sealed class const ModelDownloaderEvent();
 final class const ModelDownloaderStarted() extends ModelDownloaderEvent;
 
 final class const ModelDownloaderStateUpdated(
-  final Map<AIKind, DownloadProgress<AIKind>> downloads,
+  final Map<ModelKind, DownloadProgress<ModelKind>> downloads,
 ) extends ModelDownloaderEvent;

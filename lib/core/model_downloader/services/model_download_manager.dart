@@ -1,31 +1,31 @@
 import 'dart:async';
 
 import '../models/ai_model.dart';
-import 'model_downloader_service.dart';
+import 'model_download_service.dart';
 
-/// In-memory implementation of [ModelDownloaderService] with broadcast stream updates.
-class InMemoryModelDownloaderService implements ModelDownloaderService {
-  InMemoryModelDownloaderService({
+/// Implementation of [ModelDownloadService] managing model download lifecycles and broadcast streams.
+class ModelDownloadManager implements ModelDownloadService {
+  ModelDownloadManager({
     this.tickInterval = const Duration(milliseconds: 200),
     this.tickStep = 0.25,
-    Map<AIKind, DownloadProgress<AIKind>>? initialDownloads,
+    Map<ModelKind, DownloadProgress<ModelKind>>? initialDownloads,
   }) : _downloads = initialDownloads != null ? Map.from(initialDownloads) : {};
 
   final Duration tickInterval;
   final double tickStep;
-  final Map<AIKind, DownloadProgress<AIKind>> _downloads;
+  final Map<ModelKind, DownloadProgress<ModelKind>> _downloads;
 
-  final StreamController<Map<AIKind, DownloadProgress<AIKind>>>
+  final StreamController<Map<ModelKind, DownloadProgress<ModelKind>>>
   _downloadsController =
-      StreamController<Map<AIKind, DownloadProgress<AIKind>>>.broadcast();
-  final Map<AIKind, Timer> _timers = {};
+      StreamController<Map<ModelKind, DownloadProgress<ModelKind>>>.broadcast();
+  final Map<ModelKind, Timer> _timers = {};
 
   @override
-  Map<AIKind, DownloadProgress<AIKind>> get downloads =>
+  Map<ModelKind, DownloadProgress<ModelKind>> get downloads =>
       Map.unmodifiable(_downloads);
 
   @override
-  Stream<Map<AIKind, DownloadProgress<AIKind>>> get downloadsStream =>
+  Stream<Map<ModelKind, DownloadProgress<ModelKind>>> get downloadsStream =>
       _downloadsController.stream;
 
   @override
@@ -49,9 +49,9 @@ class InMemoryModelDownloaderService implements ModelDownloaderService {
   }
 
   @override
-  void queueDownloads(List<AIKind> kinds) {
+  void queueDownloads(List<ModelKind> kinds) {
     for (final kind in kinds) {
-      _downloads[kind] = DownloadProgress<AIKind>(
+      _downloads[kind] = DownloadProgress<ModelKind>(
         target: kind,
         status: .downloading,
         progress: 0.05,
@@ -62,7 +62,7 @@ class InMemoryModelDownloaderService implements ModelDownloaderService {
   }
 
   @override
-  void pauseDownload(AIKind kind) {
+  void pauseDownload(ModelKind kind) {
     _timers[kind]?.cancel();
     _timers.remove(kind);
     final current = _downloads[kind];
@@ -73,7 +73,7 @@ class InMemoryModelDownloaderService implements ModelDownloaderService {
   }
 
   @override
-  void resumeDownload(AIKind kind) {
+  void resumeDownload(ModelKind kind) {
     final current = _downloads[kind];
     if (current != null) {
       _downloads[kind] = current.copyWith(status: .downloading);
@@ -82,7 +82,7 @@ class InMemoryModelDownloaderService implements ModelDownloaderService {
     }
   }
 
-  void _startSimulatedDownload(AIKind kind) {
+  void _startSimulatedDownload(ModelKind kind) {
     _timers[kind]?.cancel();
     if (tickInterval == Duration.zero) {
       _finishDownload(kind);
@@ -98,14 +98,17 @@ class InMemoryModelDownloaderService implements ModelDownloaderService {
         _timers.remove(kind);
         _finishDownload(kind);
       } else {
-        _downloads[kind] = (current ?? DownloadProgress<AIKind>(target: kind))
-            .copyWith(status: .downloading, progress: nextProgress);
+        _downloads[kind] =
+            (current ?? DownloadProgress<ModelKind>(target: kind)).copyWith(
+              status: .downloading,
+              progress: nextProgress,
+            );
         _emit();
       }
     });
   }
 
-  void _finishDownload(AIKind kind) {
+  void _finishDownload(ModelKind kind) {
     final current = _downloads[kind];
     if (current != null) {
       _downloads[kind] = current.copyWith(status: .ready, progress: 1.0);

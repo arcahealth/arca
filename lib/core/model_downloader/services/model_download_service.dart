@@ -1,12 +1,12 @@
 import '../models/ai_model.dart';
 
 /// Core service managing edge AI neural weight downloads with reactive broadcast streams.
-abstract interface class ModelDownloaderService {
-  /// Map of currently tracked downloads by AI capability kind.
-  Map<AIKind, DownloadProgress<AIKind>> get downloads;
+abstract interface class ModelDownloadService {
+  /// Map of currently tracked downloads by AI model kind.
+  Map<ModelKind, DownloadProgress<ModelKind>> get downloads;
 
   /// Broadcast stream emitting updates to the downloads map.
-  Stream<Map<AIKind, DownloadProgress<AIKind>>> get downloadsStream;
+  Stream<Map<ModelKind, DownloadProgress<ModelKind>>> get downloadsStream;
 
   /// Whether any download is actively transferring or queued.
   bool get isDownloading;
@@ -18,13 +18,13 @@ abstract interface class ModelDownloaderService {
   double get totalProgress;
 
   /// Queues specified model kinds for on-device download.
-  void queueDownloads(List<AIKind> kinds);
+  void queueDownloads(List<ModelKind> kinds);
 
   /// Pauses an active download.
-  void pauseDownload(AIKind kind);
+  void pauseDownload(ModelKind kind);
 
   /// Resumes a paused download.
-  void resumeDownload(AIKind kind);
+  void resumeDownload(ModelKind kind);
 
   /// Releases stream controllers and timer resources.
   void dispose();

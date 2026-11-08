@@ -14,7 +14,7 @@ final class const SetupWizardVaultDraftAdded(final Vault vault)
 final class const SetupWizardVaultDraftRemoved(final String vaultId)
     extends SetupWizardEvent;
 
-final class const SetupWizardAiCapabilityToggled(final AIKind kind)
+final class const SetupWizardAiCapabilityToggled(final ModelKind kind)
     extends SetupWizardEvent;
 
 final class const SetupWizardFinishedRequested() extends SetupWizardEvent;

@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/core/model_downloader/models/ai_model.dart';
-import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
-import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
+import 'package:arca/core/model_downloader/services/model_download_manager.dart';
+import 'package:arca/core/model_downloader/services/model_download_service.dart';
 import 'package:arca/features/model_downloader/presentation/bloc/model_downloader_bloc.dart';
 
 void main() {
   group('ModelDownloaderBloc Tests', () {
     test('updates state reactively via service broadcast stream', () async {
-      final ModelDownloaderService service = InMemoryModelDownloaderService(
+      final ModelDownloadService service = ModelDownloadManager(
         tickInterval: const Duration(milliseconds: 20),
         tickStep: 0.5,
       );
@@ -15,7 +15,7 @@ void main() {
       final bloc = ModelDownloaderBloc(service: service);
       expect(bloc.state.isDownloading, isFalse);
 
-      service.queueDownloads([AIKind.ocr]);
+      service.queueDownloads([ModelKind.ocr]);
 
       final deadline = DateTime.now().add(const Duration(seconds: 2));
       while (!bloc.state.allCompleted && DateTime.now().isBefore(deadline)) {

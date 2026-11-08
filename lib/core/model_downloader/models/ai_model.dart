@@ -1,5 +1,5 @@
 /// Identifiers for on-device AI capabilities supported by Arca.
-enum AIKind { ocr, asr }
+enum ModelKind { ocr, asr }
 
 /// Generic download lifecycle states.
 enum DownloadStatus { queued, downloading, paused, ready, failed }
@@ -38,7 +38,7 @@ final class const DownloadProgress<T extends Object>({
 /// Pure data class representing an AI model package and its metadata.
 final class const AIModel({
   required final String id,
-  required final AIKind kind,
+  required final ModelKind kind,
   required final String name,
   required final String description,
   required final String estimatedSize,

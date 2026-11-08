@@ -1,5 +1,18 @@
 # Decisions
 
+## 2026-11-08: Rename to `ModelKind` and Adopt `ModelDownloadManager`
+
+- **Status:** agreed
+- **Request:**
+  - Rename `AIKind` to `ModelKind` for consistency across domain models and download manager.
+  - Rename `InMemoryModelDownloaderService` to `ModelDownloadManager` (implementing `ModelDownloadService`), mirroring the `DatabaseService` / `DatabaseManager` architectural pattern.
+- **Scope:** `lib/core/model_downloader/`, `lib/app/`, `lib/features/`, `test/`, `docs/`.
+- **Choices:**
+  - **`ModelKind` Identity:** Aligns with `ModelDownloadService` and `AIModel.kind`.
+  - **`ModelDownloadManager` Implementation:** Replaces misnomered `InMemory*` label with a concrete manager class, establishing clear separation between the download orchestration lifecycle and the internal transfer implementation.
+
+---
+
 ## 2026-11-08: AI Model Domain Simplification & Generic DownloadProgress
 
 - **Status:** agreed

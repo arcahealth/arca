@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/core/model_downloader/models/ai_model.dart';
-import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
-import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
+import 'package:arca/core/model_downloader/services/model_download_manager.dart';
+import 'package:arca/core/model_downloader/services/model_download_service.dart';
 import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/core/vault/models/vault.dart';
@@ -16,19 +16,17 @@ void main() {
   group('SetupWizardBloc Tests', () {
     late VaultRepository vaultRepository;
     late OnboardingRepository onboardingRepository;
-    late ModelDownloaderService modelDownloaderService;
+    late ModelDownloadService modelDownloadService;
 
     setUp(() {
       vaultRepository = InMemoryVaultRepository(initialVaults: []);
       onboardingRepository = InMemoryOnboardingRepository();
-      modelDownloaderService = InMemoryModelDownloaderService(
-        tickInterval: Duration.zero,
-      );
+      modelDownloadService = ModelDownloadManager(tickInterval: Duration.zero);
     });
 
     tearDown(() {
       vaultRepository.dispose();
-      modelDownloaderService.dispose();
+      modelDownloadService.dispose();
     });
 
     final testVault = Vault(
@@ -43,7 +41,7 @@ void main() {
       build: () => SetupWizardBloc(
         vaultRepository: vaultRepository,
         onboardingRepository: onboardingRepository,
-        modelDownloaderService: modelDownloaderService,
+        modelDownloadService: modelDownloadService,
       ),
       act: (bloc) {
         bloc.add(SetupWizardVaultDraftAdded(testVault));
@@ -60,26 +58,26 @@ void main() {
       build: () => SetupWizardBloc(
         vaultRepository: vaultRepository,
         onboardingRepository: onboardingRepository,
-        modelDownloaderService: modelDownloaderService,
+        modelDownloadService: modelDownloadService,
       ),
       seed: () => SetupWizardState(vaultDrafts: [testVault]),
       act: (bloc) {
-        bloc.add(const SetupWizardAiCapabilityToggled(AIKind.ocr));
+        bloc.add(const SetupWizardAiCapabilityToggled(ModelKind.ocr));
         bloc.add(const SetupWizardFinishedRequested());
       },
       expect: () => [
         SetupWizardState(
           vaultDrafts: [testVault],
-          selectedAiCapabilities: const {AIKind.asr},
+          selectedAiCapabilities: const {ModelKind.asr},
         ),
         SetupWizardState(
           vaultDrafts: [testVault],
-          selectedAiCapabilities: const {AIKind.asr},
+          selectedAiCapabilities: const {ModelKind.asr},
           isSaving: true,
         ),
         SetupWizardState(
           vaultDrafts: [testVault],
-          selectedAiCapabilities: const {AIKind.asr},
+          selectedAiCapabilities: const {ModelKind.asr},
           isSaving: false,
           isFinished: true,
         ),

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/app/app.dart';
 import 'package:arca/app/routes.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
-import 'package:arca/core/model_downloader/services/in_memory_model_downloader_service.dart';
-import 'package:arca/core/model_downloader/services/model_downloader_service.dart';
+import 'package:arca/core/model_downloader/services/model_download_manager.dart';
+import 'package:arca/core/model_downloader/services/model_download_service.dart';
 import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/core/vault/repositories/in_memory_vault_repository.dart';
@@ -24,8 +24,7 @@ void main() {
         );
         final OnboardingRepository onboardingRepo =
             InMemoryOnboardingRepository(hasCompletedOnboarding: false);
-        final ModelDownloaderService modelService =
-            InMemoryModelDownloaderService();
+        final ModelDownloadService modelService = ModelDownloadManager();
         addTearDown(vaultRepo.dispose);
         addTearDown(modelService.dispose);
 
@@ -33,7 +32,7 @@ void main() {
           ArcaApp(
             vaultRepository: vaultRepo,
             onboardingRepository: onboardingRepo,
-            modelDownloaderService: modelService,
+            modelDownloadService: modelService,
             initialRoute: const WelcomeRoute(),
           ),
         );

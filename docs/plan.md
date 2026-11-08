@@ -1,6 +1,17 @@
 # Plan
 
 ## Done
+- [x] ModelKind and ModelDownloadManager Architecture Alignment
+  - Requirements:
+    - Rename `AIKind` to `ModelKind` for consistency.
+    - Adopt `ModelDownloadManager` implementing `ModelDownloadService`.
+    - Update all feature BLoCs, screens, tests, and documentation.
+  - Sub-steps:
+    - [x] Rename `AIKind` to `ModelKind` in `lib/core/model_downloader/models/ai_model.dart`.
+    - [x] Rename and refactor `ModelDownloadManager` and `ModelDownloadService`.
+    - [x] Update composition root `ArcaApp`, `ModelDownloaderBloc`, and `SetupWizardBloc`.
+    - [x] Update tests and verify full suite passes (46/46 passed).
+    - [x] Synchronize `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
 - [x] AI Model Domain Simplification & Generic DownloadProgress
   - Requirements:
     - Replace bloated capability enum with lean `AIKind` (`ocr`, `asr`).

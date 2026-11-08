@@ -6,7 +6,7 @@ import '../../../../core/vault/models/vault.dart';
 final class const SetupWizardState({
   final int currentStep = 0,
   final List<Vault> vaultDrafts = const [],
-  final Set<AIKind> selectedAiCapabilities = const {.ocr, .asr},
+  final Set<ModelKind> selectedAiCapabilities = const {.ocr, .asr},
   final bool isSaving = false,
   final bool isFinished = false,
 }) {
@@ -15,7 +15,7 @@ final class const SetupWizardState({
   SetupWizardState copyWith({
     int? currentStep,
     List<Vault>? vaultDrafts,
-    Set<AIKind>? selectedAiCapabilities,
+    Set<ModelKind>? selectedAiCapabilities,
     bool? isSaving,
     bool? isFinished,
   }) {
@@ -38,7 +38,7 @@ final class const SetupWizardState({
           isSaving == other.isSaving &&
           isFinished == other.isFinished &&
           const ListEquality<Vault>().equals(vaultDrafts, other.vaultDrafts) &&
-          const SetEquality<AIKind>().equals(
+          const SetEquality<ModelKind>().equals(
             selectedAiCapabilities,
             other.selectedAiCapabilities,
           );
@@ -49,6 +49,6 @@ final class const SetupWizardState({
     isSaving,
     isFinished,
     const ListEquality<Vault>().hash(vaultDrafts),
-    const SetEquality<AIKind>().hash(selectedAiCapabilities),
+    const SetEquality<ModelKind>().hash(selectedAiCapabilities),
   );
 }
