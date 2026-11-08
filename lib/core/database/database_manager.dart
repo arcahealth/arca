@@ -1,5 +1,5 @@
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'package:path_manager/path_manager.dart';
 import 'package:sqlite_async/sqlite_async.dart';
 
 import 'database_service.dart';
@@ -30,12 +30,12 @@ class DatabaseManager implements DatabaseService {
 
     final dbPath = customPath ?? await _getDefaultDatabasePath();
     final database = SqliteDatabase(path: dbPath);
-    await ArcaDatabaseMigrations.migrations.migrate(database);
+    await ArcaDatabaseMigrations.migrate(database);
     _db = database;
   }
 
   static Future<String> _getDefaultDatabasePath() async {
-    final supportDir = await getApplicationSupportDirectory();
+    final supportDir = await PathManager.getApplicationSupportDirectory();
     return p.join(supportDir.path, 'arca_vault.db');
   }
 

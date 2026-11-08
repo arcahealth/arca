@@ -18,7 +18,7 @@ void main() {
       tempDir = Directory.systemTemp.createTempSync('arca_db_test_');
       final dbPath = p.join(tempDir.path, 'test_vault.db');
       db = SqliteDatabase(path: dbPath);
-      await ArcaDatabaseMigrations.migrations.migrate(db);
+      await ArcaDatabaseMigrations.migrate(db);
       repository = SqliteJournalRepository(db: db);
     });
 

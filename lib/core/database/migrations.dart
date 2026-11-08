@@ -1,8 +1,12 @@
 import 'package:sqlite_async/sqlite_async.dart';
 
 /// Database schema migrations for Arca's on-device SQLite database.
-class ArcaDatabaseMigrations {
-  static SqliteMigrations get migrations {
+final class ArcaDatabaseMigrations {
+  static Future<void> migrate(SqliteConnection db) async {
+    await _migrations.migrate(db);
+  }
+
+  static SqliteMigrations get _migrations {
     final migrations = SqliteMigrations();
 
     migrations.add(

@@ -98,7 +98,7 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 | `collection` | `^1.19.1` | Official Dart collection utilities: `PriorityQueue`, `HeapPriorityQueue`, `binarySearch`, `ListEquality`, `SetEquality`. |
 | `async` | `^2.13.0` | Asynchronous operations, stream groups/splitters, cancelable operations, and async caches. |
 | `sqlite_async` | `^0.14.8` | High-performance asynchronous SQLite database engine with background isolate execution (transitively manages native `sqlite3` bindings). |
-| `path_provider` | `^2.1.6` | Locates local app support directory for the encrypted SQLite database file. |
+| `path_manager` | `^0.7.1+1` | Locates local app support directory for the encrypted SQLite database file. |
 | `path` | `^1.9.1` | Cross-platform file path manipulation. |
 | `shared_preferences` | `^2.5.6` | Lightweight key-value persistence for active vault selection. |
 | `flutter_lints` | `^6.0.0` | Standard Dart/Flutter static analysis rule set. |

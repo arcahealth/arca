@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-11-08: Migration to `path_manager` and Encapsulated Database Migrations
+
+- **Status:** agreed
+- **Request:** Replace `path_provider` with `path_manager` and encapsulate database migration execution.
+- **Scope:** `pubspec.yaml`, `lib/core/database/`, `test/`.
+- **Choices:**
+  - **Adopt `path_manager`:** Replaced `path_provider` with `path_manager: ^0.7.1+1` for locating the application support directory across platforms.
+  - **Encapsulate Database Migrations:** Made `ArcaDatabaseMigrations` a `final class` and encapsulated migration execution behind a static `migrate(SqliteConnection db)` method, making `_migrations` private.
+
+---
+
 ## 2026-11-08: Complete Removal of Legacy Profile Aliases and Redirections
 
 - **Status:** agreed
