@@ -1,3 +1,4 @@
+import 'package:arca/app/router/router.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kaisel/kaisel.dart';
@@ -7,8 +8,6 @@ import '../core/database/database_service.dart';
 import '../core/design_system/arca_design_system.dart';
 import '../core/onboarding/repositories/onboarding_repository.dart';
 import '../core/onboarding/repositories/shared_prefs_onboarding_repository.dart';
-import 'router.dart';
-import 'routes.dart';
 
 sealed class const ArcaAppContainerState() {
   factory idle() = ArcaAppContainerIdle;
@@ -30,7 +29,7 @@ final class ArcaAppContainer({
 }) {
   OnboardingRepository? _onboardingRepository;
   DatabaseService? _databaseService;
-  KaiselRouterConfig<AppRoute>? _routerConfig;
+  KaiselRouterConfig<ArcaRoute>? _routerConfig;
 
   final ValueNotifier<ArcaAppContainerState> _state = .new(.idle());
   ValueNotifier<ArcaAppContainerState> get state => _state;
@@ -49,7 +48,7 @@ final class ArcaAppContainer({
     return _databaseService!;
   }
 
-  KaiselRouterConfig<AppRoute> get routerConfig {
+  KaiselRouterConfig<ArcaRoute> get routerConfig {
     _guardUninitialized();
     _guardNull('_routerConfig', _routerConfig);
 
@@ -72,7 +71,7 @@ final class ArcaAppContainer({
       _databaseService!.initialize(),
     ).wait;
 
-    _routerConfig ??= createAppRouter(initial: const WelcomeRoute());
+    _routerConfig ??= createAppRouter(initial: const .onboarding());
 
     _state.value = .ready();
   }
