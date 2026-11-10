@@ -46,7 +46,7 @@ arca/
 │   ├── core/                      # Shared design system, database, and domain infrastructure
 │   │   ├── database/              # DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
-│   │   └── onboarding/            # OnboardingRepository (SharedPrefs & InMemory)
+│   │   └── onboarding/            # OnboardingRepository (SharedPrefsOnboardingRepository)
 │   └── features/                  # Self-contained feature modules
 │       └── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
 └── test/                          # Unit, SQLite, router, widget, and accessibility tests (11 tests)

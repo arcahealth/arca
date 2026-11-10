@@ -16,7 +16,7 @@ lib/
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseManager, ArcaDatabaseMigrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
-│   └── onboarding/                # OnboardingRepository, SharedPrefsOnboardingRepository, InMemoryOnboardingRepository
+│   └── onboarding/                # OnboardingRepository, SharedPrefsOnboardingRepository
 └── features/                      # Isolated, self-contained feature modules
     └── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen)
 ```
@@ -97,6 +97,7 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 | `shared_preferences` | `^2.5.6` | Lightweight key-value persistence for active vault selection. |
 | `flutter_lints` | `^6.0.0` | Standard Dart/Flutter static analysis rule set. |
 | `bloc_test` | `^10.0.0` | Streamlined unit testing for BLoC state transitions. |
+| `shared_preferences_platform_interface` | `^2.4.2` | Platform interface for mocking asynchronous key-value persistence in test harnesses. |
 | `flutter_test` | SDK | Widget and accessibility harness for UI validation. |
 
 ---

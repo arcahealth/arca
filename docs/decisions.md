@@ -1,5 +1,17 @@
 # Decisions
 
+## 2026-11-10: Migrate Onboarding Repository to `SharedPreferencesAsync`
+
+- **Status:** agreed
+- **Request:** Migrate `SharedPrefsOnboardingRepository` from legacy synchronous `SharedPreferences` to `SharedPreferencesAsync`, decommission redundant `InMemoryOnboardingRepository`, and introduce test mocking via `MockSharedPreferencesAsync`.
+- **Scope:** `lib/core/onboarding/`, `test/core/onboarding/`, `test/test_utils/`, `test/app/router_orchestration_test.dart`, `pubspec.yaml`, `docs/`.
+- **Choices:**
+  - **Adopt `SharedPreferencesAsync`:** Replaced the legacy `SharedPreferences.getInstance()` pattern with `SharedPreferencesAsync`, removing asynchronous instance caching in `SharedPrefsOnboardingRepository`.
+  - **Decommission `InMemoryOnboardingRepository`:** Eliminated the standalone in-memory fake in production code in favor of configuring `SharedPreferencesAsyncPlatform.instance` with `MockSharedPreferencesAsync` in tests.
+  - **`MockSharedPreferencesAsync` Test Double:** Created `MockSharedPreferencesAsync` backed by `InMemorySharedPreferencesAsync.empty()` with method call logging, verifying invocations with Flutter's `isMethodCall` matcher.
+
+---
+
 ## 2026-11-10: Cleanup of Prototype Feature Modules, Repositories, and Routes
 
 - **Status:** agreed

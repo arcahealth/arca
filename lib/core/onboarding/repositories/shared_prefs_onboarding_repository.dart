@@ -1,29 +1,26 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'onboarding_repository.dart';
 
 /// SharedPreferences persistence for [OnboardingRepository].
-class SharedPrefsOnboardingRepository({var SharedPreferences? prefs})
+final class SharedPrefsOnboardingRepository([SharedPreferencesAsync? prefs])
     implements OnboardingRepository {
-  static const String _prefKey = 'arca_onboarding_completed';
+  this : _prefs = prefs ?? SharedPreferencesAsync();
 
-  Future<SharedPreferences> _getPrefs() async {
-    final cached = prefs;
-    if (cached != null) return cached;
-    final instance = await SharedPreferences.getInstance();
-    prefs = instance;
-    return instance;
-  }
+  @visibleForTesting
+  static const String initialOnboardingKey = 'arca_onboarded_initial';
+
+  SharedPreferencesAsync _prefs;
 
   @override
   Future<bool> hasCompletedOnboarding() async {
-    final instance = await _getPrefs();
-    return instance.getBool(_prefKey) ?? false;
+    final val = await _prefs.getBool(initialOnboardingKey);
+    return val ?? false;
   }
 
   @override
   Future<void> setCompletedOnboarding(bool completed) async {
-    final instance = await _getPrefs();
-    await instance.setBool(_prefKey, completed);
+    await _prefs.setBool(initialOnboardingKey, completed);
   }
 }

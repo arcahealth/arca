@@ -1,6 +1,19 @@
 # Plan
 
 ## Done
+- [x] Migrate `SharedPrefsOnboardingRepository` to `SharedPreferencesAsync`
+  - Requirements:
+    - Update `SharedPrefsOnboardingRepository` to use `SharedPreferencesAsync`.
+    - Decommission redundant `InMemoryOnboardingRepository`.
+    - Add `MockSharedPreferencesAsync` platform double for test harnesses.
+    - Fix `orderedEquals` verification with `isMethodCall` matchers and boolean values.
+    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+  - Sub-steps:
+    - [x] Refactor `SharedPrefsOnboardingRepository` to consume `SharedPreferencesAsync`.
+    - [x] Delete `lib/core/onboarding/repositories/in_memory_onboarding_repository.dart`.
+    - [x] Implement `test/test_utils/shared_preferences.dart` (`MockSharedPreferencesAsync`).
+    - [x] Update `test/core/onboarding/onboarding_repository_test.dart` and `test/app/router_orchestration_test.dart`.
+    - [x] Update `docs/architecture.md`, `docs/decisions.md`, `docs/plan.md`.
 - [x] Cleanup Legacy Modules, Repositories, and Routes
   - Requirements:
     - Remove legacy feature modules: `journal`, `setup_wizard`, `model_downloader`, `vaults`.
