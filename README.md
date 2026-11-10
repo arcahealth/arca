@@ -38,9 +38,9 @@ arca/
 │   ├── architecture.md            # Detailed system architecture, seams, and module tree
 │   └── plan.md                    # Active roadmap and implementation checklist
 ├── lib/
-│   ├── main.dart                  # Application entry point with onboarding bootstrap
+│   ├── main.dart                  # Clean application entry point running const ArcaApp()
 │   ├── app/                       # Composition root, router setup, and sealed routes
-│   │   ├── app.dart               # MultiRepositoryProvider + MultiBlocProvider + WidgetsApp.router
+│   │   ├── app.dart               # ArcaAppContainer + MultiRepositoryProvider + MultiBlocProvider + WidgetsApp.router
 │   │   ├── router.dart            # createAppRouter: Wires constructor callbacks & route guards
 │   │   └── routes.dart            # Sealed AppRoute hierarchy & AppStackCodec
 │   ├── core/                      # Shared design system, database, and domain infrastructure

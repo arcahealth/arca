@@ -1,6 +1,21 @@
 # Plan
 
 ## Done
+- [x] Adopt `ArcaAppContainer` Dependency Container and Update Test Harnesses
+  - Requirements:
+    - Encapsulate application dependency lifecycle and asynchronous bootstrapping into `ArcaAppContainer` with sealed `ArcaAppContainerState` (`idle`, `init`, `ready`, `failure`).
+    - Streamline `lib/main.dart` entrypoint to `runApp(const ArcaApp())` without manual bootstrapping.
+    - Update `ArcaApp` to inject `ArcaAppContainer` and reactively render `WidgetsApp.router` when ready with a typed `pageRouteBuilder` fallback for unready state.
+    - Update widget and end-to-end orchestration test suites to instantiate, configure with fakes/in-memory services, and await `ArcaAppContainer.init()` before pumping `ArcaApp(appContainer: container)`.
+    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+  - Sub-steps:
+    - [x] Integrate `ArcaAppContainer` and `ArcaApp` state management in `lib/app/app.dart`.
+    - [x] Streamline `lib/main.dart` to launch `const ArcaApp()`.
+    - [x] Refactor `test/app/router_orchestration_test.dart` to use `ArcaAppContainer`.
+    - [x] Refactor `test/features/journal/journal_screen_test.dart` to use `ArcaAppContainer`.
+    - [x] Refactor `test/features/journal/accessibility_test.dart` to use `ArcaAppContainer`.
+    - [x] Update documentation across `docs/decisions.md`, `docs/architecture.md`, `docs/plan.md`, and `README.md`.
+    - [x] Full verification gate passes (48/48 tests, zero lint warnings/infos).
 - [x] Align Downloader Contract to `DownloadService<K, T>` and Concise Verbs
   - Requirements:
     - Align interface and implementation names to `DownloadService<K, T>` and `DownloadManager<K, T>`.

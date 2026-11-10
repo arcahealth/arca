@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
+import 'package:sqlite_async/sqlite_async.dart';
 import 'package:arca/app/app.dart';
-import 'package:arca/app/routes.dart';
 import 'package:arca/core/ai/models/ai_model.dart';
+import 'package:arca/core/database/database_manager.dart';
+import 'package:arca/core/database/database_service.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/downloader/services/download_manager.dart';
 import 'package:arca/core/downloader/services/download_service.dart';
@@ -10,9 +15,29 @@ import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repositor
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/core/vault/repositories/in_memory_vault_repository.dart';
 import 'package:arca/core/vault/repositories/vault_repository.dart';
+import 'package:arca/features/journal/data/repositories/in_memory_journal_repository.dart';
+import 'package:arca/features/journal/domain/repositories/journal_repository.dart';
 
 void main() {
   group('Router Orchestration End-to-End Tests', () {
+    late Directory tempDir;
+    late SqliteDatabase db;
+    late DatabaseService databaseService;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('arca_router_test_');
+      final dbPath = p.join(tempDir.path, 'test.db');
+      db = SqliteDatabase(path: dbPath);
+      databaseService = DatabaseManager(customDatabase: db);
+    });
+
+    tearDown(() async {
+      await db.close();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+
     testWidgets(
       'Full flow: Welcome -> SetupWizard -> ModelDownload -> Dashboard',
       (tester) async {
@@ -23,6 +48,7 @@ void main() {
         final VaultRepository vaultRepo = InMemoryVaultRepository(
           initialVaults: [],
         );
+        final JournalRepository journalRepo = InMemoryJournalRepository();
         final OnboardingRepository onboardingRepo =
             InMemoryOnboardingRepository(hasCompletedOnboarding: false);
         final DownloadService<AIKind, AIKind> modelService =
@@ -30,14 +56,16 @@ void main() {
         addTearDown(vaultRepo.dispose);
         addTearDown(modelService.dispose);
 
-        await tester.pumpWidget(
-          ArcaApp(
-            vaultRepository: vaultRepo,
-            onboardingRepository: onboardingRepo,
-            modelDownloadService: modelService,
-            initialRoute: const WelcomeRoute(),
-          ),
+        final container = ArcaAppContainer(
+          vaultRepository: vaultRepo,
+          journalRepository: journalRepo,
+          onboardingRepository: onboardingRepo,
+          modelDownloadService: modelService,
+          databaseService: databaseService,
         );
+        await container.init();
+
+        await tester.pumpWidget(ArcaApp(appContainer: container));
         await tester.pumpAndSettle();
 
         // 1. Welcome screen renders
@@ -106,17 +134,24 @@ void main() {
         final VaultRepository vaultRepo = InMemoryVaultRepository(
           initialVaults: [],
         );
+        final JournalRepository journalRepo = InMemoryJournalRepository();
         final OnboardingRepository onboardingRepo =
             InMemoryOnboardingRepository(hasCompletedOnboarding: false);
+        final DownloadService<AIKind, AIKind> modelService =
+            DownloadManager<AIKind, AIKind>();
         addTearDown(vaultRepo.dispose);
+        addTearDown(modelService.dispose);
 
-        await tester.pumpWidget(
-          ArcaApp(
-            vaultRepository: vaultRepo,
-            onboardingRepository: onboardingRepo,
-            initialRoute: const WelcomeRoute(),
-          ),
+        final container = ArcaAppContainer(
+          vaultRepository: vaultRepo,
+          journalRepository: journalRepo,
+          onboardingRepository: onboardingRepo,
+          modelDownloadService: modelService,
+          databaseService: databaseService,
         );
+        await container.init();
+
+        await tester.pumpWidget(ArcaApp(appContainer: container));
         await tester.pumpAndSettle();
 
         final skipBtn = find.text('Skip Setup & Quick Start');

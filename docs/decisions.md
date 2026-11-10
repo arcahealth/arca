@@ -1,5 +1,21 @@
 # Decisions
 
+## 2026-11-10: `ArcaAppContainer` Dependency Container and Asynchronous Bootstrap
+
+- **Status:** agreed
+- **Request:**
+  - Encapsulate application dependencies and asynchronous setup into a dedicated `ArcaAppContainer`.
+  - Simplify `lib/main.dart` entrypoint to `runApp(const ArcaApp())` without imperative bootstrap ceremony.
+  - Track lifecycle via sealed `ArcaAppContainerState` (`idle`, `init`, `ready`, `failure`) using `ValueNotifier<ArcaAppContainerState>`.
+  - Update test harnesses across widget and router orchestration tests to inject and await `ArcaAppContainer`.
+- **Scope:** `lib/app/`, `lib/main.dart`, `test/`, `docs/`.
+- **Choices:**
+  - **Encapsulated Dependency Container (`ArcaAppContainer`):** Groups `OnboardingRepository`, `VaultRepository`, `JournalRepository`, `DatabaseService`, `DownloadService`, and `routerConfig` into a single container managing asynchronous initialization and lazy default provision.
+  - **Stateful Composition Root (`ArcaApp`):** Replaced static parameters in `ArcaApp` with an optional `appContainer` parameter. Uses `ValueListenableBuilder` to render `WidgetsApp.router` when ready and an accessible splash `ArcaScaffold` during initialization.
+  - **Test Harness Alignment:** Tests assemble `ArcaAppContainer` with test doubles and in-memory fakes, call `await container.init()`, and pass `ArcaApp(appContainer: container)`.
+
+---
+
 ## 2026-11-08: Align Downloader Contract to `DownloadService<K, T>` and Lifecycle Methods
 
 - **Status:** agreed

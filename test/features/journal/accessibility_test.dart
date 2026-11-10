@@ -1,7 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
+import 'package:sqlite_async/sqlite_async.dart';
 import 'package:arca/app/app.dart';
+import 'package:arca/core/database/database_manager.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
+import 'package:arca/core/vault/repositories/in_memory_vault_repository.dart';
 import 'package:arca/features/journal/data/repositories/in_memory_journal_repository.dart';
 import 'package:arca/features/journal/domain/models/journal_entry.dart';
 
@@ -71,7 +78,27 @@ void main() {
         tester.view.devicePixelRatio = 2.0;
         tester.platformDispatcher.textScaleFactorTestValue = 2.0;
 
-        await tester.pumpWidget(ArcaApp(journalRepository: fakeRepo));
+        final tempDir = Directory.systemTemp.createTempSync('arca_a11y_test_');
+        final dbPath = p.join(tempDir.path, 'test.db');
+        final db = SqliteDatabase(path: dbPath);
+        addTearDown(() async {
+          await db.close();
+          if (tempDir.existsSync()) {
+            tempDir.deleteSync(recursive: true);
+          }
+        });
+
+        final container = ArcaAppContainer(
+          journalRepository: fakeRepo,
+          vaultRepository: InMemoryVaultRepository(),
+          onboardingRepository: InMemoryOnboardingRepository(
+            hasCompletedOnboarding: true,
+          ),
+          databaseService: DatabaseManager(customDatabase: db),
+        );
+        await container.init();
+
+        await tester.pumpWidget(ArcaApp(appContainer: container));
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);

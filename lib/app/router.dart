@@ -26,7 +26,7 @@ import 'routes.dart';
 /// Serves as the central orchestration seam: wires constructor callbacks between
 /// isolated feature modules without allowing cross-module imports.
 KaiselRouterConfig<AppRoute> createAppRouter({
-  required JournalRepository repository,
+  required JournalRepository journalRepository,
   required VaultRepository vaultRepository,
   required OnboardingRepository onboardingRepository,
   AppRoute initial = const JournalRoute(),
@@ -143,7 +143,7 @@ KaiselRouterConfig<AppRoute> createAppRouter({
       ),
       RecordDetailRoute(:final recordId) => RecordDetailScreen(
         recordId: recordId,
-        repository: repository,
+        repository: journalRepository,
         onBack: () => context.pop(),
       ),
     },

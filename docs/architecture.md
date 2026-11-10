@@ -8,9 +8,9 @@ Cross-module imports between features are strictly forbidden (`lib/features/A` m
 
 ```
 lib/
-├── main.dart                      # Low-level application entry point with onboarding bootstrap
+├── main.dart                      # Clean application entry point running const ArcaApp()
 ├── app/                           # Composition root & route orchestrator
-│   ├── app.dart                   # ArcaApp: MultiRepositoryProvider + MultiBlocProvider + WidgetsApp.router
+│   ├── app.dart                   # ArcaAppContainer (dependency lifecycle) + ArcaApp (MultiRepositoryProvider + MultiBlocProvider + WidgetsApp.router)
 │   ├── router.dart                # createAppRouter: Wires constructor callbacks, route pushes/pops & guards
 │   └── routes.dart                # Sealed AppRoute (Welcome, SetupWizard, ModelDownload, VaultSelection, Journal, RecordDetail) & AppStackCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure

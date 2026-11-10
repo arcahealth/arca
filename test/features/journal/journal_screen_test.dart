@@ -1,12 +1,23 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
+import 'package:sqlite_async/sqlite_async.dart';
 import 'package:arca/app/app.dart';
+import 'package:arca/core/database/database_manager.dart';
+import 'package:arca/core/database/database_service.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/onboarding/repositories/in_memory_onboarding_repository.dart';
+import 'package:arca/core/vault/repositories/in_memory_vault_repository.dart';
 import 'package:arca/features/journal/data/repositories/in_memory_journal_repository.dart';
 import 'package:arca/features/journal/domain/models/journal_entry.dart';
 import 'package:arca/features/journal/domain/repositories/journal_repository.dart';
 
 void main() {
   group('JournalScreen Widget Tests', () {
+    late Directory tempDir;
+    late SqliteDatabase db;
+    late DatabaseService databaseService;
     late JournalRepository fakeRepository;
     final testEntry = JournalEntry(
       id: 'entry-test-1',
@@ -18,13 +29,35 @@ void main() {
     );
 
     setUp(() {
+      tempDir = Directory.systemTemp.createTempSync(
+        'arca_journal_screen_test_',
+      );
+      final dbPath = p.join(tempDir.path, 'test.db');
+      db = SqliteDatabase(path: dbPath);
+      databaseService = DatabaseManager(customDatabase: db);
       fakeRepository = InMemoryJournalRepository(initialEntries: [testEntry]);
+    });
+
+    tearDown(() async {
+      await db.close();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
     });
 
     testWidgets('renders header, badges, and clinical journal entry', (
       tester,
     ) async {
-      await tester.pumpWidget(ArcaApp(journalRepository: fakeRepository));
+      final container = ArcaAppContainer(
+        journalRepository: fakeRepository,
+        vaultRepository: InMemoryVaultRepository(),
+        onboardingRepository: InMemoryOnboardingRepository(
+          hasCompletedOnboarding: true,
+        ),
+        databaseService: databaseService,
+      );
+      await container.init();
+      await tester.pumpWidget(ArcaApp(appContainer: container));
       await tester.pumpAndSettle();
 
       expect(find.text('Arca Journal'), findsOneWidget);
@@ -36,7 +69,16 @@ void main() {
     testWidgets('tapping an entry navigates to RecordDetailScreen and back', (
       tester,
     ) async {
-      await tester.pumpWidget(ArcaApp(journalRepository: fakeRepository));
+      final container = ArcaAppContainer(
+        journalRepository: fakeRepository,
+        vaultRepository: InMemoryVaultRepository(),
+        onboardingRepository: InMemoryOnboardingRepository(
+          hasCompletedOnboarding: true,
+        ),
+        databaseService: databaseService,
+      );
+      await container.init();
+      await tester.pumpWidget(ArcaApp(appContainer: container));
       await tester.pumpAndSettle();
 
       // Tap on the card
