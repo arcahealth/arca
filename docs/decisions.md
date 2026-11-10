@@ -1,5 +1,19 @@
 # Decisions
 
+## 2026-11-10: Cleanup of Prototype Feature Modules, Repositories, and Routes
+
+- **Status:** agreed
+- **Request:** Remove `journalRoute`, `setupwizard`, `modelDownload`, `vaultSelection`, `recordDetailsRoute`, and associated feature modules and repositories to prepare for clean reimplementation.
+- **Scope:** `lib/features/`, `lib/core/`, `lib/app/`, `test/`, `docs/`.
+- **Choices:**
+  - **Module Removal:** Removed `journal`, `setup_wizard`, `model_downloader`, and `vaults` feature directories and their unit/widget test suites.
+  - **Repository & Domain Cleanup:** Removed `lib/core/vault/`, `lib/core/downloader/`, and `lib/core/ai/`.
+  - **Router & Route Pruning:** Pruned sealed `AppRoute` down to `WelcomeRoute`, updated `AppStackCodec` and `createAppRouter()`.
+  - **Lean Composition Root:** Updated `ArcaAppContainer` and `ArcaApp` to manage only the active infrastructure (`OnboardingRepository`, `DatabaseService`, and `routerConfig`).
+  - **Preserved Accessibility Baseline:** Relocated `ArcaButton` touch target and semantics test to `test/core/design_system/accessibility_test.dart`.
+
+---
+
 ## 2026-11-10: `ArcaAppContainer` Dependency Container and Asynchronous Bootstrap
 
 - **Status:** agreed

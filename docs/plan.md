@@ -1,6 +1,22 @@
 # Plan
 
 ## Done
+- [x] Cleanup Legacy Modules, Repositories, and Routes
+  - Requirements:
+    - Remove legacy feature modules: `journal`, `setup_wizard`, `model_downloader`, `vaults`.
+    - Remove domain repositories and models: `core/vault/`, `core/downloader/`, `core/ai/`.
+    - Clean up `lib/app/routes.dart` and `lib/app/router.dart` to retain only `WelcomeRoute` and `WelcomeScreen`.
+    - Update `ArcaAppContainer` and `ArcaApp` to inject only active infrastructure dependencies.
+    - Preserve design system accessibility test harness and welcome flow tests.
+    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+  - Sub-steps:
+    - [x] Remove feature modules in `lib/features/` and `test/features/`.
+    - [x] Remove domain repositories in `lib/core/` and `test/core/`.
+    - [x] Update `routes.dart` and `router.dart` for `WelcomeRoute`.
+    - [x] Refactor `ArcaAppContainer` and `ArcaApp` in `lib/app/app.dart`.
+    - [x] Retain `ArcaButton` accessibility test in `test/core/design_system/accessibility_test.dart`.
+    - [x] Update `docs/plan.md`, `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
+    - [x] Full verification gate passes (11/11 tests, zero analyzer issues).
 - [x] Adopt `ArcaAppContainer` Dependency Container and Update Test Harnesses
   - Requirements:
     - Encapsulate application dependency lifecycle and asynchronous bootstrapping into `ArcaAppContainer` with sealed `ArcaAppContainerState` (`idle`, `init`, `ready`, `failure`).

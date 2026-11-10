@@ -10,22 +10,15 @@ Cross-module imports between features are strictly forbidden (`lib/features/A` m
 lib/
 ├── main.dart                      # Clean application entry point running const ArcaApp()
 ├── app/                           # Composition root & route orchestrator
-│   ├── app.dart                   # ArcaAppContainer (dependency lifecycle) + ArcaApp (MultiRepositoryProvider + MultiBlocProvider + WidgetsApp.router)
-│   ├── router.dart                # createAppRouter: Wires constructor callbacks, route pushes/pops & guards
-│   └── routes.dart                # Sealed AppRoute (Welcome, SetupWizard, ModelDownload, VaultSelection, Journal, RecordDetail) & AppStackCodec
+│   ├── app.dart                   # ArcaAppContainer (dependency lifecycle) + ArcaApp (MultiRepositoryProvider + WidgetsApp.router)
+│   ├── router.dart                # createAppRouter: Wires routes and screen composition
+│   └── routes.dart                # Sealed AppRoute (WelcomeRoute) & AppStackCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseManager, ArcaDatabaseMigrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
-│   ├── onboarding/                # OnboardingRepository, SharedPrefsOnboardingRepository, InMemoryOnboardingRepository
-│   ├── ai/                        # Core AI domain entities (AIKind, AIModel)
-│   ├── downloader/                # DownloadStatus, DownloadProgress<T>, DownloadService<K, T>, DownloadManager<K, T> (broadcast downloadsStream)
-│   └── vault/                     # Vault, VaultRelationship, VaultRepository (broadcast vaultsStream & activeVaultIdStream)
-└── features/                      # Isolated, self-contained feature modules (Zero cross-feature imports)
-    ├── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen with onStartSetup & onSkip callbacks)
-    ├── setup_wizard/              # Multi-step vault creation & AI selection wizard (SetupWizardBloc & SetupWizardScreen with onBack, onSkip, onComplete)
-    ├── model_downloader/          # On-device AI downloads & status (ModelDownloaderBloc, ModelDownloadScreen, ModelDownloadIndicatorBar)
-    ├── vaults/                    # Vault management & switching (VaultBloc, VaultSelectionScreen, VaultSwitcherBar)
-    └── journal/                   # Primary medical journal & clinical records timeline (JournalBloc, JournalScreen, RecordDetailScreen)
+│   └── onboarding/                # OnboardingRepository, SharedPrefsOnboardingRepository, InMemoryOnboardingRepository
+└── features/                      # Isolated, self-contained feature modules
+    └── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen)
 ```
 
 ---

@@ -40,23 +40,16 @@ arca/
 ├── lib/
 │   ├── main.dart                  # Clean application entry point running const ArcaApp()
 │   ├── app/                       # Composition root, router setup, and sealed routes
-│   │   ├── app.dart               # ArcaAppContainer + MultiRepositoryProvider + MultiBlocProvider + WidgetsApp.router
-│   │   ├── router.dart            # createAppRouter: Wires constructor callbacks & route guards
-│   │   └── routes.dart            # Sealed AppRoute hierarchy & AppStackCodec
+│   │   ├── app.dart               # ArcaAppContainer + MultiRepositoryProvider + WidgetsApp.router
+│   │   ├── router.dart            # createAppRouter: Wires routes and screen composition
+│   │   └── routes.dart            # Sealed AppRoute (WelcomeRoute) & AppStackCodec
 │   ├── core/                      # Shared design system, database, and domain infrastructure
 │   │   ├── database/              # DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
-│   │   ├── onboarding/            # OnboardingRepository (SharedPrefs & InMemory)
-│   │   ├── ai/                    # Core AI domain models (AIKind, AIModel)
-│   │   ├── downloader/            # DownloadProgress<T>, DownloadStatus, DownloadService<K, T>, DownloadManager<K, T>
-│   │   └── vault/                 # Vault, VaultRelationship, VaultRepository (broadcast streams)
-│   └── features/                  # Self-contained feature modules (Zero cross-feature imports)
-│       ├── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
-│       ├── setup_wizard/          # Multi-step vault & AI selection wizard (SetupWizardScreen)
-│       ├── model_downloader/      # Edge AI model download screen & persistent indicator bar
-│       ├── vaults/                # Health vault switcher bar & selection screen (VaultSelectionScreen)
-│       └── journal/               # Clinical journal and health vault timeline feature (JournalScreen)
-└── test/                          # Unit, SQLite, router, widget, and accessibility tests (48 tests)
+│   │   └── onboarding/            # OnboardingRepository (SharedPrefs & InMemory)
+│   └── features/                  # Self-contained feature modules
+│       └── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
+└── test/                          # Unit, SQLite, router, widget, and accessibility tests (11 tests)
 ```
 
 ---
