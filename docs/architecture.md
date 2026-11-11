@@ -10,13 +10,15 @@ Cross-module imports between features are strictly forbidden (`lib/features/A` m
 lib/
 ├── main.dart                      # Clean application entry point running const ArcaApp()
 ├── app/                           # Composition root & route orchestrator
-│   ├── app.dart                   # ArcaAppContainer (dependency lifecycle) + ArcaApp (MultiRepositoryProvider + WidgetsApp.router)
-│   ├── router.dart                # createAppRouter: Wires routes and screen composition
-│   └── routes.dart                # Sealed AppRoute (WelcomeRoute) & AppStackCodec
+│   ├── app.dart                   # ArcaApp (ValueListenableBuilder + MultiRepositoryProvider + WidgetsApp.router)
+│   ├── app_container.dart         # ArcaContainer (dependency lifecycle) + ArcaContainerState
+│   └── router/                    # Route orchestration
+│       ├── router.dart            # createAppRouter: top-level ArcaRoute tree & AppStackCodec
+│       └── onboarding_routes.dart # OnboardingRoute, OnboardingModule & OnboardingModuleCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseManager, ArcaDatabaseMigrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
-│   └── onboarding/                # OnboardingRepository, SharedPrefsOnboardingRepository
+│   └── onboarding/                # OnboardingRepository + SharedPrefsOnboardingRepository (onboarding.dart barrel)
 └── features/                      # Isolated, self-contained feature modules
     └── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen)
 ```
@@ -40,7 +42,7 @@ lib/
 
 ### 4. Interface-Driven Dependency Injection
 - Screens, BLoCs, router parameters, and service consumers accept abstract interfaces (`abstract interface class`), never concrete implementations.
-- Repositories (`JournalRepository`, `VaultRepository`, `OnboardingRepository`) and services (`DatabaseService`, `DownloadService<AIKind, AIKind>`) are registered in `MultiRepositoryProvider` by their interface types.
+- Repositories (`JournalRepository`, `VaultRepository`, `OnboardingRepository`) and services (`DatabaseService`, `DownloadService<AIKind, AIKind>`) are injected through `ArcaContainer` and exposed to the widget tree by the composition root (`RepositoryProvider<ArcaContainer>`), which forwards to interface-typed accessors.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
 | Layer | Responsibility | Imports Permitted | Outgoing Boundary / Seam |

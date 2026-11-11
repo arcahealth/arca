@@ -39,17 +39,17 @@ arca/
 │   └── plan.md                    # Active roadmap and implementation checklist
 ├── lib/
 │   ├── main.dart                  # Clean application entry point running const ArcaApp()
-│   ├── app/                       # Composition root, router setup, and sealed routes
-│   │   ├── app.dart               # ArcaAppContainer + MultiRepositoryProvider + WidgetsApp.router
-│   │   ├── router.dart            # createAppRouter: Wires routes and screen composition
-│   │   └── routes.dart            # Sealed AppRoute (WelcomeRoute) & AppStackCodec
+│   ├── app/                       # Composition root, dependency container, and router setup
+│   │   ├── app.dart               # ArcaApp: ValueListenableBuilder + MultiRepositoryProvider + WidgetsApp.router
+│   │   ├── app_container.dart     # ArcaContainer: dependency lifecycle + ArcaContainerState
+│   │   └── router/                # createAppRouter, sealed ArcaRoute/OnboardingRoute & stack codecs
 │   ├── core/                      # Shared design system, database, and domain infrastructure
 │   │   ├── database/              # DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
 │   │   └── onboarding/            # OnboardingRepository (SharedPrefsOnboardingRepository)
 │   └── features/                  # Self-contained feature modules
 │       └── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
-└── test/                          # Unit, SQLite, router, widget, and accessibility tests (11 tests)
+└── test/                          # Unit, SQLite, router, widget, and accessibility tests (17 tests)
 ```
 
 ---

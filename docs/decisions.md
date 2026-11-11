@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-11-11: Extract `ArcaContainer`, Enum Lifecycle State, and Colocated Onboarding Persistence
+
+- **Status:** agreed
+- **Request:** Split the dependency container out of `lib/app/app.dart` into `lib/app/app_container.dart`, replace the sealed `ArcaAppContainerState` hierarchy with a flat `ArcaContainerState` enum, and colocate `SharedPrefsOnboardingRepository` with its `OnboardingRepository` contract behind an `onboarding.dart` barrel.
+- **Scope:** `lib/app/`, `lib/core/onboarding/`, `test/core/onboarding/`, `docs/`, `README.md`.
+- **Choices:**
+  - **Single-Responsibility Files:** `app.dart` now holds only `ArcaApp` (widget/DI edge), while `app_container.dart` owns dependency provisioning and the `init()`/`dispose()` lifecycle.
+  - **Enum Lifecycle (`ArcaContainerState { idle, init, ready, failure }`):** Replaced the four sealed subclasses with an enum, since no state carries a payload and every consumer only pattern-matches on the discriminant. Enables dot-shorthand matching (`.ready`).
+  - **Interface/Implementation Colocation:** `SharedPrefsOnboardingRepository` lives beside `OnboardingRepository` in `onboarding_repository.dart` and is exported through `lib/core/onboarding/onboarding.dart`, removing the separate `shared_prefs_onboarding_repository.dart` file.
+  - **Rejected — Payload-Carrying Failure State:** A `failure(String message)` variant was dropped for now; error reporting is deferred until the UI needs to render it.
+
 ## 2026-11-10: Migrate Onboarding Repository to `SharedPreferencesAsync`
 
 - **Status:** agreed

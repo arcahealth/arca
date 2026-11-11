@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
-import 'package:arca/core/onboarding/repositories/shared_prefs_onboarding_repository.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../test_utils/shared_preferences.dart';

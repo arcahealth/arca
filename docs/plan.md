@@ -1,6 +1,20 @@
 # Plan
 
 ## Done
+- [x] Extract `ArcaContainer` and Flatten Container Lifecycle State
+  - Requirements:
+    - Move the dependency container from `lib/app/app.dart` into `lib/app/app_container.dart`.
+    - Replace sealed `ArcaAppContainerState` subclasses with `ArcaContainerState { idle, init, ready, failure }`.
+    - Colocate `SharedPrefsOnboardingRepository` with `OnboardingRepository` and expose `lib/core/onboarding/onboarding.dart` barrel.
+    - Keep `ArcaApp` as the DI edge rendering the splash fallback until the container is ready.
+    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+  - Sub-steps:
+    - [x] Create `lib/app/app_container.dart` with `ArcaContainer` and `ArcaContainerState`.
+    - [x] Update `ArcaApp` to consume `ArcaContainer` and match `.ready` via dot-shorthand.
+    - [x] Merge `shared_prefs_onboarding_repository.dart` into `onboarding_repository.dart` and add `onboarding.dart`.
+    - [x] Update `test/core/onboarding/onboarding_repository_test.dart` imports.
+    - [x] Sync `docs/architecture.md`, `docs/decisions.md`, `README.md`.
+    - [x] Full verification gate passes (17/17 tests, zero analyzer issues).
 - [x] Migrate `SharedPrefsOnboardingRepository` to `SharedPreferencesAsync`
   - Requirements:
     - Update `SharedPrefsOnboardingRepository` to use `SharedPreferencesAsync`.
