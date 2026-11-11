@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:arca/app/app_container.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,13 +23,7 @@ class _ArcaAppState extends State<ArcaApp> {
     super.initState();
 
     _appContainer = widget.appContainer ?? ArcaContainer();
-    _appContainer.init();
-  }
-
-  @override
-  void dispose() {
-    _appContainer.dispose();
-    super.dispose();
+    unawaited(_appContainer.init());
   }
 
   @override
@@ -35,6 +31,8 @@ class _ArcaAppState extends State<ArcaApp> {
     return ValueListenableBuilder<ArcaContainerState>(
       valueListenable: _appContainer.state,
       builder: (context, state, child) => switch (state) {
+        // The Builder child is built lazily: _appContainer.routerConfig is
+        // only valid once the container reaches .ready.
         .ready when child != null => child,
         _ => WidgetsApp(
           color: ArcaColors.primary,

@@ -7,7 +7,9 @@
 - **Scope:** `lib/app/`, `lib/core/onboarding/`, `test/core/onboarding/`, `docs/`, `README.md`.
 - **Choices:**
   - **Single-Responsibility Files:** `app.dart` now holds only `ArcaApp` (widget/DI edge), while `app_container.dart` owns dependency provisioning and the `init()`/`dispose()` lifecycle.
-  - **Enum Lifecycle (`ArcaContainerState { idle, init, ready, failure }`):** Replaced the four sealed subclasses with an enum, since no state carries a payload and every consumer only pattern-matches on the discriminant. Enables dot-shorthand matching (`.ready`).
+  - **Enum Lifecycle (`ArcaContainerState { idle, preparing, ready, failure }`):** Replaced the four sealed subclasses with an enum, since no state carries a payload and every consumer only pattern-matches on the discriminant. Enables dot-shorthand matching (`.preparing`, `.ready`). `.preparing` (not `.init`) avoids colliding with the `init()` method name.
+  - **Read-Only Lifecycle Observation:** `state` exposes `ValueListenable<ArcaContainerState>`; the `ValueNotifier` stays private so consumers can observe but not drive the lifecycle.
+  - **Failure Containment:** Bootstrap is wrapped in `try`/`catch`, transitioning to `.failure` instead of leaving the app wedged in `.preparing`. No payload yet — rendering/retry is deferred until the UI needs it.
   - **Interface/Implementation Colocation:** `SharedPrefsOnboardingRepository` lives beside `OnboardingRepository` in `onboarding_repository.dart` and is exported through `lib/core/onboarding/onboarding.dart`, removing the separate `shared_prefs_onboarding_repository.dart` file.
   - **Rejected — Payload-Carrying Failure State:** A `failure(String message)` variant was dropped for now; error reporting is deferred until the UI needs to render it.
 

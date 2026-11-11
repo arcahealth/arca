@@ -4,7 +4,9 @@
 - [x] Extract `ArcaContainer` and Flatten Container Lifecycle State
   - Requirements:
     - Move the dependency container from `lib/app/app.dart` into `lib/app/app_container.dart`.
-    - Replace sealed `ArcaAppContainerState` subclasses with `ArcaContainerState { idle, init, ready, failure }`.
+    - Replace sealed `ArcaAppContainerState` subclasses with `ArcaContainerState { idle, preparing, ready, failure }`.
+    - Expose `ValueListenable<ArcaContainerState>` instead of the mutable notifier.
+    - Wrap bootstrap in `try`/`catch` so failures surface as `.failure` rather than a wedged `.preparing`.
     - Colocate `SharedPrefsOnboardingRepository` with `OnboardingRepository` and expose `lib/core/onboarding/onboarding.dart` barrel.
     - Keep `ArcaApp` as the DI edge rendering the splash fallback until the container is ready.
     - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
