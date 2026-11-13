@@ -46,10 +46,11 @@ arca/
 │   ├── core/                      # Shared design system, database, and domain infrastructure
 │   │   ├── database/              # DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
+│   │   ├── di/                    # Compiled Dependency Graph runtime (di.dart)
 │   │   └── onboarding/            # OnboardingRepository (SharedPrefsOnboardingRepository)
 │   └── features/                  # Self-contained feature modules
 │       └── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
-└── test/                          # Unit, SQLite, router, widget, and accessibility tests (17 tests)
+└── test/                          # Unit, SQLite, router, widget, DI, and accessibility tests (57 tests)
 ```
 
 ---

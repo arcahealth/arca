@@ -18,6 +18,7 @@ lib/
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseManager, ArcaDatabaseMigrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
+│   ├── di/                        # Compiled Dependency Graph runtime (di.dart)
 │   └── onboarding/                # OnboardingRepository + SharedPrefsOnboardingRepository (onboarding.dart barrel)
 └── features/                      # Isolated, self-contained feature modules
     └── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen)
@@ -44,6 +45,14 @@ lib/
 - Screens, BLoCs, router parameters, and service consumers accept abstract interfaces (`abstract interface class`), never concrete implementations.
 - Repositories (`JournalRepository`, `VaultRepository`, `OnboardingRepository`) and services (`DatabaseService`, `DownloadService<AIKind, AIKind>`) are injected through `ArcaContainer` and exposed to the widget tree by the composition root (`RepositoryProvider<ArcaContainer>`), which forwards to interface-typed accessors.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
+
+### 5. Compiled Dependency Graph (`lib/core/di/di.dart`)
+- Self-contained, pure Dart 3.13+ dependency management system without reflection, mirrors, code generation, or `Function.apply`.
+- **Typed Dependency Tokens (`Dependency<T extends Object>`):** Identifies registrations by token identity rather than raw types, supporting multiple registrations of the same generic type.
+- **Two-Phase Lifecycle:** Separation of mutable `DependencyRegistry` from immutable `DependencyGraph`. Validates cycles, missing dependencies, and synchronous/asynchronous boundaries during compilation before instances are created.
+- **Factory Access Boundary:** Provider factories receive a restricted `Dependencies` resolver that strictly forbids accessing undeclared dependencies.
+- **Reference-Counted Ownership & Deterministic Cascading Disposal:** Supports both permanent (`retain`) and ephemeral (`acquire`) ownership via `DependencyHandle<T>`. Dropping the reference count to zero deterministically disposes unused instances and cascaded child dependencies.
+- **Authoritative Reverse Topological Shutdown:** `graph.dispose()` invalidates all handles and cleans up all active instances in reverse dependency order, collecting disposal exceptions into `DisposalAggregateException`.
 
 | Layer | Responsibility | Imports Permitted | Outgoing Boundary / Seam |
 | --- | --- | --- | --- |

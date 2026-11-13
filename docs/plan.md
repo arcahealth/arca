@@ -1,6 +1,26 @@
 # Plan
 
 ## Done
+- [x] Compiled Dependency Graph System
+  - Requirements:
+    - Pure Dart 3.13+ runtime dependency management system without reflection, mirrors, code generation, or `Function.apply`.
+    - Typed dependency tokens (`Dependency<T>`) supporting independent registrations of the same generic type.
+    - Two-phase lifecycle: mutable `DependencyRegistry` and compiled immutable `DependencyGraph`.
+    - Strict validation at compile time: cycle detection, missing dependencies, duplicate detection, and sync/async boundary enforcement (sync providers cannot depend on async providers).
+    - Restricted factory boundary: `Dependencies` only allows access to explicitly declared `requires`.
+    - Lazy synchronous and asynchronous resolution (`resolve`, `resolveAsync`) with in-flight future deduplication.
+    - Reference-counted instance ownership with permanent (`retain`) and ephemeral (`acquire`) handles.
+    - Deterministic cascading disposal and recreation of unused instances when ref count reaches zero.
+    - Graph-wide idempotent disposal in reverse topological dependency order with failure collection and handle invalidation.
+    - Comprehensive read-only diagnostics (`diagnostics`, `dump`).
+    - Self-contained single-file implementation in `lib/core/di/di.dart`.
+    - Self-contained comprehensive test suite in `test/core/di/dependency_graph_test.dart`.
+  - Sub-steps:
+    - [x] Record plan entry in `docs/plan.md` and architectural decisions in `docs/decisions.md`.
+    - [x] Implement `lib/core/di/di.dart` covering all 7 milestones in a single self-contained file.
+    - [x] Implement `test/core/di/dependency_graph_test.dart` validating all invariants, edge cases, and lifecycles (37 tests).
+    - [x] Update `docs/architecture.md` and `README.md`.
+    - [x] Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
 - [x] Extract `ArcaContainer` and Flatten Container Lifecycle State
   - Requirements:
     - Move the dependency container from `lib/app/app.dart` into `lib/app/app_container.dart`.
