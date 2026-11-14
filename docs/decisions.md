@@ -1,5 +1,22 @@
 # Decisions
 
+## 2026-11-15: Flutter Bridge (`CircuitProvider` and `CircuitState`) for Wire & Circuit Dependency Injection
+
+- **Status:** agreed
+- **Request:** Implement the Flutter bridge (`CircuitProvider` and `CircuitState`) connecting Arca's pure Dart Wire & Circuit dependency injection engine (`lib/core/di/di.dart`) to the Flutter framework, replace `FutureBuilder<Circuit>` and `MultiRepositoryProvider` in `lib/app/app.dart`, and enable clean typed dependency access.
+- **Scope:** `lib/core/di/circuit_provider.dart`, `lib/app/app.dart`, `test/core/di/circuit_provider_test.dart`, `docs/`, `README.md`.
+- **Choices:**
+  - **`CircuitState` Sealed Hierarchy:** Defined `CircuitState` with subclasses `CircuitBuilding`, `CircuitReady(final Circuit circuit)`, and `CircuitFailure(final Object error, [final StackTrace? stackTrace])`. Enables Dart 3 exhaustive pattern matching without raw booleans or mutable loading flags.
+  - **`CircuitProvider` Sealed Widget Hierarchy:**
+    - `CircuitProvider` base sealed class with factory constructors:
+      - Default factory constructor `CircuitProvider({wires, builder})` instantiating `CircuitWireProvider`.
+      - Value factory constructor `CircuitProvider.value({value, child})` instantiating `CircuitValueProvider`.
+    - `CircuitWireProvider`: Delegates to private `_CircuitWireStateful` managing asynchronous `Circuit.build(wires)`. Implements `didUpdateWidget` using `listEquals` with monotonic compilation epoch generation tracking to safely handle dynamic wire updates and cancel/dispose superseded in-flight builds. Automatically disposes the created circuit on unmount or if completed while unmounted. In `CircuitReady`, wraps children in `_CircuitScope` before calling `builder(context, state)` so `CircuitProvider.of(context)` works immediately in `builder` and descendants.
+    - `CircuitValueProvider`: Pure synchronous injection of an existing `Circuit` into `_CircuitScope` without async state or unmount disposal. Automatically notifies dependents when `value` changes in a parent rebuild.
+    - Static accessors `CircuitProvider.of(context)` (throws `StateError` if not found) and `CircuitProvider.maybeOf(context)`. Explicitly rejected `BuildContext` extensions to enforce unambiguous dependency access.
+  - **Composition Root Modernization (`lib/app/app.dart`):** Replaced `FutureBuilder<Circuit>`, `MultiRepositoryProvider`, and `RepositoryProvider<Circuit>.value` with `CircuitProvider`. Converted `ArcaApp` to a `StatelessWidget`. Extracted static constant `_defaultWires` to avoid redundant allocations and prevent spurious widget re-evaluations. Pattern-matched `CircuitReady`, `CircuitBuilding`, and `CircuitFailure` using a Dart 3 switch expression, providing consistent splash and error fallbacks while eliminating `flutter_bloc` import from the composition root.
+  - **Test Suite (`test/core/di/circuit_provider_test.dart`):** Added 21 comprehensive unit and widget tests covering compilation lifecycle, unmount disposal, in-flight race cancellation, dynamic widget wire updates, duplicate wire detection, failure transitions, accessor scoping, value injection semantics, and `ArcaApp` composition root integration.
+
 ## 2026-11-15: Combine Static Async Factory and DAG Wire for Database Initialization
 
 - **Status:** agreed

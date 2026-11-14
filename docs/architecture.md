@@ -10,14 +10,14 @@ Cross-module imports between features are strictly forbidden (`lib/features/A` m
 lib/
 ├── main.dart                      # Clean application entry point running const ArcaApp()
 ├── app/                           # Composition root & route orchestrator
-│   ├── app.dart                   # ArcaApp (FutureBuilder<Circuit> + MultiRepositoryProvider + WidgetsApp.router)
+│   ├── app.dart                   # ArcaApp (CircuitProvider + WidgetsApp.router)
 │   └── router/                    # Route orchestration
 │       ├── router.dart            # createAppRouter: top-level ArcaRoute tree, AppStackCodec & appRouterWire
 │       └── onboarding_routes.dart # OnboardingRoute, OnboardingModule & OnboardingModuleCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseConfig, DatabaseService, DatabaseManager, migrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
-│   ├── di/                        # Wire & Circuit Dependency Injection DAG engine (di.dart)
+│   ├── di/                        # Wire & Circuit Dependency Injection DAG engine (di.dart, circuit_provider.dart)
 │   └── onboarding/                # OnboardingRepository, onboardingRepoWire (onboarding.dart barrel)
 └── features/                      # Isolated, self-contained feature modules
     └── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen)
@@ -43,11 +43,16 @@ lib/
 ### 4. Interface-Driven Dependency Injection
 - Screens, BLoCs, router parameters, and service consumers accept abstract interfaces (`abstract interface class`), never concrete implementations.
 - Storage configuration (`DatabaseConfig`), repositories (`OnboardingRepository`), and services (`DatabaseService`) are declared via declarative `CircuitWire` recipes (`DatabaseConfig.wire`, `DatabaseService.wire`, `OnboardingRepository.wire`, `appRouterWire`) and resolved through `Circuit.build(wires)`.
-- The composition root exposes `Circuit` to the widget tree via `RepositoryProvider<Circuit>`, forwarding to interface-typed accessors.
+- The composition root exposes `Circuit` to the widget tree via `CircuitProvider`, forwarding to interface-typed accessors.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
-### 5. Wire & Circuit Dependency Injection Engine (`lib/core/di/di.dart`)
-- Self-contained, pure Dart 3.13+ zero-codegen, graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG).
+### 5. Wire & Circuit Dependency Injection Engine (`lib/core/di/di.dart`, `lib/core/di/circuit_provider.dart`)
+- Self-contained, pure Dart 3.13+ zero-codegen, graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG), bridged to Flutter via `CircuitProvider`.
+- **Flutter Bridge (`CircuitProvider`, `CircuitState`):**
+  - Sealed `CircuitState` hierarchy (`CircuitBuilding`, `CircuitReady`, `CircuitFailure`) for pattern-matched UI rendering.
+  - `CircuitProvider` manages async DAG compilation (`Circuit.build`), provides the resolved `Circuit` via internal `_CircuitScope extends InheritedWidget`, and automatically disposes the circuit on unmount.
+  - `CircuitProvider.value` enables synchronous injection of pre-built circuits without lifecycle disposal.
+  - Explicit accessors `CircuitProvider.of(context)` and `CircuitProvider.maybeOf(context)` without `BuildContext` extension pollution.
 - **Record Tuple Keys (`WireKey = (Type, Enum?)`):** Identifies wires by record tuple. Untagged wires use `(T, null)`. Tagged wires constrain tags to `Enum` values (`(T, K)` where `K extends Enum`), supporting Dart dot-shorthands (e.g. `.images`, `.prod`) and multiple registrations of the same generic type without collisions.
 - **Declarative Wire Recipes (`CircuitWire`, `Wire<T>`, `AsyncWire<T>`):**
   - `Wire<T>` defines synchronous lazy singletons, constructed on first access or when required by an `AsyncWire` during build.

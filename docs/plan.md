@@ -1,6 +1,24 @@
 # Plan
 
 ## Done
+- [x] Flutter Bridge (`CircuitProvider` and `CircuitState`) for Wire & Circuit Dependency Injection
+  - Requirements:
+    - Implement `CircuitState` sealed hierarchy (`CircuitBuilding`, `CircuitReady`, `CircuitFailure`) with const constructors and redirecting factories.
+    - Implement `CircuitProvider` base sealed class with default factory `CircuitProvider({wires, builder})` and `CircuitProvider.value({value, child})`.
+    - Provide explicit static accessors `CircuitProvider.of(context)` (throwing `StateError` if not found/ready) and `CircuitProvider.maybeOf(context)`. Disallow `BuildContext` extensions.
+    - Implement `CircuitValueProvider` for pure synchronous injection of an existing `Circuit` without lifecycle disposal on unmount.
+    - Implement `CircuitWireProvider` delegating to private stateful `_CircuitWireStateful` managing async compilation, unmount disposal, in-flight race prevention, dynamic widget updates via `didUpdateWidget`, and providing `Circuit` through `_CircuitScope` when ready.
+    - Refactor `lib/app/app.dart` composition root to use `CircuitProvider`, convert `ArcaApp` to `StatelessWidget`, extract static default wires, pattern match states via Dart 3 switch expression, provide splash/error fallbacks, and remove unused `flutter_bloc` import.
+    - Add comprehensive unit and widget tests in `test/core/di/circuit_provider_test.dart` (21 tests).
+    - Synchronize `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
+    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+  - Sub-steps:
+    - [x] Implement `lib/core/di/circuit_provider.dart` with sealed `CircuitState`, `CircuitProvider`, `CircuitWireProvider`, `CircuitValueProvider`, and `_CircuitScope`.
+    - [x] Update `lib/app/app.dart` to use `CircuitProvider` and Dart 3 pattern matching with fallback `WidgetsApp`.
+    - [x] Implement `test/core/di/circuit_provider_test.dart` covering lifecycles, unmount disposal, failures, accessors, value injection, and `ArcaApp` integration.
+    - [x] Run inner loop tests and fix all warnings.
+    - [x] Update `docs/decisions.md`, `docs/architecture.md`, `README.md`, and `docs/plan.md`.
+    - [x] Run full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
 - [x] Combine Factory Pattern & DAG Wire Configuration for Database Initialization
   - Requirements:
     - Eliminate two-phase initialization and mutable `SqliteDatabase? _db` in `DatabaseManager` and `DatabaseService`.
