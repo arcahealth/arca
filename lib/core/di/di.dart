@@ -2,1193 +2,563 @@ library;
 
 import 'dart:async';
 
-/// Represents a uniquely typed dependency token in the dependency graph.
+/// A record tuple uniquely identifying a wire in a circuit.
 ///
-/// Tokens are identified by object identity (default reference equality).
-/// Multiple tokens may have the same underlying type [T], allowing distinct
-/// registrations of the same Dart type without collisions.
-final class Dependency<T extends Object> {
-  final String name;
+/// Untagged wires have a key of `(T, null)`.
+/// Tagged wires have a key of `(T, tag)` where `tag is Enum`.
+typedef WireKey = (Type type, Enum? tag);
 
-  const Dependency(this.name);
+/// Base sealed class representing a dependency recipe in a circuit.
+sealed class CircuitWire {
+  /// Unique key identifying this wire in the circuit.
+  WireKey get key;
 
-  Type get type => T;
+  /// The keys of all dependencies required by this wire.
+  List<WireKey> get dependencies;
+
+  /// Whether this wire must be resolved asynchronously during circuit build.
+  bool get isAsync;
+
+  /// Invoked when disposing an active instance of this wire.
+  FutureOr<void> disposeInstance(Object? instance);
+}
+
+/// A synchronous dependency recipe representing a lazy singleton.
+final class Wire<T> extends CircuitWire {
+  @override
+  final WireKey key;
 
   @override
-  String toString() => 'Dependency<$T>($name)';
+  final List<WireKey> dependencies;
+
+  @override
+  bool get isAsync => false;
+
+  /// Optional disposal callback invoked when the circuit is disposed.
+  final FutureOr<void> Function(T instance)? onDispose;
+
+  final T Function(Circuit circuit) _create;
+
+  /// Creates an untagged synchronous wire with no dependencies.
+  Wire(T Function() create, {this.onDispose})
+    : key = (T, null),
+      dependencies = const [],
+      _create = ((_) => create());
+
+  /// Creates a tagged synchronous wire with no dependencies.
+  static Wire<T> tag<T, K extends Enum>(
+    T Function() create, {
+    required K tag,
+    FutureOr<void> Function(T instance)? onDispose,
+  }) {
+    return Wire<T>._(
+      key: (T, tag),
+      dependencies: const [],
+      create: (_) => create(),
+      onDispose: onDispose,
+    );
+  }
+
+  Wire._({
+    required this.key,
+    required this.dependencies,
+    required this._create,
+    this.onDispose,
+  });
+
+  /// Starts building a synchronous wire that depends on an untagged dependency of type [A].
+  static WireBuilder<A> takes<A>() =>
+      WireBuilder<A>._([(A, null)], (c) => c.get<A>());
+
+  /// Starts building a synchronous wire that depends on a tagged dependency of type [A] with [tag].
+  static WireBuilder<A> takesTagged<A, K extends Enum>(K tag) =>
+      WireBuilder<A>._([(A, tag)], (c) => c.getTagged<A, K>(tag));
+
+  @override
+  FutureOr<void> disposeInstance(Object? instance) {
+    if (instance is T && onDispose != null) {
+      return onDispose!(instance);
+    }
+  }
+
+  T _createInstance(Circuit circuit) => _create(circuit);
 }
 
-/// Abstract interface for factory-scoped dependency resolution.
-///
-/// Only dependencies explicitly declared in the provider's `requires` list
-/// can be requested. Any attempt to request an undeclared dependency throws
-/// an [UndeclaredDependencyException].
-abstract interface class Dependencies {
-  /// Synchronously retrieves the declared [dependency].
-  ///
-  /// Throws [UndeclaredDependencyException] if [dependency] was not declared.
-  /// Throws [UnsupportedError] if called inside a synchronous factory for an
-  /// asynchronous dependency.
-  T require<T extends Object>(Dependency<T> dependency);
+/// An asynchronous dependency recipe resolved in parallel topological waves during circuit build.
+final class AsyncWire<T> extends CircuitWire {
+  @override
+  final WireKey key;
 
-  /// Asynchronously retrieves the declared [dependency].
-  ///
-  /// Throws [UndeclaredDependencyException] if [dependency] was not declared.
-  /// Throws [UnsupportedError] if called inside a synchronous factory.
-  Future<T> requireAsync<T extends Object>(Dependency<T> dependency);
+  @override
+  final List<WireKey> dependencies;
+
+  @override
+  bool get isAsync => true;
+
+  /// Optional disposal callback invoked when the circuit is disposed.
+  final FutureOr<void> Function(T instance)? onDispose;
+
+  final Future<T> Function(Circuit circuit) _create;
+
+  /// Creates an untagged asynchronous wire with no dependencies.
+  AsyncWire(Future<T> Function() create, {this.onDispose})
+    : key = (T, null),
+      dependencies = const [],
+      _create = ((_) => create());
+
+  /// Creates a tagged asynchronous wire with no dependencies.
+  static AsyncWire<T> tag<T, K extends Enum>(
+    Future<T> Function() create, {
+    required K tag,
+    FutureOr<void> Function(T instance)? onDispose,
+  }) {
+    return AsyncWire<T>._(
+      key: (T, tag),
+      dependencies: const [],
+      create: (_) => create(),
+      onDispose: onDispose,
+    );
+  }
+
+  AsyncWire._({
+    required this.key,
+    required this.dependencies,
+    required this._create,
+    this.onDispose,
+  });
+
+  /// Starts building an asynchronous wire that depends on an untagged dependency of type [A].
+  static AsyncWireBuilder<A> takes<A>() =>
+      AsyncWireBuilder<A>._([(A, null)], (c) => c.get<A>());
+
+  /// Starts building an asynchronous wire that depends on a tagged dependency of type [A] with [tag].
+  static AsyncWireBuilder<A> takesTagged<A, K extends Enum>(K tag) =>
+      AsyncWireBuilder<A>._([(A, tag)], (c) => c.getTagged<A, K>(tag));
+
+  @override
+  FutureOr<void> disposeInstance(Object? instance) {
+    if (instance is T && onDispose != null) {
+      return onDispose!(instance);
+    }
+  }
+
+  Future<T> _createInstance(Circuit circuit) => _create(circuit);
 }
 
-/// A handle representing external ownership of an active dependency instance.
-abstract interface class DependencyHandle<T extends Object> {
-  /// The active dependency instance.
-  ///
-  /// Throws [StateError] if this handle has been released or the owning graph
-  /// has been disposed.
-  T get value;
+/// Accumulator-based chaining builder for synchronous [Wire]s.
+final class WireBuilder<Acc> {
+  final List<WireKey> _dependencies;
+  final Acc Function(Circuit circuit) _resolveDeps;
 
-  /// Whether this handle has been released.
-  bool get isReleased;
+  WireBuilder._(this._dependencies, this._resolveDeps);
 
-  /// Whether this handle represents permanent ownership intent.
-  bool get isPermanent;
+  /// Appends an untagged dependency of type [Next] to the dependency accumulator.
+  WireBuilder<(Acc, Next)> takes<Next>() {
+    return WireBuilder<(Acc, Next)>._([
+      ..._dependencies,
+      (Next, null),
+    ], (c) => (_resolveDeps(c), c.get<Next>()));
+  }
 
-  /// The dependency token this handle manages.
-  Dependency<T> get dependency;
+  /// Appends a tagged dependency of type [Next] with [tag] to the dependency accumulator.
+  WireBuilder<(Acc, Next)> takesTagged<Next, K extends Enum>(K tag) {
+    return WireBuilder<(Acc, Next)>._([
+      ..._dependencies,
+      (Next, tag),
+    ], (c) => (_resolveDeps(c), c.getTagged<Next, K>(tag)));
+  }
 
-  /// Releases this ownership claim.
-  ///
-  /// Decrements the external reference count of the target dependency instance.
-  /// If the reference count drops to zero and no other instances retain it,
-  /// the instance is deterministically disposed.
-  ///
-  /// Calling [release] on an already released handle is a no-op.
-  void release();
+  /// Completes the builder by defining the factory [create] that receives the accumulated dependencies.
+  Wire<T> to<T, K extends Enum>(
+    T Function(Acc deps) create, {
+    K? tag,
+    FutureOr<void> Function(T instance)? onDispose,
+  }) {
+    return Wire<T>._(
+      key: (T, tag),
+      dependencies: List.unmodifiable(_dependencies),
+      create: (c) => create(_resolveDeps(c)),
+      onDispose: onDispose,
+    );
+  }
 }
 
-/// Lifecycle states of a provider instance in the runtime graph.
-enum InstanceState { uninitialized, initializing, initialized, disposing }
+/// Accumulator-based chaining builder for asynchronous [AsyncWire]s.
+final class AsyncWireBuilder<Acc> {
+  final List<WireKey> _dependencies;
+  final Acc Function(Circuit circuit) _resolveDeps;
 
-/// Base exception for all dependency graph errors.
-sealed class DependencyException implements Exception {
+  AsyncWireBuilder._(this._dependencies, this._resolveDeps);
+
+  /// Appends an untagged dependency of type [Next] to the dependency accumulator.
+  AsyncWireBuilder<(Acc, Next)> takes<Next>() {
+    return AsyncWireBuilder<(Acc, Next)>._([
+      ..._dependencies,
+      (Next, null),
+    ], (c) => (_resolveDeps(c), c.get<Next>()));
+  }
+
+  /// Appends a tagged dependency of type [Next] with [tag] to the dependency accumulator.
+  AsyncWireBuilder<(Acc, Next)> takesTagged<Next, K extends Enum>(K tag) {
+    return AsyncWireBuilder<(Acc, Next)>._([
+      ..._dependencies,
+      (Next, tag),
+    ], (c) => (_resolveDeps(c), c.getTagged<Next, K>(tag)));
+  }
+
+  /// Completes the builder by defining the asynchronous factory [create] that receives the accumulated dependencies.
+  AsyncWire<T> to<T, K extends Enum>(
+    Future<T> Function(Acc deps) create, {
+    K? tag,
+    FutureOr<void> Function(T instance)? onDispose,
+  }) {
+    return AsyncWire<T>._(
+      key: (T, tag),
+      dependencies: List.unmodifiable(_dependencies),
+      create: (c) => create(_resolveDeps(c)),
+      onDispose: onDispose,
+    );
+  }
+}
+
+/// Base exception for all circuit-related errors.
+sealed class CircuitException implements Exception {
   final String message;
 
-  const DependencyException(this.message);
+  const CircuitException(this.message);
 
   @override
   String toString() => '$runtimeType: $message';
 }
 
-/// Thrown when attempting to register a token that is already registered.
-final class DuplicateDependencyException extends DependencyException {
-  final Dependency<Object> dependency;
+/// Thrown when multiple wires are registered with the same [WireKey].
+final class DuplicateWireException extends CircuitException {
+  final WireKey key;
 
-  DuplicateDependencyException(super.message, {required this.dependency});
+  DuplicateWireException(super.message, {required this.key});
 }
 
-/// Thrown when a declared dependency does not exist in the registry during compilation.
-final class MissingDependencyException extends DependencyException {
-  final Dependency<Object> dependency;
-  final Dependency<Object>? requiredBy;
+/// Thrown when a wire requires a dependency that was not provided to the circuit.
+final class MissingWireException extends CircuitException {
+  final WireKey missingKey;
+  final WireKey? requiredBy;
 
-  MissingDependencyException(
+  MissingWireException(
     super.message, {
-    required this.dependency,
+    required this.missingKey,
     this.requiredBy,
   });
 }
 
-/// Thrown when a circular dependency is detected in the graph during compilation.
-final class DependencyCycleException extends DependencyException {
-  final List<Dependency<Object>> cycle;
+/// Thrown when a dependency cycle is detected in the circuit graph.
+final class CircularDependencyException extends CircuitException {
+  final List<WireKey> cycle;
 
-  DependencyCycleException(super.message, {required this.cycle});
+  CircularDependencyException(super.message, {required this.cycle});
 }
 
-/// Thrown when a synchronous provider depends directly or transitively on an
-/// asynchronous provider, or when attempting synchronous resolution on an async provider.
-final class AsyncDependencyException extends DependencyException {
-  final List<Dependency<Object>> path;
+/// Thrown when looking up a wire that does not exist in the circuit.
+final class WireNotFoundException extends CircuitException {
+  final WireKey key;
 
-  AsyncDependencyException(super.message, {required this.path});
+  WireNotFoundException(super.message, {required this.key});
 }
 
-/// Thrown when a provider factory attempts to access a dependency not declared in its `requires`.
-final class UndeclaredDependencyException extends DependencyException {
-  final Dependency<Object> requested;
-  final Dependency<Object> requestingProvider;
-  final Set<Dependency<Object>> declaredDependencies;
-
-  UndeclaredDependencyException(
-    super.message, {
-    required this.requested,
-    required this.requestingProvider,
-    required this.declaredDependencies,
-  });
-}
-
-/// Thrown when performing operations on an already disposed [DependencyGraph].
-final class DisposedGraphException extends DependencyException {
-  const DisposedGraphException([
-    super.message = 'The DependencyGraph has been disposed and cannot be used.',
+/// Thrown when attempting to resolve dependencies on a disposed [Circuit].
+final class DisposedCircuitException extends CircuitException {
+  const DisposedCircuitException([
+    super.message = 'The Circuit has been disposed and cannot be used.',
   ]);
 }
 
-/// Thrown when factory execution throws during instance resolution.
-final class DependencyResolutionException extends DependencyException {
-  final Dependency<Object> dependency;
-  final Object cause;
-  final StackTrace stackTrace;
-
-  DependencyResolutionException(
-    super.message, {
-    required this.dependency,
-    required this.cause,
-    required this.stackTrace,
-  });
-}
-
-/// Thrown when one or more disposal callbacks throw during graph shutdown or cleanup.
-final class DisposalAggregateException extends DependencyException {
+/// Thrown when one or more disposal callbacks throw during circuit shutdown.
+final class DisposalException extends CircuitException {
   final List<Object> errors;
   final List<StackTrace> stackTraces;
 
-  DisposalAggregateException(
+  DisposalException(
     super.message, {
     required this.errors,
     required this.stackTraces,
   });
 }
 
-/// Signature for synchronous provider factories.
-typedef Factory<T extends Object> = T Function(Dependencies deps);
-
-/// Signature for asynchronous provider factories.
-typedef AsyncFactory<T extends Object> = Future<T> Function(Dependencies deps);
-
-/// Signature for disposal callbacks.
-typedef DisposeCallback<T extends Object> = FutureOr<void> Function(T instance);
-
-/// Internal representation of a provider definition before compilation.
-sealed class _ProviderDefinition<T extends Object> {
-  final Dependency<T> dependency;
-  final List<Dependency<Object>> requires;
-  final FutureOr<void> Function(Object instance)? dispose;
-  final bool isAsync;
-
-  const _ProviderDefinition({
-    required this.dependency,
-    required this.requires,
-    required this.dispose,
-    required this.isAsync,
-  });
-}
-
-final class _SyncProviderDefinition<T extends Object>
-    extends _ProviderDefinition<T> {
-  final Factory<T> factory;
-
-  _SyncProviderDefinition({
-    required super.dependency,
-    required this.factory,
-    required super.requires,
-    super.dispose,
-  }) : super(isAsync: false);
-}
-
-final class _AsyncProviderDefinition<T extends Object>
-    extends _ProviderDefinition<T> {
-  final AsyncFactory<T> factory;
-
-  _AsyncProviderDefinition({
-    required super.dependency,
-    required this.factory,
-    required super.requires,
-    super.dispose,
-  }) : super(isAsync: true);
-}
-
-/// Mutable registry for registering providers and compiling them into an immutable [DependencyGraph].
-final class DependencyRegistry {
-  final Map<Dependency<Object>, _ProviderDefinition<Object>> _definitions = {};
-
-  /// Defines a synchronous provider for [dependency].
-  ///
-  /// [factory] receives a restricted [Dependencies] resolver containing only
-  /// declared dependencies specified in [requires].
-  /// [dispose] is invoked when the instance reference count drops to zero or
-  /// during graph shutdown.
-  void define<T extends Object>(
-    Dependency<T> dependency,
-    Factory<T> factory, {
-    Iterable<Dependency<Object>> requires = const [],
-    DisposeCallback<T>? dispose,
-  }) {
-    _register(
-      _SyncProviderDefinition<T>(
-        dependency: dependency,
-        factory: factory,
-        requires: List.unmodifiable(requires),
-        dispose: dispose == null ? null : (Object inst) => dispose(inst as T),
-      ),
-    );
-  }
-
-  /// Defines an asynchronous provider for [dependency].
-  ///
-  /// [factory] returns a [Future] of [T] and receives a restricted [Dependencies]
-  /// resolver containing only declared dependencies specified in [requires].
-  /// [dispose] is invoked when the instance reference count drops to zero or
-  /// during graph shutdown.
-  void defineAsync<T extends Object>(
-    Dependency<T> dependency,
-    AsyncFactory<T> factory, {
-    Iterable<Dependency<Object>> requires = const [],
-    DisposeCallback<T>? dispose,
-  }) {
-    _register(
-      _AsyncProviderDefinition<T>(
-        dependency: dependency,
-        factory: factory,
-        requires: List.unmodifiable(requires),
-        dispose: dispose == null ? null : (Object inst) => dispose(inst as T),
-      ),
-    );
-  }
-
-  void _register<T extends Object>(_ProviderDefinition<T> definition) {
-    if (_definitions.containsKey(definition.dependency)) {
-      throw DuplicateDependencyException(
-        'Duplicate registration for ${definition.dependency}. Tokens must be unique.',
-        dependency: definition.dependency,
-      );
-    }
-    _definitions[definition.dependency] = definition;
-  }
-
-  /// Compiles registered provider definitions into an immutable [DependencyGraph].
-  ///
-  /// Validates dependency existence, detects circular dependencies, and validates
-  /// sync/async compatibility. No provider instances are constructed during compilation.
-  DependencyGraph compile() {
-    return _GraphCompiler.compile(Map.unmodifiable(_definitions));
-  }
-}
-
-/// An immutable compiled graph node.
-final class _CompiledNode {
-  final Dependency<Object> dependency;
-  final _ProviderDefinition<Object> definition;
-  final Set<Dependency<Object>> requires;
-  final Set<Dependency<Object>> dependents;
-  final bool isAsync;
-  final bool transitivelyAsync;
-
-  _CompiledNode({
-    required this.dependency,
-    required this.definition,
-    required this.requires,
-    required this.dependents,
-    required this.isAsync,
-    required this.transitivelyAsync,
-  });
-}
-
-/// Internal compiler responsible for graph validation and building immutable topology.
-abstract final class _GraphCompiler {
-  static DependencyGraph compile(
-    Map<Dependency<Object>, _ProviderDefinition<Object>> definitions,
-  ) {
-    // 1. Missing dependency validation
-    for (final entry in definitions.entries) {
-      final node = entry.value;
-      for (final req in node.requires) {
-        if (!definitions.containsKey(req)) {
-          throw MissingDependencyException(
-            'Missing dependency $req required by ${node.dependency}.',
-            dependency: req,
-            requiredBy: node.dependency,
-          );
-        }
-      }
-    }
-
-    // 2. Cycle detection (Tarjan/DFS with path tracking)
-    final visited = <Dependency<Object>>{};
-    final recursionStack = <Dependency<Object>>[];
-    final inStack = <Dependency<Object>>{};
-
-    void checkCycle(Dependency<Object> current) {
-      visited.add(current);
-      recursionStack.add(current);
-      inStack.add(current);
-
-      final def = definitions[current]!;
-      for (final req in def.requires) {
-        if (!visited.contains(req)) {
-          checkCycle(req);
-        } else if (inStack.contains(req)) {
-          final cycleStartIndex = recursionStack.indexOf(req);
-          final cycle = [...recursionStack.sublist(cycleStartIndex), req];
-          throw DependencyCycleException(
-            'Circular dependency detected: ${cycle.map((d) => d.toString()).join(' -> ')}',
-            cycle: List.unmodifiable(cycle),
-          );
-        }
-      }
-
-      inStack.remove(current);
-      recursionStack.removeLast();
-    }
-
-    for (final token in definitions.keys) {
-      if (!visited.contains(token)) {
-        checkCycle(token);
-      }
-    }
-
-    // 3. Sync/Async compatibility & transitive async detection
-    List<Dependency<Object>>? findPathToAsync(
-      Dependency<Object> start,
-      Set<Dependency<Object>> seen,
-    ) {
-      seen.add(start);
-      final def = definitions[start]!;
-      for (final req in def.requires) {
-        final reqDef = definitions[req]!;
-        if (reqDef.isAsync) {
-          return [start, req];
-        }
-        if (!seen.contains(req)) {
-          final subPath = findPathToAsync(req, seen);
-          if (subPath != null) {
-            return [start, ...subPath];
-          }
-        }
-      }
-      return null;
-    }
-
-    final transitivelyAsyncMap = <Dependency<Object>, bool>{};
-    for (final entry in definitions.entries) {
-      final token = entry.key;
-      final def = entry.value;
-      final pathToAsync = findPathToAsync(token, <Dependency<Object>>{});
-      final isTransAsync = def.isAsync || pathToAsync != null;
-      transitivelyAsyncMap[token] = isTransAsync;
-
-      if (!def.isAsync && pathToAsync != null) {
-        throw AsyncDependencyException(
-          'Synchronous provider $token cannot depend directly or transitively on asynchronous provider ${pathToAsync.last}. '
-          'Path: ${pathToAsync.map((d) => d.toString()).join(' -> ')}',
-          path: List.unmodifiable(pathToAsync),
-        );
-      }
-    }
-
-    // 4. Build dependents (reverse edges)
-    final dependentsMap = <Dependency<Object>, Set<Dependency<Object>>>{};
-    for (final token in definitions.keys) {
-      dependentsMap[token] = <Dependency<Object>>{};
-    }
-    for (final entry in definitions.entries) {
-      for (final req in entry.value.requires) {
-        dependentsMap[req]!.add(entry.key);
-      }
-    }
-
-    // 5. Build immutable compiled nodes
-    final compiledNodes = <Dependency<Object>, _CompiledNode>{};
-    for (final entry in definitions.entries) {
-      final token = entry.key;
-      final def = entry.value;
-      compiledNodes[token] = _CompiledNode(
-        dependency: token,
-        definition: def,
-        requires: Set.unmodifiable(def.requires),
-        dependents: Set.unmodifiable(dependentsMap[token]!),
-        isAsync: def.isAsync,
-        transitivelyAsync: transitivelyAsyncMap[token]!,
-      );
-    }
-
-    return DependencyGraph._(Map.unmodifiable(compiledNodes));
-  }
-}
-
-/// Runtime state container for a specific compiled node.
-final class _NodeRuntime {
-  final _CompiledNode node;
-
-  InstanceState state = InstanceState.uninitialized;
-  Object? instance;
-  Future<void>? inFlightFuture;
-
-  bool isGraphRetained = false;
-  int externalRefCount = 0;
-  int internalRefCount = 0;
-  int get totalRefCount =>
-      (isGraphRetained ? 1 : 0) + externalRefCount + internalRefCount;
-
-  final Set<Dependency<Object>> retainedDependencies = {};
-  final Set<_DependencyHandleImpl<Object>> activeHandles = {};
-
-  _NodeRuntime(this.node);
-}
-
-/// Restricted dependency resolver for synchronous provider factories.
-final class _RestrictedSyncDependencies implements Dependencies {
-  final Dependency<Object> requestingProvider;
-  final Set<Dependency<Object>> allowedDependencies;
-  final Map<Dependency<Object>, _NodeRuntime> runtimes;
-
-  _RestrictedSyncDependencies({
-    required this.requestingProvider,
-    required this.allowedDependencies,
-    required this.runtimes,
-  });
-
-  @override
-  T require<T extends Object>(Dependency<T> dependency) {
-    if (!allowedDependencies.contains(dependency)) {
-      throw UndeclaredDependencyException(
-        'Provider $requestingProvider attempted to access undeclared dependency $dependency. Declare it in `requires`.',
-        requested: dependency,
-        requestingProvider: requestingProvider,
-        declaredDependencies: allowedDependencies,
-      );
-    }
-    final runtime = runtimes[dependency]!;
-    if (runtime.state != InstanceState.initialized) {
-      throw StateError(
-        'Dependency $dependency is not in initialized state (state: ${runtime.state}).',
-      );
-    }
-    return runtime.instance as T;
-  }
-
-  @override
-  Future<T> requireAsync<T extends Object>(Dependency<T> dependency) {
-    if (!allowedDependencies.contains(dependency)) {
-      throw UndeclaredDependencyException(
-        'Provider $requestingProvider attempted to access undeclared dependency $dependency. Declare it in `requires`.',
-        requested: dependency,
-        requestingProvider: requestingProvider,
-        declaredDependencies: allowedDependencies,
-      );
-    }
-    throw AsyncDependencyException(
-      'Cannot call requireAsync inside a synchronous provider factory for $requestingProvider.',
-      path: [requestingProvider, dependency],
-    );
-  }
-}
-
-/// Restricted dependency resolver for asynchronous provider factories.
-final class _RestrictedAsyncDependencies implements Dependencies {
-  final Dependency<Object> requestingProvider;
-  final Set<Dependency<Object>> allowedDependencies;
-  final Map<Dependency<Object>, _NodeRuntime> runtimes;
-
-  _RestrictedAsyncDependencies({
-    required this.requestingProvider,
-    required this.allowedDependencies,
-    required this.runtimes,
-  });
-
-  @override
-  T require<T extends Object>(Dependency<T> dependency) {
-    if (!allowedDependencies.contains(dependency)) {
-      throw UndeclaredDependencyException(
-        'Provider $requestingProvider attempted to access undeclared dependency $dependency. Declare it in `requires`.',
-        requested: dependency,
-        requestingProvider: requestingProvider,
-        declaredDependencies: allowedDependencies,
-      );
-    }
-    final runtime = runtimes[dependency]!;
-    if (runtime.state != InstanceState.initialized) {
-      throw StateError(
-        'Dependency $dependency is not in initialized state (state: ${runtime.state}).',
-      );
-    }
-    return runtime.instance as T;
-  }
-
-  @override
-  Future<T> requireAsync<T extends Object>(Dependency<T> dependency) async {
-    return require<T>(dependency);
-  }
-}
-
-/// Concrete implementation of [DependencyHandle].
-final class _DependencyHandleImpl<T extends Object>
-    implements DependencyHandle<T> {
-  @override
-  final Dependency<T> dependency;
-  @override
-  final bool isPermanent;
-
-  final _NodeRuntime runtime;
-  final DependencyGraph graph;
-
-  bool _isReleased = false;
-
-  _DependencyHandleImpl({
-    required this.dependency,
-    required this.runtime,
-    required this.graph,
-    required this.isPermanent,
-  });
-
-  @override
-  bool get isReleased => _isReleased;
-
-  @override
-  T get value {
-    if (_isReleased || graph.isDisposed) {
-      throw StateError(
-        'Cannot access value of released handle or disposed graph for $dependency.',
-      );
-    }
-    final inst = runtime.instance;
-    if (inst == null) {
-      throw StateError('Instance for $dependency is not available.');
-    }
-    return inst as T;
-  }
-
-  @override
-  void release() {
-    if (_isReleased) return;
-    _isReleased = true;
-    graph._onHandleReleased(this);
-  }
-
-  void _markInvalidated() {
-    _isReleased = true;
-  }
-}
-
-/// Read-only diagnostics and introspection interface for [DependencyGraph].
-abstract interface class DependencyGraphDiagnostics {
-  /// All registered dependency tokens.
-  List<Dependency<Object>> get registeredTokens;
-
-  /// Root tokens (tokens that no other provider in the graph depends on).
-  List<Dependency<Object>> get rootTokens;
-
-  /// Leaf tokens (tokens that have no dependencies).
-  List<Dependency<Object>> get leafTokens;
-
-  /// Direct declared dependencies of [dependency].
-  List<Dependency<Object>> dependenciesOf(Dependency<Object> dependency);
-
-  /// Direct dependents of [dependency] (providers that declare [dependency] in requires).
-  List<Dependency<Object>> dependentsOf(Dependency<Object> dependency);
-
-  /// Whether [dependency] is declared as an asynchronous provider.
-  bool isAsync(Dependency<Object> dependency);
-
-  /// Whether [dependency] depends directly or transitively on an asynchronous provider.
-  bool isTransitivelyAsync(Dependency<Object> dependency);
-
-  /// Whether [dependency] is retained permanently under the graph caching policy via [resolve].
-  bool isGraphRetained(Dependency<Object> dependency);
-
-  /// Current runtime state of [dependency].
-  InstanceState stateOf(Dependency<Object> dependency);
-
-  /// External reference count of [dependency] (active handles).
-  int externalRefCountOf(Dependency<Object> dependency);
-
-  /// Internal reference count of [dependency] (initialized dependent instances).
-  int internalRefCountOf(Dependency<Object> dependency);
-
-  /// Total reference count of [dependency].
-  int totalRefCountOf(Dependency<Object> dependency);
-
-  /// Chronological construction order of currently and previously initialized instances.
-  List<Dependency<Object>> get constructionOrder;
-
-  /// Chronological disposal order of disposed instances.
-  List<Dependency<Object>> get disposalOrder;
-
-  /// Formatted diagnostic dump of graph topology and runtime state.
-  String dump();
-}
-
-final class _DependencyGraphDiagnosticsImpl
-    implements DependencyGraphDiagnostics {
-  final DependencyGraph _graph;
-
-  _DependencyGraphDiagnosticsImpl(this._graph);
-
-  @override
-  List<Dependency<Object>> get registeredTokens =>
-      _graph._compiledNodes.keys.toList();
-
-  @override
-  List<Dependency<Object>> get rootTokens => _graph._compiledNodes.values
-      .where((node) => node.dependents.isEmpty)
-      .map((node) => node.dependency)
-      .toList();
-
-  @override
-  List<Dependency<Object>> get leafTokens => _graph._compiledNodes.values
-      .where((node) => node.requires.isEmpty)
-      .map((node) => node.dependency)
-      .toList();
-
-  @override
-  List<Dependency<Object>> dependenciesOf(Dependency<Object> dependency) {
-    return _graph._getNode(dependency).requires.toList();
-  }
-
-  @override
-  List<Dependency<Object>> dependentsOf(Dependency<Object> dependency) {
-    return _graph._getNode(dependency).dependents.toList();
-  }
-
-  @override
-  bool isAsync(Dependency<Object> dependency) {
-    return _graph._getNode(dependency).isAsync;
-  }
-
-  @override
-  bool isTransitivelyAsync(Dependency<Object> dependency) {
-    return _graph._getNode(dependency).transitivelyAsync;
-  }
-
-  @override
-  bool isGraphRetained(Dependency<Object> dependency) {
-    return _graph._getRuntime(dependency).isGraphRetained;
-  }
-
-  @override
-  InstanceState stateOf(Dependency<Object> dependency) {
-    return _graph._getRuntime(dependency).state;
-  }
-
-  @override
-  int externalRefCountOf(Dependency<Object> dependency) {
-    return _graph._getRuntime(dependency).externalRefCount;
-  }
-
-  @override
-  int internalRefCountOf(Dependency<Object> dependency) {
-    return _graph._getRuntime(dependency).internalRefCount;
-  }
-
-  @override
-  int totalRefCountOf(Dependency<Object> dependency) {
-    return _graph._getRuntime(dependency).totalRefCount;
-  }
-
-  @override
-  List<Dependency<Object>> get constructionOrder =>
-      List.unmodifiable(_graph._constructionOrder);
-
-  @override
-  List<Dependency<Object>> get disposalOrder =>
-      List.unmodifiable(_graph._disposalOrder);
-
-  @override
-  String dump() {
-    final buffer = StringBuffer('DependencyGraph Diagnostics Dump:\n');
-    buffer.writeln('Disposed: ${_graph.isDisposed}');
-    buffer.writeln('Nodes (${_graph._compiledNodes.length}):');
-    for (final node in _graph._compiledNodes.values) {
-      final runtime = _graph._runtimes[node.dependency]!;
-      buffer.writeln(
-        '  - ${node.dependency} [${node.isAsync ? "async" : "sync"}, state: ${runtime.state.name}, '
-        'refCount: ${runtime.totalRefCount} (graph: ${runtime.isGraphRetained}, ext: ${runtime.externalRefCount}, int: ${runtime.internalRefCount})]',
-      );
-      buffer.writeln(
-        '      requires: [${node.requires.map((d) => d.name).join(", ")}]',
-      );
-      buffer.writeln(
-        '      dependents: [${node.dependents.map((d) => d.name).join(", ")}]',
-      );
-    }
-    buffer.writeln('Roots: [${rootTokens.map((d) => d.name).join(", ")}]');
-    buffer.writeln('Leaves: [${leafTokens.map((d) => d.name).join(", ")}]');
-    buffer.writeln(
-      'Construction Order: [${_graph._constructionOrder.map((d) => d.name).join(" -> ")}]',
-    );
-    buffer.writeln(
-      'Disposal Order: [${_graph._disposalOrder.map((d) => d.name).join(" -> ")}]',
-    );
-    return buffer.toString();
-  }
-}
-
-/// An immutable dependency graph providing lazy, reference-counted resolution.
-///
-/// Created by calling [DependencyRegistry.compile].
-final class DependencyGraph {
-  final Map<Dependency<Object>, _CompiledNode> _compiledNodes;
-  final Map<Dependency<Object>, _NodeRuntime> _runtimes;
-
-  final List<Dependency<Object>> _constructionOrder = [];
-  final List<Dependency<Object>> _disposalOrder = [];
-
+/// A dependency injection container managing lazy synchronous singletons
+/// and asynchronously resolved dependencies backed by a Directed Acyclic Graph (DAG).
+final class Circuit {
+  final Map<WireKey, CircuitWire> _wires;
+  final Map<WireKey, Object?> _instances;
+  final Map<WireKey, int> _levels;
+  final int _maxLevel;
+
+  final Set<WireKey> _creating = {};
   bool _isDisposed = false;
-  late final DependencyGraphDiagnostics _diagnostics;
+  Future<void>? _disposeFuture;
 
-  DependencyGraph._(this._compiledNodes)
-    : _runtimes = {
-        for (final entry in _compiledNodes.entries)
-          entry.key: _NodeRuntime(entry.value),
-      } {
-    _diagnostics = _DependencyGraphDiagnosticsImpl(this);
-  }
+  Circuit._({
+    required this._wires,
+    required this._instances,
+    required this._levels,
+    required this._maxLevel,
+  });
 
-  /// Whether this graph has been shut down via [dispose].
+  /// Whether this circuit has been shut down via [dispose].
   bool get isDisposed => _isDisposed;
 
-  /// Read-only diagnostics for graph topology and runtime state.
-  DependencyGraphDiagnostics get diagnostics => _diagnostics;
+  /// Whether the wire for [key] has been instantiated on an active circuit.
+  bool isKeyInitialized(WireKey key) =>
+      !_isDisposed && _instances.containsKey(key);
 
-  /// Resolves [dependency] under the graph's permanent caching policy.
+  /// Whether the untagged wire of type [T] has been instantiated.
+  bool isInitialized<T>() => isKeyInitialized((T, null));
+
+  /// Whether the tagged wire of type [T] with [tag] has been instantiated.
+  bool isInitializedTagged<T, K extends Enum>(K tag) =>
+      isKeyInitialized((T, tag));
+
+  /// Builds a [Circuit] from the provided [wires].
   ///
-  /// The returned instance is kept alive by the graph until [dispose] is called.
-  /// Repeated calls return the existing graph-owned instance without creating
-  /// cumulative ownership claims or inflating reference counts.
+  /// Validates the dependency graph for:
+  /// - Duplicate keys -> throws [DuplicateWireException]
+  /// - Missing dependencies -> throws [MissingWireException]
+  /// - Circular dependencies -> throws [CircularDependencyException]
   ///
-  /// Throws [AsyncDependencyException] if [dependency] or any of its transitive
-  /// dependencies is asynchronous.
-  T resolve<T extends Object>(Dependency<T> dependency) {
-    _checkNotDisposed();
-    final runtime = _getRuntime(dependency);
-
-    if (runtime.node.transitivelyAsync) {
-      throw AsyncDependencyException(
-        'Cannot synchronously resolve asynchronous dependency $dependency. Use resolveAsync instead.',
-        path: [dependency],
-      );
-    }
-
-    runtime.isGraphRetained = true;
-    try {
-      if (runtime.state != InstanceState.initialized) {
-        _resolveNodeSync(runtime);
-      }
-      return runtime.instance as T;
-    } catch (_) {
-      if (runtime.state != InstanceState.initialized) {
-        runtime.isGraphRetained = false;
-      }
-      rethrow;
-    }
-  }
-
-  /// Asynchronously resolves [dependency] under the graph's permanent caching policy.
-  ///
-  /// The returned instance is kept alive by the graph until [dispose] is called.
-  /// Repeated calls return the existing graph-owned instance without creating
-  /// cumulative ownership claims or inflating reference counts.
-  ///
-  /// Supports both synchronous and asynchronous providers.
-  Future<T> resolveAsync<T extends Object>(Dependency<T> dependency) async {
-    _checkNotDisposed();
-    final runtime = _getRuntime(dependency);
-
-    runtime.isGraphRetained = true;
-    try {
-      if (runtime.state != InstanceState.initialized) {
-        await _resolveNodeAsync(runtime);
-        _checkNotDisposed();
-      }
-      return runtime.instance as T;
-    } catch (_) {
-      if (runtime.state != InstanceState.initialized) {
-        runtime.isGraphRetained = false;
-      }
-      rethrow;
-    }
-  }
-
-  /// Acquires a permanent ownership handle for [dependency].
-  ///
-  /// The instance remains alive until the returned [DependencyHandle.release] is called
-  /// or until graph [dispose].
-  DependencyHandle<T> retain<T extends Object>(Dependency<T> dependency) {
-    return _createHandleSync<T>(dependency, isPermanent: true);
-  }
-
-  /// Acquires an ephemeral ownership handle for [dependency].
-  ///
-  /// When released, if no other handles or dependent instances retain it,
-  /// the instance is deterministically disposed.
-  DependencyHandle<T> acquire<T extends Object>(Dependency<T> dependency) {
-    return _createHandleSync<T>(dependency, isPermanent: false);
-  }
-
-  /// Asynchronously acquires a permanent ownership handle for [dependency].
-  Future<DependencyHandle<T>> retainAsync<T extends Object>(
-    Dependency<T> dependency,
-  ) {
-    return _createHandleAsync<T>(dependency, isPermanent: true);
-  }
-
-  /// Asynchronously acquires an ephemeral ownership handle for [dependency].
-  Future<DependencyHandle<T>> acquireAsync<T extends Object>(
-    Dependency<T> dependency,
-  ) {
-    return _createHandleAsync<T>(dependency, isPermanent: false);
-  }
-
-  DependencyHandle<T> _createHandleSync<T extends Object>(
-    Dependency<T> dependency, {
-    required bool isPermanent,
-  }) {
-    _checkNotDisposed();
-    final runtime = _getRuntime(dependency);
-
-    if (runtime.node.transitivelyAsync) {
-      throw AsyncDependencyException(
-        'Cannot synchronously resolve asynchronous dependency $dependency. Use acquireAsync or retainAsync instead.',
-        path: [dependency],
-      );
-    }
-
-    _resolveNodeSync(runtime);
-
-    runtime.externalRefCount++;
-    final handle = _DependencyHandleImpl<T>(
-      dependency: dependency,
-      runtime: runtime,
-      graph: this,
-      isPermanent: isPermanent,
-    );
-    runtime.activeHandles.add(handle);
-    return handle;
-  }
-
-  Future<DependencyHandle<T>> _createHandleAsync<T extends Object>(
-    Dependency<T> dependency, {
-    required bool isPermanent,
-  }) async {
-    _checkNotDisposed();
-    final runtime = _getRuntime(dependency);
-
-    // Increment externalRefCount so ownership exists while initialization awaits
-    runtime.externalRefCount++;
-    final handle = _DependencyHandleImpl<T>(
-      dependency: dependency,
-      runtime: runtime,
-      graph: this,
-      isPermanent: isPermanent,
-    );
-    runtime.activeHandles.add(handle);
-
-    try {
-      await _resolveNodeAsync(runtime);
-      _checkNotDisposed();
-
-      if (handle.isReleased) {
-        throw DisposedGraphException(
-          'Handle for $dependency was released before asynchronous resolution completed.',
+  /// Once validated, all [AsyncWire]s are resolved in parallel topological waves
+  /// using [Future.wait].
+  static Future<Circuit> build(List<CircuitWire> wires) async {
+    // 1. Duplicate wire detection
+    final wireMap = <WireKey, CircuitWire>{};
+    for (final wire in wires) {
+      if (wireMap.containsKey(wire.key)) {
+        throw DuplicateWireException(
+          'Duplicate wire registered for key ${_formatKey(wire.key)}.',
+          key: wire.key,
         );
       }
-      return handle;
-    } catch (e) {
-      handle.release();
-      rethrow;
-    }
-  }
-
-  void _resolveNodeSync(_NodeRuntime runtime) {
-    if (runtime.state == InstanceState.initialized) {
-      return;
-    }
-    if (runtime.state == InstanceState.initializing) {
-      throw DependencyCycleException(
-        'Reentrant synchronous initialization detected for ${runtime.node.dependency}.',
-        cycle: [runtime.node.dependency, runtime.node.dependency],
-      );
-    }
-    if (runtime.state == InstanceState.disposing) {
-      throw StateError(
-        'Cannot resolve ${runtime.node.dependency} while it is disposing.',
-      );
+      wireMap[wire.key] = wire;
     }
 
-    runtime.state = InstanceState.initializing;
-    final newlyRetained = <Dependency<Object>>[];
-
-    try {
-      // 1. Retain and resolve declared dependencies synchronously
-      for (final depToken in runtime.node.requires) {
-        final depRuntime = _runtimes[depToken]!;
-        depRuntime.internalRefCount++;
-        runtime.retainedDependencies.add(depToken);
-        newlyRetained.add(depToken);
-        _resolveNodeSync(depRuntime);
-      }
-
-      // 2. Pass restricted resolver
-      final restrictedDeps = _RestrictedSyncDependencies(
-        requestingProvider: runtime.node.dependency,
-        allowedDependencies: runtime.node.requires,
-        runtimes: _runtimes,
-      );
-
-      // 3. Construct instance
-      final syncDef =
-          runtime.node.definition as _SyncProviderDefinition<Object>;
-      final instance = syncDef.factory(restrictedDeps);
-
-      runtime.instance = instance;
-      runtime.state = InstanceState.initialized;
-      _constructionOrder.add(runtime.node.dependency);
-    } catch (error, stackTrace) {
-      // Rollback partially retained dependencies on failure
-      for (final depToken in newlyRetained) {
-        final depRuntime = _runtimes[depToken]!;
-        depRuntime.internalRefCount--;
-        runtime.retainedDependencies.remove(depToken);
-        if (depRuntime.totalRefCount <= 0 &&
-            depRuntime.state == InstanceState.initialized) {
-          _disposeNode(depRuntime);
+    // 2. Missing dependency validation
+    for (final wire in wires) {
+      for (final depKey in wire.dependencies) {
+        if (!wireMap.containsKey(depKey)) {
+          throw MissingWireException(
+            'Missing wire for dependency ${_formatKey(depKey)} required by ${_formatKey(wire.key)}.',
+            missingKey: depKey,
+            requiredBy: wire.key,
+          );
         }
       }
-      runtime.state = InstanceState.uninitialized;
-      runtime.instance = null;
-
-      if (error is DependencyException) {
-        rethrow;
-      }
-      throw DependencyResolutionException(
-        'Failed to construct ${runtime.node.dependency}: $error',
-        dependency: runtime.node.dependency,
-        cause: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<void> _resolveNodeAsync(_NodeRuntime runtime) async {
-    if (runtime.state == InstanceState.initialized) {
-      return;
-    }
-    if (runtime.state == InstanceState.initializing) {
-      if (runtime.inFlightFuture != null) {
-        await runtime.inFlightFuture;
-        return;
-      }
-      throw DependencyCycleException(
-        'Reentrant initialization detected for ${runtime.node.dependency}.',
-        cycle: [runtime.node.dependency, runtime.node.dependency],
-      );
-    }
-    if (runtime.state == InstanceState.disposing) {
-      throw StateError(
-        'Cannot resolve ${runtime.node.dependency} while it is disposing.',
-      );
     }
 
-    final completer = Completer<void>();
-    runtime.inFlightFuture = completer.future;
-    runtime.state = InstanceState.initializing;
-    final newlyRetained = <Dependency<Object>>[];
+    // 3. Cycle detection (DFS with recursion stack tracking)
+    final visitState =
+        <WireKey, int>{}; // 0 = unvisited, 1 = visiting, 2 = visited
+    final recursionStack = <WireKey>[];
 
-    try {
-      // 1. Retain and resolve declared dependencies
-      for (final depToken in runtime.node.requires) {
-        final depRuntime = _runtimes[depToken]!;
-        depRuntime.internalRefCount++;
-        runtime.retainedDependencies.add(depToken);
-        newlyRetained.add(depToken);
-        await _resolveNodeAsync(depRuntime);
-      }
+    void checkCycle(WireKey current) {
+      visitState[current] = 1;
+      recursionStack.add(current);
 
-      // 2. Restricted resolver
-      final restrictedDeps = _RestrictedAsyncDependencies(
-        requestingProvider: runtime.node.dependency,
-        allowedDependencies: runtime.node.requires,
-        runtimes: _runtimes,
-      );
-
-      // 3. Construct instance
-      final Object instance;
-      if (runtime.node.isAsync) {
-        final asyncDef =
-            runtime.node.definition as _AsyncProviderDefinition<Object>;
-        instance = await asyncDef.factory(restrictedDeps);
-      } else {
-        final syncDef =
-            runtime.node.definition as _SyncProviderDefinition<Object>;
-        instance = syncDef.factory(restrictedDeps);
-      }
-
-      runtime.instance = instance;
-
-      // Check if all owners released claims while factory was awaiting
-      if (runtime.totalRefCount <= 0) {
-        runtime.state = InstanceState.initialized;
-        _disposeNode(runtime);
-      } else {
-        runtime.state = InstanceState.initialized;
-        _constructionOrder.add(runtime.node.dependency);
-      }
-
-      completer.complete();
-    } catch (error, stackTrace) {
-      // Rollback
-      for (final depToken in newlyRetained) {
-        final depRuntime = _runtimes[depToken]!;
-        depRuntime.internalRefCount--;
-        runtime.retainedDependencies.remove(depToken);
-        if (depRuntime.totalRefCount <= 0 &&
-            depRuntime.state == InstanceState.initialized) {
-          _disposeNode(depRuntime);
+      final currentWire = wireMap[current]!;
+      for (final depKey in currentWire.dependencies) {
+        final state = visitState[depKey] ?? 0;
+        if (state == 1) {
+          final cycleStartIndex = recursionStack.indexOf(depKey);
+          final cycle = [...recursionStack.sublist(cycleStartIndex), depKey];
+          throw CircularDependencyException(
+            'Circular dependency detected: ${cycle.map(_formatKey).join(' -> ')}',
+            cycle: List.unmodifiable(cycle),
+          );
+        } else if (state == 0) {
+          checkCycle(depKey);
         }
       }
-      runtime.state = InstanceState.uninitialized;
-      runtime.instance = null;
 
-      final resolutionError = error is DependencyException
-          ? error
-          : DependencyResolutionException(
-              'Failed to construct ${runtime.node.dependency}: $error',
-              dependency: runtime.node.dependency,
-              cause: error,
-              stackTrace: stackTrace,
-            );
-      completer.completeError(resolutionError, stackTrace);
-      completer.future.ignore();
-      throw resolutionError;
-    } finally {
-      runtime.inFlightFuture = null;
+      recursionStack.removeLast();
+      visitState[current] = 2;
     }
-  }
 
-  void _onHandleReleased(_DependencyHandleImpl<Object> handle) {
-    if (_isDisposed) return;
-    final runtime = handle.runtime;
-    runtime.activeHandles.remove(handle);
-    runtime.externalRefCount--;
-
-    if (runtime.totalRefCount <= 0 &&
-        runtime.state == InstanceState.initialized) {
-      _disposeNode(runtime);
+    for (final key in wireMap.keys) {
+      if ((visitState[key] ?? 0) == 0) {
+        checkCycle(key);
+      }
     }
-  }
 
-  void _disposeNode(_NodeRuntime runtime) {
-    if (runtime.state != InstanceState.initialized) return;
-
-    runtime.state = InstanceState.disposing;
-
-    // Invalidate any lingering handles
-    for (final handle in runtime.activeHandles) {
-      handle._markInvalidated();
+    // 4. Compute topological levels
+    final levels = <WireKey, int>{};
+    int computeLevel(WireKey key) {
+      if (levels.containsKey(key)) {
+        return levels[key]!;
+      }
+      final wire = wireMap[key]!;
+      if (wire.dependencies.isEmpty) {
+        levels[key] = 0;
+        return 0;
+      }
+      var maxDep = 0;
+      for (final depKey in wire.dependencies) {
+        final depLevel = computeLevel(depKey);
+        if (depLevel > maxDep) {
+          maxDep = depLevel;
+        }
+      }
+      final level = maxDep + 1;
+      levels[key] = level;
+      return level;
     }
-    runtime.activeHandles.clear();
 
-    // Execute disposal callback
-    final dispose = runtime.node.definition.dispose;
-    if (dispose != null && runtime.instance != null) {
+    var maxLevel = 0;
+    for (final key in wireMap.keys) {
+      final lvl = computeLevel(key);
+      if (lvl > maxLevel) {
+        maxLevel = lvl;
+      }
+    }
+
+    final instances = <WireKey, Object?>{};
+    final circuit = Circuit._(
+      wires: Map.unmodifiable(wireMap),
+      instances: instances,
+      levels: Map.unmodifiable(levels),
+      maxLevel: maxLevel,
+    );
+
+    // 5. Resolve AsyncWires in parallel topological waves
+    try {
+      for (var i = 0; i <= maxLevel; i++) {
+        final asyncWiresAtLevel = wireMap.values
+            .where((w) => w.isAsync && levels[w.key] == i)
+            .cast<AsyncWire<Object?>>()
+            .toList();
+
+        if (asyncWiresAtLevel.isNotEmpty) {
+          await Future.wait(
+            asyncWiresAtLevel.map((wire) async {
+              final instance = await wire._createInstance(circuit);
+              instances[wire.key] = instance;
+            }),
+          );
+        }
+      }
+    } catch (error, stackTrace) {
       try {
-        final res = dispose(runtime.instance!);
-        if (res is Future) {
-          // Fire and forget unawaited during synchronous handle release
-          res.ignore();
-        }
+        await circuit.dispose();
       } catch (_) {
-        // Ignored during synchronous handle cascading
+        // Suppress secondary disposal errors so original build failure is preserved.
       }
+      Error.throwWithStackTrace(error, stackTrace);
     }
 
-    // Release internally retained dependencies
-    final retained = List.of(runtime.retainedDependencies);
-    runtime.retainedDependencies.clear();
-    for (final depToken in retained) {
-      final depRuntime = _runtimes[depToken]!;
-      depRuntime.internalRefCount--;
-      if (depRuntime.totalRefCount <= 0 &&
-          depRuntime.state == InstanceState.initialized) {
-        _disposeNode(depRuntime);
-      }
-    }
-
-    _constructionOrder.remove(runtime.node.dependency);
-    _disposalOrder.add(runtime.node.dependency);
-    runtime.isGraphRetained = false;
-    runtime.instance = null;
-    runtime.state = InstanceState.uninitialized;
+    return circuit;
   }
 
-  /// Authoritatively shuts down the entire dependency graph.
+  /// Synchronously retrieves the untagged dependency instance of type [T].
   ///
-  /// Disposes every initialized instance in reverse dependency/construction order.
-  /// Invalidates all outstanding handles and rejects any subsequent resolutions.
+  /// Throws [DisposedCircuitException] if this circuit has been disposed.
+  /// Throws [WireNotFoundException] if no wire is registered for [T].
+  T get<T>() {
+    _checkNotDisposed();
+    return _getByKey((T, null)) as T;
+  }
+
+  /// Synchronously retrieves the tagged dependency instance of type [T] with [tag].
   ///
-  /// If one or more disposal callbacks throw, cleanup continues for all remaining
-  /// instances, and a [DisposalAggregateException] is thrown containing all caught errors.
+  /// Throws [DisposedCircuitException] if this circuit has been disposed.
+  /// Throws [WireNotFoundException] if no wire is registered for [T] with [tag].
+  T getTagged<T, K extends Enum>(K tag) {
+    _checkNotDisposed();
+    return _getByKey((T, tag)) as T;
+  }
+
+  Object? _getByKey(WireKey key) {
+    _checkNotDisposed();
+
+    if (_instances.containsKey(key)) {
+      return _instances[key];
+    }
+
+    final wire = _wires[key];
+    if (wire == null) {
+      throw WireNotFoundException(
+        'Wire for key ${_formatKey(key)} not found in circuit.',
+        key: key,
+      );
+    }
+
+    if (wire is! Wire) {
+      throw StateError(
+        'Async wire ${_formatKey(key)} was not resolved during circuit build.',
+      );
+    }
+
+    if (_creating.contains(key)) {
+      throw CircularDependencyException(
+        'Circular dependency detected while creating ${_formatKey(key)}.',
+        cycle: [..._creating, key],
+      );
+    }
+
+    _creating.add(key);
+    try {
+      final instance = wire._createInstance(this);
+      _instances[key] = instance;
+      return instance;
+    } finally {
+      _creating.remove(key);
+    }
+  }
+
+  /// Disposes this circuit in idempotent reverse topological waves (leaves -> roots),
+  /// awaiting [onDispose] callbacks in parallel waves.
   ///
-  /// Repeated calls to [dispose] are safe and idempotent.
+  /// Aggregates all disposal failures into a [DisposalException].
+  /// Repeated calls after completion are safe no-ops.
   Future<void> dispose() async {
-    if (_isDisposed) return;
+    if (_disposeFuture != null) {
+      try {
+        await _disposeFuture;
+      } catch (_) {
+        // If already disposed, subsequent calls are safe no-ops.
+      }
+      return;
+    }
+    return _disposeFuture = _performDispose();
+  }
+
+  Future<void> _performDispose() async {
     _isDisposed = true;
-
-    // Await any in-flight asynchronous initializations before shutting down
-    for (final runtime in _runtimes.values) {
-      if (runtime.inFlightFuture != null) {
-        try {
-          await runtime.inFlightFuture;
-        } catch (_) {
-          // Ignore failures of in-flight initializations during shutdown
-        }
-      }
-    }
-
-    // Invalidate all active external handles
-    for (final runtime in _runtimes.values) {
-      for (final handle in runtime.activeHandles) {
-        handle._markInvalidated();
-      }
-      runtime.activeHandles.clear();
-    }
 
     final errors = <Object>[];
     final stackTraces = <StackTrace>[];
 
-    // Dispose in reverse construction order (guarantees reverse dependency order)
-    final orderToDispose = List.of(_constructionOrder.reversed);
-    for (final token in orderToDispose) {
-      final runtime = _runtimes[token]!;
-      if (runtime.state != InstanceState.initialized) continue;
+    try {
+      for (var i = _maxLevel; i >= 0; i--) {
+        final wiresAtLevel = _wires.values
+            .where((w) => _levels[w.key] == i && _instances.containsKey(w.key))
+            .toList();
 
-      runtime.state = InstanceState.disposing;
-      final dispose = runtime.node.definition.dispose;
-      if (dispose != null && runtime.instance != null) {
-        try {
-          final res = dispose(runtime.instance!);
-          if (res is Future) {
-            await res;
-          }
-        } catch (e, st) {
-          errors.add(e);
-          stackTraces.add(st);
-        }
+        if (wiresAtLevel.isEmpty) continue;
+
+        await Future.wait(
+          wiresAtLevel.map((wire) async {
+            try {
+              final instance = _instances[wire.key];
+              await wire.disposeInstance(instance);
+            } catch (error, stackTrace) {
+              errors.add(error);
+              stackTraces.add(stackTrace);
+            }
+          }),
+        );
       }
-
-      runtime.isGraphRetained = false;
-      runtime.instance = null;
-      runtime.state = InstanceState.uninitialized;
-      runtime.retainedDependencies.clear();
-      runtime.internalRefCount = 0;
-      runtime.externalRefCount = 0;
-      _disposalOrder.add(token);
+    } finally {
+      _instances.clear();
     }
 
-    _constructionOrder.clear();
-
     if (errors.isNotEmpty) {
-      throw DisposalAggregateException(
-        'One or more disposal callbacks threw errors during graph disposal.',
+      throw DisposalException(
+        'Circuit disposal encountered ${errors.length} error(s).',
         errors: List.unmodifiable(errors),
         stackTraces: List.unmodifiable(stackTraces),
       );
@@ -1197,29 +567,17 @@ final class DependencyGraph {
 
   void _checkNotDisposed() {
     if (_isDisposed) {
-      throw const DisposedGraphException();
+      throw const DisposedCircuitException(
+        'The Circuit has been disposed and cannot be used.',
+      );
     }
   }
 
-  _CompiledNode _getNode(Dependency<Object> dependency) {
-    final node = _compiledNodes[dependency];
-    if (node == null) {
-      throw MissingDependencyException(
-        'Dependency $dependency is not registered in this graph.',
-        dependency: dependency,
-      );
+  static String _formatKey(WireKey key) {
+    final typeName = key.$1.toString();
+    if (key.$2 == null) {
+      return typeName;
     }
-    return node;
-  }
-
-  _NodeRuntime _getRuntime(Dependency<Object> dependency) {
-    final runtime = _runtimes[dependency];
-    if (runtime == null) {
-      throw MissingDependencyException(
-        'Dependency $dependency is not registered in this graph.',
-        dependency: dependency,
-      );
-    }
-    return runtime;
+    return '$typeName#${key.$2}';
   }
 }

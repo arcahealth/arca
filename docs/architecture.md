@@ -18,7 +18,7 @@ lib/
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseManager, ArcaDatabaseMigrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
-│   ├── di/                        # Compiled Dependency Graph runtime (di.dart)
+│   ├── di/                        # Wire & Circuit Dependency Injection DAG engine (di.dart)
 │   └── onboarding/                # OnboardingRepository + SharedPrefsOnboardingRepository (onboarding.dart barrel)
 └── features/                      # Isolated, self-contained feature modules
     └── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen)
@@ -46,13 +46,24 @@ lib/
 - Repositories (`JournalRepository`, `VaultRepository`, `OnboardingRepository`) and services (`DatabaseService`, `DownloadService<AIKind, AIKind>`) are injected through `ArcaContainer` and exposed to the widget tree by the composition root (`RepositoryProvider<ArcaContainer>`), which forwards to interface-typed accessors.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
-### 5. Compiled Dependency Graph (`lib/core/di/di.dart`)
-- Self-contained, pure Dart 3.13+ dependency management system without reflection, mirrors, code generation, or `Function.apply`.
-- **Typed Dependency Tokens (`Dependency<T extends Object>`):** Identifies registrations by token identity rather than raw types, supporting multiple registrations of the same generic type.
-- **Two-Phase Lifecycle:** Separation of mutable `DependencyRegistry` from immutable `DependencyGraph`. Validates cycles, missing dependencies, and synchronous/asynchronous boundaries during compilation before instances are created.
-- **Factory Access Boundary:** Provider factories receive a restricted `Dependencies` resolver that strictly forbids accessing undeclared dependencies.
-- **Reference-Counted Ownership & Deterministic Cascading Disposal:** Supports both permanent (`retain`) and ephemeral (`acquire`) ownership via `DependencyHandle<T>`. Dropping the reference count to zero deterministically disposes unused instances and cascaded child dependencies.
-- **Authoritative Reverse Topological Shutdown:** `graph.dispose()` invalidates all handles and cleans up all active instances in reverse dependency order, collecting disposal exceptions into `DisposalAggregateException`.
+### 5. Wire & Circuit Dependency Injection Engine (`lib/core/di/di.dart`)
+- Self-contained, pure Dart 3.13+ zero-codegen, graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG).
+- **Record Tuple Keys (`WireKey = (Type, Enum?)`):** Identifies wires by record tuple. Untagged wires use `(T, null)`. Tagged wires constrain tags to `Enum` values (`(T, K)` where `K extends Enum`), supporting Dart dot-shorthands (e.g. `.images`, `.prod`) and multiple registrations of the same generic type without collisions.
+- **Declarative Wire Recipes (`CircuitWire`, `Wire<T>`, `AsyncWire<T>`):**
+  - `Wire<T>` defines synchronous lazy singletons, constructed on first access or when required by an `AsyncWire` during build.
+  - `AsyncWire<T>` defines asynchronous singletons resolved in parallel topological waves during `Circuit.build(wires)`.
+- **Accumulator Chaining Builders (`WireBuilder<Acc>`, `AsyncWireBuilder<Acc>`):**
+  - Type-safe accumulator chaining via `takes<Next>()` and `takesTagged<Next, K>(tag)` producing `(Acc, Next)`.
+  - 1-dependency accumulator passes directly to 1-arg constructor/tear-off (`.to(UserService.new)`).
+  - Multi-dependency accumulator unpacks nested record tuples (`(deps) => OrderService(deps.$1, deps.$2)`).
+- **DAG Static Validation & Topological Wave Build:**
+  - `Circuit.build(wires)` executes full DAG validation before instantiation: duplicate keys (`DuplicateWireException`), missing dependencies (`MissingWireException`), and cycles with cycle paths (`CircularDependencyException`).
+  - Resolves `AsyncWire`s in parallel topological waves using `Future.wait`. Automatically tears down partially initialized instances in reverse topological order if any wave throws, preventing resource leakage.
+- **Synchronous Runtime Reads (`circuit.get<T>()`, `circuit.getTagged<T, K>(tag)`):**
+  - Synchronous lookups and initialization state inspection (`circuit.isInitialized<T>()`, `circuit.isInitializedTagged<T, K>(tag)`). Disposed circuits reject reads with `DisposedCircuitException`. Unregistered lookups throw `WireNotFoundException`.
+- **Reverse Topological Wave Disposal (`Circuit.dispose()`):**
+  - Idempotent teardown in reverse topological dependency waves (`leaves -> roots`), ensuring consumers are disposed before their underlying dependencies. Clears instance cache on completion to allow garbage collection.
+  - Parallel wave execution of `onDispose` callbacks with error collection into `DisposalException`. Subsequent calls are safe no-ops.
 
 | Layer | Responsibility | Imports Permitted | Outgoing Boundary / Seam |
 | --- | --- | --- | --- |

@@ -1,6 +1,26 @@
 # Plan
 
 ## Done
+- [x] Wire & Circuit Minimal v1 Specification
+  - Requirements:
+    - Pure Dart 3.13+ zero-codegen, graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG) in `lib/core/di/di.dart`.
+    - Vertex keys as record tuples `typedef WireKey = (Type type, Enum? tag);` supporting untagged `(T, null)` and tagged `(T, K)` where `K extends Enum` with Dart dot-shorthands.
+    - Base sealed class `CircuitWire` with `key`, `dependencies`, `isAsync`, and `disposeInstance(Object? instance)`.
+    - Synchronous lazy singleton `Wire<T>` and parallel-wave asynchronous `AsyncWire<T>`.
+    - Accumulator-based chaining builders `WireBuilder<Acc>` and `AsyncWireBuilder<Acc>` with `takes<Next>()`, `takesTagged<Next, K>(tag)`, and `to(...)` (1-dep direct/tear-off unpacking, multi-dep tuple unpacking).
+    - Pure singleton lifecycle model: all wires are singletons; sync wires lazily constructed on first access or when required by an `AsyncWire` during build.
+    - `Circuit.build(wires)`: DAG validation (duplicate keys -> `DuplicateWireException`, missing keys -> `MissingWireException`, cycle detection with cycle paths -> `CircularDependencyException`) followed by parallel topological wave resolution of `AsyncWire`s using `Future.wait`.
+    - Synchronous runtime lookups via `circuit.get<T>()` and `circuit.getTagged<T, K>(tag)` throwing `DisposedCircuitException` if disposed, `WireNotFoundException` if not found.
+    - Idempotent reverse topological wave disposal (`leaves -> roots`) awaiting `onDispose` callbacks in parallel waves, aggregating disposal failures into `DisposalException`.
+    - Comprehensive unit test suites in `test/core/di/wire_test.dart` and `test/core/di/circuit_test.dart`.
+  - Sub-steps:
+    - [x] Implement Wire & Circuit minimal v1 in `lib/core/di/di.dart`.
+    - [x] Delete legacy `test/core/di/dependency_graph_test.dart`.
+    - [x] Create `test/core/di/wire_test.dart` testing recipes, keys, tagging, accumulator chaining, and unpacker resolution.
+    - [x] Create `test/core/di/circuit_test.dart` testing lifecycle, DAG validation, wave execution, laziness, and reverse topological disposal.
+    - [x] Update `docs/decisions.md` with ADR.
+    - [x] Update `docs/architecture.md` and `README.md`.
+    - [x] Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
 - [x] Compiled Dependency Graph System
   - Requirements:
     - Pure Dart 3.13+ runtime dependency management system without reflection, mirrors, code generation, or `Function.apply`.

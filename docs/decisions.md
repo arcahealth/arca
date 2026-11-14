@@ -1,5 +1,33 @@
 # Decisions
 
+## 2026-11-14: Wire & Circuit Minimal v1 Dependency Injection Engine
+
+- **Status:** agreed
+- **Request:** Replace legacy token-based compiled dependency graph prototype with the Wire & Circuit Minimal v1 specification: pure Dart 3.13+ zero-codegen, graph-based dependency injection engine backed by an internal Directed Acyclic Graph (DAG) in `lib/core/di/di.dart`.
+- **Scope:** `lib/core/di/di.dart`, `test/core/di/wire_test.dart`, `test/core/di/circuit_test.dart`, `docs/`, `README.md`.
+- **Choices:**
+  - **Record Tuple Keys (`WireKey = (Type, Enum?)`):** Identifies wires with Dart 3 record tuples. Untagged wires use `(T, null)`. Tagged wires constrain tags to `Enum` values (`(T, K)` where `K extends Enum`), supporting Dart dot-shorthands (e.g. `.images`, `.prod`) and distinct registrations of the same underlying Dart type without collisions.
+  - **Declarative Wire Recipes (`CircuitWire`, `Wire<T>`, `AsyncWire<T>`):**
+    - `Wire<T>` defines synchronous lazy singletons, constructed on first access or when demanded by an `AsyncWire` during build.
+    - `AsyncWire<T>` defines asynchronous singletons resolved in parallel topological waves during `Circuit.build(wires)`.
+  - **Accumulator Chaining Builders (`WireBuilder<Acc>`, `AsyncWireBuilder<Acc>`):**
+    - Type-safe accumulator chaining via `takes<Next>()` and `takesTagged<Next, K>(tag)` producing `(Acc, Next)`.
+    - Single dependency accumulator passes directly to 1-arg constructor/tear-off (`.to(UserService.new)`).
+    - Multi-dependency accumulator unpacks nested record tuples (`(deps) => OrderService(deps.$1, deps.$2)` or `final ((db, cache), auth) = deps`).
+  - **DAG Static Validation & Topological Wave Build:**
+    - `Circuit.build(wires)` executes full DAG validation before instantiation:
+      - Duplicate keys throw `DuplicateWireException`.
+      - Missing dependencies throw `MissingWireException` with `missingKey` and `requiredBy`.
+      - Circular dependencies throw `CircularDependencyException` with cycle path.
+    - Parallel wave resolution of all `AsyncWire`s using `Future.wait` across topological levels. Automatically tears down partially initialized instances in reverse topological order if wave resolution throws.
+  - **Synchronous Runtime Reads (`circuit.get<T>()`, `circuit.getTagged<T, K>(tag)`):**
+    - Instantaneous $O(1)$ lookups into the singleton cache with initialization inspection (`circuit.isInitialized<T>()`, `circuit.isInitializedTagged<T, K>(tag)`).
+    - Sync wires are lazily instantiated and cached on first read.
+    - Disposed circuits reject reads with `DisposedCircuitException`. Unregistered lookups throw `WireNotFoundException`.
+  - **Reverse Topological Wave Disposal (`Circuit.dispose()`):**
+    - Idempotent teardown in reverse topological dependency waves (`leaves -> roots`), ensuring consumers are disposed before their underlying dependencies. Clears instance cache on completion to allow garbage collection.
+    - Parallel wave execution of `onDispose` callbacks with error collection into `DisposalException`. Subsequent calls are safe no-ops.
+
 ## 2026-11-13: Compiled Dependency Graph System Architecture & Lifecycles
 
 - **Status:** agreed
