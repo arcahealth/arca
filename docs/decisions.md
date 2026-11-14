@@ -1,5 +1,52 @@
 # Decisions
 
+## 2026-11-14: Wire & Circuit Minimal v1 Dependency Injection Engine
+
+- **Status:** agreed
+- **Request:** Replace legacy token-based compiled dependency graph prototype with the Wire & Circuit Minimal v1 specification: pure Dart 3.13+ zero-codegen, graph-based dependency injection engine backed by an internal Directed Acyclic Graph (DAG) in `lib/core/di/di.dart`.
+- **Scope:** `lib/core/di/di.dart`, `test/core/di/wire_test.dart`, `test/core/di/circuit_test.dart`, `docs/`, `README.md`.
+- **Choices:**
+  - **Record Tuple Keys (`WireKey = (Type, Enum?)`):** Identifies wires with Dart 3 record tuples. Untagged wires use `(T, null)`. Tagged wires constrain tags to `Enum` values (`(T, K)` where `K extends Enum`), supporting Dart dot-shorthands (e.g. `.images`, `.prod`) and distinct registrations of the same underlying Dart type without collisions.
+  - **Declarative Wire Recipes (`CircuitWire`, `Wire<T>`, `AsyncWire<T>`):**
+    - `Wire<T>` defines synchronous lazy singletons, constructed on first access or when demanded by an `AsyncWire` during build.
+    - `AsyncWire<T>` defines asynchronous singletons resolved in parallel topological waves during `Circuit.build(wires)`.
+  - **Accumulator Chaining Builders (`WireBuilder<Acc>`, `AsyncWireBuilder<Acc>`):**
+    - Type-safe accumulator chaining via `takes<Next>()` and `takesTagged<Next, K>(tag)` producing `(Acc, Next)`.
+    - Single dependency accumulator passes directly to 1-arg constructor/tear-off (`.to(UserService.new)`).
+    - Multi-dependency accumulator unpacks nested record tuples (`(deps) => OrderService(deps.$1, deps.$2)` or `final ((db, cache), auth) = deps`).
+  - **DAG Static Validation & Topological Wave Build:**
+    - `Circuit.build(wires)` executes full DAG validation before instantiation:
+      - Duplicate keys throw `DuplicateWireException`.
+      - Missing dependencies throw `MissingWireException` with `missingKey` and `requiredBy`.
+      - Circular dependencies throw `CircularDependencyException` with cycle path.
+    - Parallel wave resolution of all `AsyncWire`s using `Future.wait` across topological levels. Automatically tears down partially initialized instances in reverse topological order if wave resolution throws.
+  - **Synchronous Runtime Reads (`circuit.get<T>()`, `circuit.getTagged<T, K>(tag)`):**
+    - Instantaneous $O(1)$ lookups into the singleton cache with initialization inspection (`circuit.isInitialized<T>()`, `circuit.isInitializedTagged<T, K>(tag)`).
+    - Sync wires are lazily instantiated and cached on first read.
+    - Disposed circuits reject reads with `DisposedCircuitException`. Unregistered lookups throw `WireNotFoundException`.
+  - **Reverse Topological Wave Disposal (`Circuit.dispose()`):**
+    - Idempotent teardown in reverse topological dependency waves (`leaves -> roots`), ensuring consumers are disposed before their underlying dependencies. Clears instance cache on completion to allow garbage collection.
+    - Parallel wave execution of `onDispose` callbacks with error collection into `DisposalException`. Subsequent calls are safe no-ops.
+
+## 2026-11-13: Compiled Dependency Graph System Architecture & Lifecycles
+
+- **Status:** agreed
+- **Request:** Implement a self-contained runtime dependency management system in `lib/core/di/di.dart` for Dart 3.13+ without reflection, code generation, mirrors, or `Function.apply`. Deliver immutable compiled topology, typed dependency tokens, explicit declared boundaries, reference-counted ownership (`retain`, `acquire`), deterministic cascading disposal, async resolution deduplication, reverse-topological graph-wide shutdown, and read-only diagnostics.
+- **Scope:** `lib/core/di/di.dart`, `test/core/di/dependency_graph_test.dart`, `docs/`, `README.md`.
+- **Choices:**
+  - **Self-Contained Single File (`lib/core/di/di.dart`):** Encapsulates the entire dependency management system (tokens, registry, compiler, compiled graph, runtime state manager, handles, and diagnostics) into a single cohesive, portable file with zero external dependencies beyond canonical Dart SDK libraries (`dart:async`, `dart:collection`).
+  - **Typed Dependency Tokens (`Dependency<T extends Object>`):** Identifies registrations by token identity rather than raw Dart type `T`. Supports const canonicalization and multiple registrations sharing the same Dart type without collisions.
+  - **Strict Compilation & Topology Immutability:** Separation of mutable `DependencyRegistry` from immutable `DependencyGraph`. Validates missing dependencies, duplicate registrations, dependency cycles (DFS cycle detection with cycle paths), and sync/async boundary rules (synchronous providers cannot depend on asynchronous providers directly or transitively). Provider factories never execute during compilation.
+  - **Restricted Factory Boundary (`Dependencies`):** Factory functions receive a restricted `Dependencies` resolver that strictly enforces access to tokens declared in `requires`. Undeclared lookups throw `UndeclaredDependencyException`.
+  - **Lifetime Semantics of Direct Resolution vs. Handles:**
+    - `graph.resolve(token)` and `graph.resolveAsync(token)` establish graph-held permanent ownership (`isGraphRetained = true`). Repeated calls return the existing graph-owned instance directly without allocating cumulative ownership claims or inflating reference counts (external ref count remains 0, graph retention contributes a constant 1 to total ref count).
+    - `graph.retain(token)` / `graph.retainAsync(token)` allocates a distinct, explicit permanent `DependencyHandle<T>` per call, incrementing `externalRefCount`. Each handle must be released individually.
+    - `graph.acquire(token)` / `graph.acquireAsync(token)` allocates a distinct, explicit ephemeral `DependencyHandle<T>` per call, incrementing `externalRefCount`. When all handles and retentions are released, the instance deterministically disposes.
+  - **Cascading Reference Counting & Reinitialization:** Ref count combines external handle claims and internal dependency retentions. Releasing the final handle triggers deterministic disposal: running the disposal callback, releasing internal dependency claims, recursively disposing child dependencies whose ref counts reach zero, and resetting runtime state to uninitialized. Disposed nodes can be safely recreated on subsequent acquisitions.
+  - **Async Race Handling & Rollback:** Concurrent async resolutions for the same token share a single in-flight Future. If all handles are released while an async factory is in flight, the completed instance is immediately disposed to prevent orphaned alive instances. If factory execution throws, all partially retained dependencies are released and the node resets to uninitialized.
+  - **Authoritative Reverse Topological Shutdown & Error Aggregation:** `graph.dispose()` is idempotent and authoritative: invalidates all outstanding handles, rejects new resolutions (`DisposedGraphException`), and disposes all initialized instances in reverse dependency order (consumers before dependencies). Disposal callback exceptions are collected and thrown as `DisposalAggregateException` without blocking cleanup of remaining instances.
+
+
 ## 2026-11-11: Extract `ArcaContainer`, Enum Lifecycle State, and Colocated Onboarding Persistence
 
 - **Status:** agreed
