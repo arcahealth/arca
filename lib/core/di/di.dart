@@ -16,9 +16,6 @@ sealed class CircuitWire {
   /// The keys of all dependencies required by this wire.
   List<WireKey> get dependencies;
 
-  /// Whether this wire must be resolved asynchronously during circuit build.
-  bool get isAsync;
-
   /// Invoked when disposing an active instance of this wire.
   FutureOr<void> disposeInstance(Object? instance);
 }
@@ -30,9 +27,6 @@ final class Wire<T> extends CircuitWire {
 
   @override
   final List<WireKey> dependencies;
-
-  @override
-  bool get isAsync => false;
 
   /// Optional disposal callback invoked when the circuit is disposed.
   final FutureOr<void> Function(T instance)? onDispose;
@@ -91,9 +85,6 @@ final class AsyncWire<T> extends CircuitWire {
 
   @override
   final List<WireKey> dependencies;
-
-  @override
-  bool get isAsync => true;
 
   /// Optional disposal callback invoked when the circuit is disposed.
   final FutureOr<void> Function(T instance)? onDispose;
@@ -428,8 +419,8 @@ final class Circuit {
     try {
       for (var i = 0; i <= maxLevel; i++) {
         final asyncWiresAtLevel = wireMap.values
-            .where((w) => w.isAsync && levels[w.key] == i)
-            .cast<AsyncWire<Object?>>()
+            .whereType<AsyncWire>()
+            .where((w) => levels[w.key] == i)
             .toList();
 
         if (asyncWiresAtLevel.isNotEmpty) {

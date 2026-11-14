@@ -5,7 +5,7 @@
   - Requirements:
     - Pure Dart 3.13+ zero-codegen, graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG) in `lib/core/di/di.dart`.
     - Vertex keys as record tuples `typedef WireKey = (Type type, Enum? tag);` supporting untagged `(T, null)` and tagged `(T, K)` where `K extends Enum` with Dart dot-shorthands.
-    - Base sealed class `CircuitWire` with `key`, `dependencies`, `isAsync`, and `disposeInstance(Object? instance)`.
+    - Base sealed class `CircuitWire` with `key`, `dependencies`, and `disposeInstance(Object? instance)`.
     - Synchronous lazy singleton `Wire<T>` and parallel-wave asynchronous `AsyncWire<T>`.
     - Accumulator-based chaining builders `WireBuilder<Acc>` and `AsyncWireBuilder<Acc>` with `takes<Next>()`, `takesTagged<Next, K>(tag)`, and `to(...)` (1-dep direct/tear-off unpacking, multi-dep tuple unpacking).
     - Pure singleton lifecycle model: all wires are singletons; sync wires lazily constructed on first access or when required by an `AsyncWire` during build.

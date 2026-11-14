@@ -55,38 +55,38 @@ final class ComplexAppService {
 
 void main() {
   group('WireKey and Wire Definition Specs', () {
-    test('untagged sync Wire has (T, null) key and isAsync false', () {
+    test('untagged sync Wire has (T, null) key and is a Wire', () {
       final wire = Wire(() => DatabaseService());
       expect(wire.key, equals((DatabaseService, null)));
       expect(wire.dependencies, isEmpty);
-      expect(wire.isAsync, isFalse);
+      expect(wire, isA<Wire<DatabaseService>>());
     });
 
-    test('tagged sync Wire has (T, tag) key and isAsync false', () {
+    test('tagged sync Wire has (T, tag) key and is a Wire', () {
       final wire = Wire.tag(
         () => DatabaseService('prod.db'),
         tag: Environment.prod,
       );
       expect(wire.key, equals((DatabaseService, Environment.prod)));
       expect(wire.dependencies, isEmpty);
-      expect(wire.isAsync, isFalse);
+      expect(wire, isA<Wire<DatabaseService>>());
     });
 
-    test('untagged AsyncWire has (T, null) key and isAsync true', () {
+    test('untagged AsyncWire has (T, null) key and is an AsyncWire', () {
       final wire = AsyncWire(() async => DatabaseService());
       expect(wire.key, equals((DatabaseService, null)));
       expect(wire.dependencies, isEmpty);
-      expect(wire.isAsync, isTrue);
+      expect(wire, isA<AsyncWire<DatabaseService>>());
     });
 
-    test('tagged AsyncWire has (T, tag) key and isAsync true', () {
+    test('tagged AsyncWire has (T, tag) key and is an AsyncWire', () {
       final wire = AsyncWire.tag(
         () async => DatabaseService('staging.db'),
         tag: Environment.staging,
       );
       expect(wire.key, equals((DatabaseService, Environment.staging)));
       expect(wire.dependencies, isEmpty);
-      expect(wire.isAsync, isTrue);
+      expect(wire, isA<AsyncWire<DatabaseService>>());
     });
   });
 
@@ -97,7 +97,7 @@ void main() {
 
       expect(wire.key, equals((UserService, null)));
       expect(wire.dependencies, equals([(DatabaseService, null)]));
-      expect(wire.isAsync, isFalse);
+      expect(wire, isA<Wire<UserService>>());
     });
 
     test('1-dep Wire.takesTagged<A, K>(tag) produces builder with tagged dependency', () {
@@ -172,7 +172,7 @@ void main() {
 
       expect(wire.key, equals((UserService, null)));
       expect(wire.dependencies, equals([(DatabaseService, null)]));
-      expect(wire.isAsync, isTrue);
+      expect(wire, isA<AsyncWire<UserService>>());
     });
 
     test('1-dep AsyncWire.takesTagged<A, K>() produces tagged dependency', () {
@@ -185,7 +185,7 @@ void main() {
         wire.dependencies,
         equals([(DatabaseService, Environment.staging)]),
       );
-      expect(wire.isAsync, isTrue);
+      expect(wire, isA<AsyncWire<UserService>>());
     });
 
     test('2-deps AsyncWireBuilder chains into (Acc, Next)', () {
@@ -198,7 +198,7 @@ void main() {
         wire.dependencies,
         equals([(DatabaseService, null), (CacheService, null)]),
       );
-      expect(wire.isAsync, isTrue);
+      expect(wire, isA<AsyncWire<OrderService>>());
     });
 
     test('AsyncWireBuilder.to supports tagged output wire', () {
@@ -209,7 +209,7 @@ void main() {
 
       expect(wire.key, equals((UserService, Role.admin)));
       expect(wire.dependencies, equals([(DatabaseService, null)]));
-      expect(wire.isAsync, isTrue);
+      expect(wire, isA<AsyncWire<UserService>>());
     });
   });
 
