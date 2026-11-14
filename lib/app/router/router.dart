@@ -1,5 +1,12 @@
 import 'package:arca/app/router/onboarding_routes.dart';
+import 'package:arca/core/database/database_service.dart';
+import 'package:arca/core/di/di.dart';
+import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:kaisel/kaisel.dart';
+
+final appRouterWire = Wire.takes<DatabaseService>()
+    .takes<OnboardingRepository>()
+    .to((deps) => createAppRouter(initial: .onboarding()));
 
 enum AppRoute(final String segment) {
   root('/'),

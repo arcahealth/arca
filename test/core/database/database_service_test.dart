@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
-import 'package:arca/core/database/database_manager.dart';
 import 'package:arca/core/database/database_service.dart';
 
 void main() {

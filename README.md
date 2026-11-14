@@ -40,14 +40,13 @@ arca/
 ├── lib/
 │   ├── main.dart                  # Clean application entry point running const ArcaApp()
 │   ├── app/                       # Composition root, dependency container, and router setup
-│   │   ├── app.dart               # ArcaApp: ValueListenableBuilder + MultiRepositoryProvider + WidgetsApp.router
-│   │   ├── app_container.dart     # ArcaContainer: dependency lifecycle + ArcaContainerState
-│   │   └── router/                # createAppRouter, sealed ArcaRoute/OnboardingRoute & stack codecs
+│   │   ├── app.dart               # ArcaApp: FutureBuilder<Circuit> + MultiRepositoryProvider + WidgetsApp.router
+│   │   └── router/                # createAppRouter, sealed ArcaRoute/OnboardingRoute, stack codecs & appRouterWire
 │   ├── core/                      # Shared design system, database, and domain infrastructure
-│   │   ├── database/              # DatabaseManager, migrations, SQLite connection pool
+│   │   ├── database/              # DatabaseService, primaryDBWire, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
 │   │   ├── di/                    # Wire & Circuit Dependency Injection DAG engine (di.dart)
-│   │   └── onboarding/            # OnboardingRepository (SharedPrefsOnboardingRepository)
+│   │   └── onboarding/            # OnboardingRepository, onboardingRepoWire (SharedPrefsOnboardingRepository)
 │   └── features/                  # Self-contained feature modules
 │       └── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
 └── test/                          # Unit, SQLite, router, widget, Wire & Circuit, and accessibility tests (63 tests)

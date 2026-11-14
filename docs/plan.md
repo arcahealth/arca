@@ -1,6 +1,23 @@
 # Plan
 
 ## Done
+- [x] Migrate Composition Root to Wire & Circuit Dependency Injection
+  - Requirements:
+    - Replace legacy `ArcaContainer` with declarative `CircuitWire` recipes in `lib/app/app.dart`.
+    - Update `ArcaApp` to accept `wires` and cache `_circuitBuilder = Circuit.build(widget.wires)` in `initState()`.
+    - Pattern match `FutureBuilder` snapshot using `AsyncSnapshot<Circuit>(connectionState: .done, data: final circuit?)` to provide `Circuit` and configure `WidgetsApp.router`.
+    - Define declarative wires: `primaryDBWire` in `lib/core/database/database_service.dart`, `onboardingRepoWire` in `lib/core/onboarding/repositories/onboarding_repository.dart`, and `appRouterWire` in `lib/app/router/router.dart`.
+    - Colocate `DatabaseManager` with `DatabaseService` in `lib/core/database/database_service.dart` and remove standalone `database_manager.dart`.
+    - Remove obsolete `lib/app/app_container.dart`.
+    - Update database service tests and pass strict verification gate.
+  - Sub-steps:
+    - [x] Define `primaryDBWire`, `onboardingRepoWire`, and `appRouterWire`.
+    - [x] Colocate `DatabaseManager` in `database_service.dart` and remove `database_manager.dart`.
+    - [x] Refactor `ArcaApp` in `lib/app/app.dart` to use `FutureBuilder<Circuit>` with pattern matching.
+    - [x] Remove `lib/app/app_container.dart`.
+    - [x] Clean up test imports in `test/core/database/database_service_test.dart`.
+    - [x] Update `docs/plan.md`, `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
+    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
 - [x] Wire & Circuit Minimal v1 Specification
   - Requirements:
     - Pure Dart 3.13+ zero-codegen, graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG) in `lib/core/di/di.dart`.

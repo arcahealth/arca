@@ -1,5 +1,10 @@
+import 'package:arca/core/di/di.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final onboardingRepoWire = Wire<OnboardingRepository>(
+  SharedPrefsOnboardingRepository.new,
+);
 
 /// Core repository contract managing user onboarding state.
 abstract interface class OnboardingRepository {

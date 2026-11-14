@@ -1,39 +1,48 @@
-import 'dart:async';
-
-import 'package:arca/app/app_container.dart';
+import 'package:arca/core/di/di.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:kaisel/kaisel.dart';
 
 /// Composition root for Arca.
 ///
 /// Injects core dependencies at the application edge.
-final class const ArcaApp({super.key, final ArcaContainer? appContainer})
+final class const ArcaApp({super.key, final List<CircuitWire> wires = const []})
     extends StatefulWidget {
   @override
   State<ArcaApp> createState() => _ArcaAppState();
 }
 
 class _ArcaAppState extends State<ArcaApp> {
-  late final ArcaContainer _appContainer;
+  late final Future<Circuit> _circuitBuilder;
 
   @override
   void initState() {
     super.initState();
 
-    _appContainer = widget.appContainer ?? ArcaContainer();
-    unawaited(_appContainer.init());
+    _circuitBuilder = Circuit.build(widget.wires);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ArcaContainerState>(
-      valueListenable: _appContainer.state,
-      builder: (context, state, child) => switch (state) {
-        // The Builder child is built lazily: _appContainer.routerConfig is
-        // only valid once the container reaches .ready.
-        .ready when child != null => child,
+    return FutureBuilder<Circuit>(
+      future: _circuitBuilder,
+      builder: (context, snapshot) => switch (snapshot) {
+        AsyncSnapshot<Circuit>(connectionState: .done, data: final circuit?) =>
+          MultiRepositoryProvider(
+            providers: [RepositoryProvider<Circuit>.value(value: circuit)],
+            child: WidgetsApp.router(
+              color: ArcaColors.primary,
+              textStyle: ArcaTypography.bodyMedium,
+              routerConfig: circuit.get<KaiselRouterConfig>(),
+              title: 'Arca',
+            ),
+          ),
+        // // TODO: Handle this case.
+        // AsyncSnapshot(:final error?) => throw UnimplementedError(),
+        // The Builder child is built lazily: wires are only
+        // valid once the Circuit is validated and built.
         _ => WidgetsApp(
           color: ArcaColors.primary,
           textStyle: ArcaTypography.bodyMedium,
@@ -48,21 +57,6 @@ class _ArcaAppState extends State<ArcaApp> {
           ),
         ),
       },
-      child: Builder(
-        builder: (context) {
-          return MultiRepositoryProvider(
-            providers: [
-              RepositoryProvider<ArcaContainer>.value(value: _appContainer),
-            ],
-            child: WidgetsApp.router(
-              color: ArcaColors.primary,
-              textStyle: ArcaTypography.bodyMedium,
-              routerConfig: _appContainer.routerConfig,
-              title: 'Arca',
-            ),
-          );
-        },
-      ),
     );
   }
 }

@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-11-14: Migrate Composition Root to Wire & Circuit Dependency Injection
+
+- **Status:** agreed
+- **Request:** Decommission `ArcaContainer` and migrate the application composition root, router, database, and repository wiring to the declarative Wire & Circuit DAG dependency injection engine in `lib/core/di/di.dart`.
+- **Scope:** `lib/app/`, `lib/core/database/`, `lib/core/onboarding/`, `test/core/database/`, `docs/`, `README.md`.
+- **Choices:**
+  - **Decommission `ArcaContainer`:** Removed `ArcaContainer` and its associated enum states in favor of pure declarative `CircuitWire` definitions (`primaryDBWire`, `onboardingRepoWire`, `appRouterWire`) resolved via `Circuit.build(wires)`.
+  - **Cached Future in `ArcaApp` Composition Root:** Preserved `StatefulWidget` lifecycle in `ArcaApp` caching `_circuitBuilder = Circuit.build(widget.wires)` in `initState()`, preventing duplicate DAG construction and database pool initialization across widget rebuilds.
+  - **Pattern Matching `FutureBuilder` Snapshot:** Pattern match `AsyncSnapshot<Circuit>` with `AsyncSnapshot<Circuit>(connectionState: .done, data: final circuit?)` to seamlessly bind the resolved `circuit`, provide it via `RepositoryProvider<Circuit>.value`, and look up `circuit.get<KaiselRouterConfig>()`.
+  - **Colocate `DatabaseManager` into `database_service.dart`:** Merged `DatabaseManager` with the `DatabaseService` abstract interface to keep SQLite connection pool management cohesive alongside `primaryDBWire`.
+
 ## 2026-11-14: Wire & Circuit Minimal v1 Dependency Injection Engine
 
 - **Status:** agreed
