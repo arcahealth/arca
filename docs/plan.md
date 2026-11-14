@@ -1,6 +1,25 @@
 # Plan
 
 ## Done
+- [x] Combine Factory Pattern & DAG Wire Configuration for Database Initialization
+  - Requirements:
+    - Eliminate two-phase initialization and mutable `SqliteDatabase? _db` in `DatabaseManager` and `DatabaseService`.
+    - Introduce `DatabaseConfig` holding vault path configuration and its own `AsyncWire<DatabaseConfig>` recipe resolving the filesystem path via `PathManager`.
+    - Refactor `DatabaseManager` to be immutable with `final SqliteDatabase db` and provide a static asynchronous factory `DatabaseManager.open(DatabaseConfig config)`.
+    - Remove `initialize()` from the `DatabaseService` interface and `DatabaseManager` implementation to prevent interface leakage and temporal coupling.
+    - Wire `DatabaseService` via `AsyncWire.takes<DatabaseConfig>().to(DatabaseManager.open, onDispose: (s) => s.close())`.
+    - Update `ArcaApp` composition root in `lib/app/app.dart` to include `DatabaseConfig.wire` in default wires.
+    - Update `test/core/database/database_service_test.dart` to test `DatabaseConfig`, `DatabaseManager.open`, and DAG circuit resolution without platform channel mocking.
+    - Sync `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
+    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+  - Sub-steps:
+    - [x] Update `docs/plan.md` with in-progress task.
+    - [x] Refactor `lib/core/database/database_service.dart` with `DatabaseConfig`, immutable `DatabaseManager`, and `AsyncWire.takes<DatabaseConfig>().to(DatabaseManager.open)`.
+    - [x] Update `lib/app/app.dart` default wires to register `DatabaseConfig.wire`.
+    - [x] Update `test/core/database/database_service_test.dart`.
+    - [x] Run inner loop analyzer and tests.
+    - [x] Update `docs/decisions.md`, `docs/architecture.md`, `README.md`, and mark plan complete.
+    - [x] Run full verification gate.
 - [x] Migrate Composition Root to Wire & Circuit Dependency Injection
   - Requirements:
     - Replace legacy `ArcaContainer` with declarative `CircuitWire` recipes in `lib/app/app.dart`.

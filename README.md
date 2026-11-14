@@ -43,7 +43,7 @@ arca/
 │   │   ├── app.dart               # ArcaApp: FutureBuilder<Circuit> + MultiRepositoryProvider + WidgetsApp.router
 │   │   └── router/                # createAppRouter, sealed ArcaRoute/OnboardingRoute, stack codecs & appRouterWire
 │   ├── core/                      # Shared design system, database, and domain infrastructure
-│   │   ├── database/              # DatabaseService, primaryDBWire, migrations, SQLite connection pool
+│   │   ├── database/              # DatabaseConfig, DatabaseService, DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
 │   │   ├── di/                    # Wire & Circuit Dependency Injection DAG engine (di.dart)
 │   │   └── onboarding/            # OnboardingRepository, onboardingRepoWire (SharedPrefsOnboardingRepository)

@@ -2,12 +2,11 @@ import 'package:arca/core/di/di.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final onboardingRepoWire = Wire<OnboardingRepository>(
-  SharedPrefsOnboardingRepository.new,
-);
-
 /// Core repository contract managing user onboarding state.
 abstract interface class OnboardingRepository {
+  static Wire<OnboardingRepository> get wire =>
+      .new(SharedPrefsOnboardingRepository.new);
+
   /// Returns whether the initial onboarding flow has been completed.
   Future<bool> hasCompletedOnboarding();
 

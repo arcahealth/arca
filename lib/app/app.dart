@@ -1,4 +1,7 @@
+import 'package:arca/app/router/router.dart';
+import 'package:arca/core/database/database_service.dart';
 import 'package:arca/core/di/di.dart';
+import 'package:arca/core/onboarding/onboarding.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -21,7 +24,16 @@ class _ArcaAppState extends State<ArcaApp> {
   void initState() {
     super.initState();
 
-    _circuitBuilder = Circuit.build(widget.wires);
+    final wires = widget.wires.isNotEmpty
+        ? widget.wires
+        : [
+            DatabaseConfig.wire,
+            DatabaseService.wire,
+            OnboardingRepository.wire,
+            appRouterWire,
+          ];
+
+    _circuitBuilder = Circuit.build(wires);
   }
 
   @override
@@ -35,7 +47,7 @@ class _ArcaAppState extends State<ArcaApp> {
             child: WidgetsApp.router(
               color: ArcaColors.primary,
               textStyle: ArcaTypography.bodyMedium,
-              routerConfig: circuit.get<KaiselRouterConfig>(),
+              routerConfig: circuit.get<KaiselRouterConfig<ArcaRoute>>(),
               title: 'Arca',
             ),
           ),

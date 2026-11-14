@@ -4,63 +4,50 @@ import 'package:path/path.dart' as p;
 import 'package:path_manager/path_manager.dart';
 import 'package:sqlite_async/sqlite_async.dart';
 
-final primaryDBWire = AsyncWire<DatabaseService>(() async {
-  final db = DatabaseManager();
-  await db.initialize();
-  return db;
-}, onDispose: (db) async => await db.close());
+/// Configuration for on-device SQLite database storage location and options.
+final class const DatabaseConfig({
+  /// Absolute filesystem path to the SQLite vault file.
+  required final String path,
+}) {
+  /// Default wire resolving application support directory via [PathManager].
+  static AsyncWire<DatabaseConfig> get wire => .new(() async {
+    final supportDir = await PathManager.getApplicationSupportDirectory();
+    return .new(path: p.join(supportDir.path, 'arca_vault.db'));
+  });
+}
 
-/// Abstract service interface for managing on-device SQLite database connection pools,
-/// lifecycle, and migrations.
+/// Abstract service interface for managing on-device SQLite database connection pools
+/// and lifecycle.
 abstract interface class DatabaseService {
+  /// Resolves [DatabaseService] by feeding [DatabaseConfig] into [DatabaseManager.open].
+  static AsyncWire<DatabaseService> get wire =>
+      AsyncWire.takes<DatabaseConfig>().to(
+        DatabaseManager.open,
+        onDispose: (service) => service.close(),
+      );
+
   /// Active SQLite database connection pool.
   SqliteDatabase get db;
-
-  /// Initializes the local database file and runs pending migrations.
-  Future<void> initialize({String? customPath});
 
   /// Closes database connections safely.
   Future<void> close();
 }
 
+/// Creates a ready-to-use [DatabaseService] wrapping an already opened and migrated connection pool.
 /// Manages lifecycle, connection pool, and migrations for the on-device SQLite vault.
-class DatabaseManager implements DatabaseService {
-  DatabaseManager({SqliteDatabase? customDatabase}) : _db = customDatabase;
-
-  SqliteDatabase? _db;
-
-  /// Active SQLite database connection pool.
+final class const DatabaseManager(this.db) implements DatabaseService {
   @override
-  SqliteDatabase get db {
-    final database = _db;
-    if (database == null) {
-      throw StateError(
-        'DatabaseManager has not been initialized. Call initialize() first.',
-      );
-    }
-    return database;
-  }
+  final SqliteDatabase db;
 
-  /// Initializes the local database file and runs pending migrations.
-  @override
-  Future<void> initialize({String? customPath}) async {
-    if (_db != null) return;
-
-    final dbPath = customPath ?? await _getDefaultDatabasePath();
-    final database = SqliteDatabase(path: dbPath);
+  /// Asynchronous factory: opens the SQLite connection pool at [config.path],
+  /// runs pending schema migrations, and returns an initialized [DatabaseManager].
+  static Future<DatabaseManager> open(DatabaseConfig config) async {
+    final database = SqliteDatabase(path: config.path);
     await ArcaDatabaseMigrations.migrate(database);
-    _db = database;
-  }
-
-  static Future<String> _getDefaultDatabasePath() async {
-    final supportDir = await PathManager.getApplicationSupportDirectory();
-    return p.join(supportDir.path, 'arca_vault.db');
+    return DatabaseManager(database);
   }
 
   /// Closes database connections safely.
   @override
-  Future<void> close() async {
-    await _db?.close();
-    _db = null;
-  }
+  Future<void> close() => db.close();
 }

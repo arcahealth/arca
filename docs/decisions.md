@@ -1,5 +1,17 @@
 # Decisions
 
+## 2026-11-15: Combine Static Async Factory and DAG Wire for Database Initialization
+
+- **Status:** agreed
+- **Request:** Replace two-phase database initialization and verbose inline closure in `DatabaseService.wire` with a combination of a static async factory (`DatabaseManager.open`) and a DAG-composable storage wire (`DatabaseConfig.wire`).
+- **Scope:** `lib/core/database/`, `lib/app/app.dart`, `test/core/database/`, `docs/`, `README.md`.
+- **Choices:**
+  - **`DatabaseConfig` Value Class & Wire:** Separated filesystem path resolution (`PathManager.getApplicationSupportDirectory()`) into an explicit `DatabaseConfig` dependency with its own `AsyncWire<DatabaseConfig>`. This decouples database connection logic from platform directory lookups and allows tests to supply in-memory or temp path configs without platform channel mocking.
+  - **Eliminate Two-Phase Initialization:** Removed `initialize({String? customPath})` from both `DatabaseService` interface and `DatabaseManager`. Replaced mutable `SqliteDatabase? _db` with non-nullable `final SqliteDatabase db`. `DatabaseManager` can never be in an uninitialized state, eliminating defensive `StateError` checks.
+  - **Static Async Factory Tear-off:** Implemented `DatabaseManager.open(DatabaseConfig config)` which opens `SqliteDatabase(path: config.path)`, runs `ArcaDatabaseMigrations.migrate(db)`, and returns an immutable `DatabaseManager(db)`.
+  - **Chained Declarative Wire:** Wired `DatabaseService.wire` using `AsyncWire.takes<DatabaseConfig>().to(DatabaseManager.open, onDispose: (service) => service.close())`.
+  - **Default Wires in Composition Root:** Added `DatabaseConfig.wire` to `ArcaApp` default wires in `lib/app/app.dart`, maintaining automatic parallel topological wave resolution during `Circuit.build`.
+
 ## 2026-11-14: Migrate Composition Root to Wire & Circuit Dependency Injection
 
 - **Status:** agreed

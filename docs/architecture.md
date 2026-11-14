@@ -15,7 +15,7 @@ lib/
 │       ├── router.dart            # createAppRouter: top-level ArcaRoute tree, AppStackCodec & appRouterWire
 │       └── onboarding_routes.dart # OnboardingRoute, OnboardingModule & OnboardingModuleCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
-│   ├── database/                  # On-device SQLite infrastructure (DatabaseService, primaryDBWire, migrations)
+│   ├── database/                  # On-device SQLite infrastructure (DatabaseConfig, DatabaseService, DatabaseManager, migrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
 │   ├── di/                        # Wire & Circuit Dependency Injection DAG engine (di.dart)
 │   └── onboarding/                # OnboardingRepository, onboardingRepoWire (onboarding.dart barrel)
@@ -42,7 +42,7 @@ lib/
 
 ### 4. Interface-Driven Dependency Injection
 - Screens, BLoCs, router parameters, and service consumers accept abstract interfaces (`abstract interface class`), never concrete implementations.
-- Repositories (`OnboardingRepository`) and services (`DatabaseService`) are declared via declarative `CircuitWire` recipes (`primaryDBWire`, `onboardingRepoWire`, `appRouterWire`) and resolved through `Circuit.build(wires)`.
+- Storage configuration (`DatabaseConfig`), repositories (`OnboardingRepository`), and services (`DatabaseService`) are declared via declarative `CircuitWire` recipes (`DatabaseConfig.wire`, `DatabaseService.wire`, `OnboardingRepository.wire`, `appRouterWire`) and resolved through `Circuit.build(wires)`.
 - The composition root exposes `Circuit` to the widget tree via `RepositoryProvider<Circuit>`, forwarding to interface-typed accessors.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
