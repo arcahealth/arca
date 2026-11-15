@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:arca/core/database/database_service.dart';
-import 'package:arca/core/di/di.dart';
+import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite_async/sqlite_async.dart';

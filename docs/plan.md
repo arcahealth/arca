@@ -1,6 +1,22 @@
 # Plan
 
 ## Done
+- [x] Migrate Arca to External `circuitry_flutter` Package and Decommission `lib/core/di/`
+  - Requirements:
+    - Add `circuitry_flutter` path dependency in `pubspec.yaml` pointing to `../circuitry/packages/circuitry_flutter`.
+    - Update all imports in `lib/core/database/`, `lib/core/onboarding/`, `lib/app/`, and `test/` from `package:arca/core/di/...` to `package:circuitry_flutter/circuitry_flutter.dart`.
+    - Delete decommissioned `lib/core/di/di.dart` and `lib/core/di/circuit_provider.dart`.
+    - Replace `test/core/di/` (which tested internal engine specs now owned by the `circuitry` monorepo) with `test/app/app_composition_test.dart` validating `ArcaApp` integration with `CircuitProvider`.
+    - Synchronize `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
+    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
+  - Sub-steps:
+    - [x] Add `circuitry_flutter` dependency in `pubspec.yaml` and run `flutter pub get`.
+    - [x] Update imports in `lib/core/database/database_service.dart`, `lib/core/onboarding/repositories/onboarding_repository.dart`, `lib/app/router/router.dart`, and `lib/app/app.dart`.
+    - [x] Update `test/core/database/database_service_test.dart` imports.
+    - [x] Create `test/app/app_composition_test.dart` for `ArcaApp` and remove `test/core/di/` and `lib/core/di/`.
+    - [x] Run `flutter analyze` and `flutter test`.
+    - [x] Sync `docs/decisions.md`, `docs/architecture.md`, `README.md`, and mark plan complete.
+    - [x] Run full verification gate.
 - [x] Flutter Bridge (`CircuitProvider` and `CircuitState`) for Wire & Circuit Dependency Injection
   - Requirements:
     - Implement `CircuitState` sealed hierarchy (`CircuitBuilding`, `CircuitReady`, `CircuitFailure`) with const constructors and redirecting factories.

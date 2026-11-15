@@ -1,6 +1,6 @@
 import 'package:arca/app/router/onboarding_routes.dart';
 import 'package:arca/core/database/database_service.dart';
-import 'package:arca/core/di/di.dart';
+import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:kaisel/kaisel.dart';
 

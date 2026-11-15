@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-11-15: Extract DAG-Based Dependency Engine into `circuitry` Monorepo
+
+- **Status:** agreed
+- **Request:** Extract Arca's custom DAG-based dependency injection engine into a dedicated monorepo workspace at `/Users/maranix/Developer/circuitry` housing two packages (`circuitry` for pure Dart and `circuitry_flutter` for the Flutter bridge), update Arca to consume `circuitry_flutter` as a path dependency, and decommission `lib/core/di/`.
+- **Scope:** `pubspec.yaml`, `lib/app/`, `lib/core/`, `test/`, `docs/`, `README.md`.
+- **Choices:**
+  - **Monorepo Package Separation:** Established standalone workspace in `/Users/maranix/Developer/circuitry` with `packages/circuitry` (pure Dart, zero Flutter dependencies) and `packages/circuitry_flutter` (Flutter bridge providing `CircuitProvider` and `CircuitState`).
+  - **Arca Dependency Update:** Added `circuitry_flutter: { path: ../circuitry/packages/circuitry_flutter }` to `pubspec.yaml` in Arca. Updated all imports across `lib/core/database/`, `lib/core/onboarding/`, `lib/app/`, and `test/` to `package:circuitry_flutter/circuitry_flutter.dart`.
+  - **Decommission In-Tree Engine:** Removed `lib/core/di/di.dart` and `lib/core/di/circuit_provider.dart`.
+  - **Test Suite Specialization:** Relocated the 67 engine unit and widget tests to the `circuitry` monorepo. In Arca, replaced `test/core/di/` with `test/app/app_composition_test.dart` to strictly test `ArcaApp` composition root integration with `CircuitProvider`.
+
 ## 2026-11-15: Flutter Bridge (`CircuitProvider` and `CircuitState`) for Wire & Circuit Dependency Injection
 
 - **Status:** agreed

@@ -1,5 +1,5 @@
 import 'package:arca/core/database/migrations.dart';
-import 'package:arca/core/di/di.dart';
+import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_manager/path_manager.dart';
 import 'package:sqlite_async/sqlite_async.dart';

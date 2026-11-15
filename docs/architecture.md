@@ -17,7 +17,6 @@ lib/
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseConfig, DatabaseService, DatabaseManager, migrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
-│   ├── di/                        # Wire & Circuit Dependency Injection DAG engine (di.dart, circuit_provider.dart)
 │   └── onboarding/                # OnboardingRepository, onboardingRepoWire (onboarding.dart barrel)
 └── features/                      # Isolated, self-contained feature modules
     └── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen)
@@ -46,8 +45,8 @@ lib/
 - The composition root exposes `Circuit` to the widget tree via `CircuitProvider`, forwarding to interface-typed accessors.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
-### 5. Wire & Circuit Dependency Injection Engine (`lib/core/di/di.dart`, `lib/core/di/circuit_provider.dart`)
-- Self-contained, pure Dart 3.13+ zero-codegen, graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG), bridged to Flutter via `CircuitProvider`.
+### 5. Circuitry Dependency Injection Engine (`package:circuitry_flutter`)
+- Zero-codegen, pure Dart 3.13+ graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG) and bridged to Flutter via `CircuitProvider`. Consumed as a dedicated package from the `circuitry` monorepo.
 - **Flutter Bridge (`CircuitProvider`, `CircuitState`):**
   - Sealed `CircuitState` hierarchy (`CircuitBuilding`, `CircuitReady`, `CircuitFailure`) for pattern-matched UI rendering.
   - `CircuitProvider` manages async DAG compilation (`Circuit.build`), provides the resolved `Circuit` via internal `_CircuitScope extends InheritedWidget`, and automatically disposes the circuit on unmount.
@@ -114,6 +113,7 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 
 | Dependency | Version | Architectural Purpose |
 | --- | --- | --- |
+| `circuitry_flutter` | `path` | Zero-codegen DAG-based dependency injection engine and Flutter bridge (`CircuitProvider`). |
 | `flutter_bloc` | `^9.1.1` | Predictable, event-driven unidirectional state management for clinical records. |
 | `kaisel` | `^1.1.0` | Dart 3 native navigation using sealed classes and stack-as-state model. |
 | `collection` | `^1.19.1` | Official Dart collection utilities: `PriorityQueue`, `HeapPriorityQueue`, `binarySearch`, `ListEquality`, `SetEquality`. |

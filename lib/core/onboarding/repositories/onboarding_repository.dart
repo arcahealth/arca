@@ -1,4 +1,4 @@
-import 'package:arca/core/di/di.dart';
+import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

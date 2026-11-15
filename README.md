@@ -45,11 +45,10 @@ arca/
 │   ├── core/                      # Shared design system, database, and domain infrastructure
 │   │   ├── database/              # DatabaseConfig, DatabaseService, DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
-│   │   ├── di/                    # Wire & Circuit Dependency Injection DAG engine (di.dart, circuit_provider.dart)
 │   │   └── onboarding/            # OnboardingRepository, onboardingRepoWire (SharedPrefsOnboardingRepository)
 │   └── features/                  # Self-contained feature modules
 │       └── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
-└── test/                          # Unit, SQLite, router, widget, Wire & Circuit, and accessibility tests (85 tests)
+└── test/                          # Unit, SQLite, router, widget, and accessibility tests (20 tests)
 ```
 
 ---

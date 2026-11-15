@@ -4,7 +4,7 @@ import 'package:kaisel/kaisel.dart';
 import 'package:arca/app/router/router.dart';
 import 'package:arca/core/database/database_service.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
-import 'package:arca/core/di/circuit_provider.dart';
+import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:arca/core/onboarding/onboarding.dart';
 
 /// Composition root for Arca.
