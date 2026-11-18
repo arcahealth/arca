@@ -20,7 +20,7 @@ class const SetupChoiceScreen({
         title: 'Setup',
         leading: NullableBuilder(
           onBack,
-          (context, back) => ArcaButton(
+          builder: (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to welcome screen',

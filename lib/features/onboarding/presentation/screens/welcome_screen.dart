@@ -71,7 +71,7 @@ class const WelcomeScreen({
               ),
               NullableBuilder(
                 onSkip,
-                (context, skip) => Padding(
+                builder: (context, skip) => Padding(
                   padding: const EdgeInsets.only(top: ArcaSpacing.sm),
                   child: ArcaButton(
                     label: 'Skip Setup',

@@ -70,7 +70,7 @@ class _UserNameScreenState extends State<UserNameScreen> {
         title: 'Profile',
         leading: NullableBuilder(
           widget.onBack,
-          (context, back) => ArcaButton(
+          builder: (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back',

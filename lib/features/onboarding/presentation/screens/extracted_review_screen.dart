@@ -38,7 +38,7 @@ class const ExtractedReviewScreen({
         title: 'Review',
         leading: NullableBuilder(
           onBack,
-          (context, back) => ArcaButton(
+          builder: (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to scan screen',
