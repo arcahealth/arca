@@ -1,0 +1,122 @@
+import 'package:flutter/widgets.dart';
+
+import '../../../../core/design_system/arca_design_system.dart';
+
+/// Screen asking only for the user's name during manual onboarding setup.
+///
+/// Features a prominent voice dictation microphone button alongside the text field
+/// as an alternative input modality.
+class const ManualNameScreen({
+  required final ValueChanged<String> onContinue,
+  super.key,
+  final VoidCallback? onBack,
+  final VoidCallback? onVoiceInput,
+  final String? initialName,
+}) extends StatefulWidget {
+  @override
+  State<ManualNameScreen> createState() => _ManualNameScreenState();
+}
+
+class _ManualNameScreenState extends State<ManualNameScreen> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialName ?? '');
+  }
+
+  @override
+  void didUpdateWidget(ManualNameScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialName != oldWidget.initialName &&
+        widget.initialName != null &&
+        _controller.text.isEmpty) {
+      _controller.text = widget.initialName!;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleVoiceDictation() {
+    if (widget.onVoiceInput != null) {
+      widget.onVoiceInput!();
+    } else {
+      // Default voice input simulation fallback when no provider is connected
+      setState(() {
+        _controller.text = 'Alex Morgan';
+      });
+    }
+  }
+
+  Widget _buildMicButton() {
+    return ArcaButton(
+      label: '🎙️',
+      variant: .secondary,
+      semanticsLabel: 'Dictate name with voice',
+      onPressed: _handleVoiceDictation,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ArcaScaffold(
+      header: ArcaHeader(
+        title: 'Profile',
+        leading: widget.onBack != null
+            ? ArcaButton(
+                label: '←',
+                variant: .ghost,
+                semanticsLabel: 'Go back',
+                onPressed: widget.onBack,
+              )
+            : null,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: ArcaSpacing.lg,
+            vertical: ArcaSpacing.xl,
+          ),
+          child: Column(
+            crossAxisAlignment: .stretch,
+            children: [
+              const Text(
+                'What should Arca call you?',
+                style: ArcaTypography.display,
+              ),
+              const SizedBox(height: ArcaSpacing.xs),
+              Text(
+                'Your name identifies your primary health vault and stays encrypted exclusively on your hardware.',
+                style: ArcaTypography.bodyLarge.copyWith(
+                  color: ArcaColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: ArcaSpacing.xxl),
+              ArcaTextField(
+                controller: _controller,
+                label: 'Your Name',
+                hintText: 'e.g. Alex Morgan',
+                trailing: _buildMicButton(),
+              ),
+              const SizedBox(height: ArcaSpacing.xxl),
+              ArcaButton(
+                label: 'Continue →',
+                variant: .primary,
+                semanticsLabel: 'Continue to vitals setup',
+                onPressed: () {
+                  final text = _controller.text.trim();
+                  widget.onContinue(text.isNotEmpty ? text : 'Alex');
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
