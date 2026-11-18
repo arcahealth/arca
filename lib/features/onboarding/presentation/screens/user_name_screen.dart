@@ -69,8 +69,8 @@ class _UserNameScreenState extends State<UserNameScreen> {
       header: ArcaHeader(
         title: 'Profile',
         leading: NullableBuilder(
-          value: widget.onBack,
-          builder: (context, back) => ArcaButton(
+          widget.onBack,
+          (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back',

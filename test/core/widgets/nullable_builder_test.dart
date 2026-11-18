@@ -9,10 +9,7 @@ void main() {
       await tester.pumpWidget(
         Directionality(
           textDirection: TextDirection.ltr,
-          child: NullableBuilder<String>(
-            value: 'hello',
-            builder: (context, val) => Text(val),
-          ),
+          child: NullableBuilder<String>('hello', (context, val) => Text(val)),
         ),
       );
 
@@ -24,8 +21,8 @@ void main() {
         Directionality(
           textDirection: TextDirection.ltr,
           child: NullableBuilder<String>(
-            value: null,
-            builder: (context, val) => Text(val),
+            null,
+            (context, val) => Text(val),
             fallback: const Text('fallback'),
           ),
         ),
@@ -40,10 +37,7 @@ void main() {
         await tester.pumpWidget(
           Directionality(
             textDirection: TextDirection.ltr,
-            child: NullableBuilder<String>(
-              value: null,
-              builder: (context, val) => Text(val),
-            ),
+            child: NullableBuilder<String>(null, (context, val) => Text(val)),
           ),
         );
 

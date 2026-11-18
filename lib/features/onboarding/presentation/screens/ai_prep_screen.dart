@@ -45,8 +45,8 @@ class const AiPrepScreen({
       header: ArcaHeader(
         title: 'Intelligence Prep',
         leading: NullableBuilder(
-          value: onBack,
-          builder: (context, back) => ArcaButton(
+          onBack,
+          (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to setup choice',

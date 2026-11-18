@@ -19,8 +19,8 @@ class const DocumentScanScreen({
       header: ArcaHeader(
         title: 'Document Scan',
         leading: NullableBuilder(
-          value: onBack,
-          builder: (context, back) => ArcaButton(
+          onBack,
+          (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to intelligence prep',

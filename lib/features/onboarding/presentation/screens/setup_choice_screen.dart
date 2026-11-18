@@ -19,8 +19,8 @@ class const SetupChoiceScreen({
       header: ArcaHeader(
         title: 'Setup',
         leading: NullableBuilder(
-          value: onBack,
-          builder: (context, back) => ArcaButton(
+          onBack,
+          (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to welcome screen',
