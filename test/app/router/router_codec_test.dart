@@ -32,6 +32,39 @@ void main() {
       expect(path.isEmpty, isTrue);
     });
 
+    test('encodes and decodes all onboarding flow sub-routes', () {
+      expect(codec.encode([const .setupChoice()]), ['choice']);
+      expect(codec.encode([const .aiPrep()]), ['ai-prep']);
+      expect(codec.encode([const .documentScan()]), ['scan']);
+      expect(codec.encode([const .extractedReview()]), ['review']);
+      expect(codec.encode([const .manualName()]), ['name']);
+      expect(codec.encode([const .manualVitals()]), ['vitals']);
+
+      final choiceStack = codec.decode(['choice']);
+      expect(choiceStack, isNotNull);
+      expect(choiceStack!.last, isA<OnboardingSetupChoice>());
+
+      final aiPrepStack = codec.decode(['ai-prep']);
+      expect(aiPrepStack, isNotNull);
+      expect(aiPrepStack!.last, isA<OnboardingAiPrep>());
+
+      final scanStack = codec.decode(['scan']);
+      expect(scanStack, isNotNull);
+      expect(scanStack!.last, isA<OnboardingDocumentScan>());
+
+      final reviewStack = codec.decode(['review']);
+      expect(reviewStack, isNotNull);
+      expect(reviewStack!.last, isA<OnboardingExtractedReview>());
+
+      final nameStack = codec.decode(['name']);
+      expect(nameStack, isNotNull);
+      expect(nameStack!.last, isA<OnboardingManualName>());
+
+      final vitalsStack = codec.decode(['vitals']);
+      expect(vitalsStack, isNotNull);
+      expect(vitalsStack!.last, isA<OnboardingManualVitals>());
+    });
+
     test('decodes [] to [OnboardingWelcome()]', () {
       final stack = codec.decode([]);
       expect(stack, isNotNull);
