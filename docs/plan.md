@@ -9,6 +9,18 @@
 
 ## Next
 
+### Inverted onboarding UI/UX flow
+- **Release:** 0.2.0
+- **Goal:** Deliver an inverted, privacy-first onboarding flow with minimal bold typography, automatic document scan path, and manual voice/text path.
+- **Requirements:**
+  - Screen 1: Minimal greeting welcoming the user with big bold display typography and brief mission text.
+  - Screen 2: Setup choice fork choosing between Automatic (scan prescription/lab) and Manual setup, highlighting 100% on-device privacy.
+  - Automatic Path: AI preparation status, document scan viewfinder UI, and extracted profile review with confirmation.
+  - Manual Path: Name input with microphone button for voice dictation alternative, and optional vitals (DOB, blood type, allergies).
+  - Pure constructor callbacks on screens, wired to Kaisel router in `OnboardingModule`.
+- **Approach:** Presentation screens under `lib/features/onboarding/presentation/screens/` using foundation design system, sealed `OnboardingRoute`s, and `OnboardingModuleCodec`.
+- **Acceptance:** Full verification gate passes; widget tests verify both automatic and manual branches and all interaction callbacks.
+
 ### Multi-member health vault and setup wizard
 
 - **Release:** 0.2.0
