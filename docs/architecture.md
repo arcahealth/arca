@@ -12,7 +12,7 @@ lib/
 ├── app/                           # Composition root & route orchestrator
 │   ├── app.dart                   # ArcaApp (CircuitProvider + WidgetsApp.router)
 │   └── router/                    # Route orchestration
-│       ├── router.dart            # createAppRouter: top-level ArcaRoute tree, AppStackCodec & appRouterWire
+│       ├── router.dart            # ArcaRouter, ArcaRouteGuards, AppStackCodec & ArcaRouter.wire
 │       └── onboarding_routes.dart # OnboardingRoute, OnboardingModule & OnboardingModuleCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseConfig, DatabaseService, DatabaseManager, migrations)
@@ -31,7 +31,7 @@ lib/
 - No feature may import another feature (`import '../../features/other/...'` is strictly forbidden).
 
 ### 2. Decoupled Route Orchestration via Constructor Callbacks
-- Presentation screens never import `AppRoute`, `routes.dart`, or `package:kaisel/kaisel.dart`.
+- Presentation screens never import `ArcaRoute`, `routes.dart`, or `package:kaisel/kaisel.dart`.
 - Screens express navigation intent exclusively through constructor callbacks (`onStartSetup`, `onSkip`).
 - The router in `lib/app/router/` is the sole orchestrator wiring these callbacks to `context.push()` / `context.pop()`, preventing navigation leakage and enabling isolated widget testing.
 
@@ -41,7 +41,7 @@ lib/
 
 ### 4. Interface-Driven Dependency Injection
 - Screens, BLoCs, router parameters, and service consumers accept abstract interfaces (`abstract interface class`), never concrete implementations.
-- Storage configuration (`DatabaseConfig`), repositories (`OnboardingRepository`), and services (`DatabaseService`) are declared via declarative `CircuitWire` recipes (`DatabaseConfig.wire`, `DatabaseService.wire`, `OnboardingRepository.wire`, `appRouterWire`) and resolved through `Circuit.build(wires)`.
+- Storage configuration (`DatabaseConfig`), repositories (`OnboardingRepository`), services (`DatabaseService`), and routing (`ArcaRouter`) are declared via declarative `CircuitWire` recipes (`DatabaseConfig.wire`, `DatabaseService.wire`, `OnboardingRepository.wire`, `ArcaRouter.wire`) and resolved through `Circuit.build(wires)`.
 - The composition root exposes `Circuit` to the widget tree via `CircuitProvider`, forwarding to interface-typed accessors.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 

@@ -44,7 +44,7 @@ arca/
 │   ├── main.dart                  # Clean application entry point running const ArcaApp()
 │   ├── app/                       # Composition root, dependency container, and router setup
 │   │   ├── app.dart               # ArcaApp: CircuitProvider + WidgetsApp.router
-│   │   └── router/                # createAppRouter, sealed ArcaRoute/OnboardingRoute, stack codecs & appRouterWire
+│   │   └── router/                # ArcaRouter, sealed ArcaRoute/OnboardingRoute, stack codecs & ArcaRouter.wire
 │   ├── core/                      # Shared design system, database, and domain infrastructure
 │   │   ├── database/              # DatabaseConfig, DatabaseService, DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets

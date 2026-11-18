@@ -16,7 +16,7 @@ final class const ArcaApp({super.key, final List<CircuitWire> wires = const []})
     DatabaseConfig.wire,
     DatabaseService.wire,
     OnboardingRepository.wire,
-    appRouterWire,
+    ArcaRouter.wire,
   ];
 
   static Widget _fallbackApp(Widget home) => WidgetsApp(

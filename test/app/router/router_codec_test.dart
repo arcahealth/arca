@@ -59,8 +59,8 @@ void main() {
     });
   });
 
-  group('AppRouterCodec', () {
-    final codec = createAppRouterCodec();
+  group('ArcaRouter.codec', () {
+    final codec = ArcaRouter.codec();
 
     test('encodes OnboardingMount to /onboarding', () {
       final uri = codec.encode(.stackOnly([.onboarding()]));
