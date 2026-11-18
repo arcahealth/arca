@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/widgets/widgets.dart';
 
 /// Screen allowing the user to choose between automatic document extraction or manual entry.
 ///
@@ -17,13 +18,13 @@ class const SetupChoiceScreen({
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Setup',
-        leading: NullableBuilder.orNull(
-          onBack,
-          (cb) => ArcaButton(
+        leading: NullableBuilder(
+          value: onBack,
+          builder: (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to welcome screen',
-            onPressed: cb,
+            onPressed: back,
           ),
         ),
       ),

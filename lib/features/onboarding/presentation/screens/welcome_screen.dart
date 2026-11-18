@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/widgets/widgets.dart';
 
 /// Minimal first-launch welcome screen greeting the user.
 ///

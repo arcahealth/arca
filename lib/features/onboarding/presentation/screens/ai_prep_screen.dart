@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/widgets/widgets.dart';
 
 /// Screen displaying the status of on-device AI features before scanning.
 ///
@@ -43,13 +44,13 @@ class const AiPrepScreen({
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Intelligence Prep',
-        leading: NullableBuilder.orNull(
-          onBack,
-          (cb) => ArcaButton(
+        leading: NullableBuilder(
+          value: onBack,
+          builder: (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to setup choice',
-            onPressed: cb,
+            onPressed: back,
           ),
         ),
       ),

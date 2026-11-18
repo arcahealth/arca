@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/widgets/widgets.dart';
 
 /// Screen asking only for the user's name during onboarding setup.
 ///
@@ -67,13 +68,13 @@ class _UserNameScreenState extends State<UserNameScreen> {
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Profile',
-        leading: NullableBuilder.orNull(
-          widget.onBack,
-          (cb) => ArcaButton(
+        leading: NullableBuilder(
+          value: widget.onBack,
+          builder: (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back',
-            onPressed: cb,
+            onPressed: back,
           ),
         ),
       ),

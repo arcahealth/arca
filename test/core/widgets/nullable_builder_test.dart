@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/widgets/widgets.dart';
 
 void main() {
   group('NullableBuilder Tests', () {
@@ -19,14 +19,14 @@ void main() {
       expect(find.text('hello'), findsOneWidget);
     });
 
-    testWidgets('renders fallback when value is null', (tester) async {
+    testWidgets('renders fallback widget when value is null', (tester) async {
       await tester.pumpWidget(
         Directionality(
           textDirection: TextDirection.ltr,
           child: NullableBuilder<String>(
             value: null,
             builder: (context, val) => Text(val),
-            fallback: (context) => const Text('fallback'),
+            fallback: const Text('fallback'),
           ),
         ),
       );
@@ -34,25 +34,21 @@ void main() {
       expect(find.text('fallback'), findsOneWidget);
     });
 
-    test('orNull returns widget when non-null and null when null', () {
-      final widget = NullableBuilder.orNull<String>(
-        'active',
-        (val) => Text(val),
-      );
-      expect(widget, isA<Text>());
+    testWidgets(
+      'renders SizedBox.shrink when value is null and fallback omitted',
+      (tester) async {
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: NullableBuilder<String>(
+              value: null,
+              builder: (context, val) => Text(val),
+            ),
+          ),
+        );
 
-      final nullWidget = NullableBuilder.orNull<String>(
-        null,
-        (val) => Text(val),
-      );
-      expect(nullWidget, isNull);
-
-      final fallbackWidget = NullableBuilder.orNull<String>(
-        null,
-        (val) => Text(val),
-        () => const SizedBox(),
-      );
-      expect(fallbackWidget, isA<SizedBox>());
-    });
+        expect(find.byType(SizedBox), findsOneWidget);
+      },
+    );
   });
 }

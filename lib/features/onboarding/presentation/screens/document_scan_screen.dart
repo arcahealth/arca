@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/widgets/widgets.dart';
 
 /// Document capture viewfinder screen for prescription or lab report scanning.
 ///
@@ -17,13 +18,13 @@ class const DocumentScanScreen({
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Document Scan',
-        leading: NullableBuilder.orNull(
-          onBack,
-          (cb) => ArcaButton(
+        leading: NullableBuilder(
+          value: onBack,
+          builder: (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to intelligence prep',
-            onPressed: cb,
+            onPressed: back,
           ),
         ),
       ),
