@@ -19,7 +19,7 @@ lib/
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
 │   └── onboarding/                # OnboardingRepository, onboardingRepoWire (onboarding.dart barrel)
 └── features/                      # Isolated, self-contained feature modules
-    └── welcome/                   # First-launch welcome & privacy value pillars (WelcomeScreen)
+    └── onboarding/                # Inverted and manual onboarding flow (Welcome, SetupChoice, AiPrep, DocumentScan, ExtractedReview, ManualName, ManualVitals)
 ```
 
 ---
