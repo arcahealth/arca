@@ -3,12 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kaisel/kaisel.dart';
 
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
-import 'package:arca/features/onboarding/presentation/screens/ai_prep_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/document_scan_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/extracted_review_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/setup_choice_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/user_name_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/welcome_screen.dart';
+import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 
 /// Sealed application route hierarchy for the onboarding module.
 sealed class const OnboardingRoute() extends KaiselRoute {
@@ -35,19 +30,19 @@ final class const OnboardingModule([
   final VoidCallback? onCompleted,
 ]) extends RouteModule<OnboardingRoute> {
   @override
-  List<OnboardingRoute> get initialStack => const [OnboardingRoute.welcome()];
+  List<OnboardingRoute> get initialStack => const [.welcome()];
 
   @override
   Widget buildPage(BuildContext context, OnboardingRoute route) {
     final repo =
         onboardingRepo ??
-        CircuitProvider.maybeOf(context)?.get<OnboardingRepository>();
+        CircuitProvider.of(context).get<OnboardingRepository>();
 
     return switch (route) {
       _OnboardingWelcome() => WelcomeScreen(
         onStart: () => context.push(const OnboardingRoute.setupChoice()),
         onSkip: () async {
-          await repo?.setCompletedOnboarding(true);
+          await repo.setCompletedOnboarding(true);
           onCompleted?.call();
         },
       ),
@@ -67,18 +62,16 @@ final class const OnboardingModule([
       ),
       _OnboardingExtractedReview() => ExtractedReviewScreen(
         onConfirm: () async {
-          await repo?.setCompletedOnboarding(true);
+          await repo.setCompletedOnboarding(true);
           onCompleted?.call();
         },
-        onEditManually: () => context.push(
-          const OnboardingRoute.userName(initialName: 'Alex Morgan'),
-        ),
+        onEditManually: () => context.push(const OnboardingRoute.userName()),
         onBack: () => context.pop(),
       ),
       _OnboardingUserName(:final initialName) => UserNameScreen(
         initialName: initialName,
         onContinue: (name) async {
-          await repo?.setCompletedOnboarding(true);
+          await repo.setCompletedOnboarding(true);
           onCompleted?.call();
         },
         onBack: () => context.pop(),
@@ -90,22 +83,6 @@ final class const OnboardingModule([
 /// Codec serializing and deserializing the onboarding flow routes and deep link stacks.
 final class const OnboardingModuleCodec()
     extends ModuleStackCodec<OnboardingRoute> {
-  static const _routes = <String, OnboardingRoute>{
-    'choice': OnboardingRoute.setupChoice(),
-    'ai-prep': OnboardingRoute.aiPrep(),
-    'scan': OnboardingRoute.documentScan(),
-    'review': OnboardingRoute.extractedReview(),
-    'name': OnboardingRoute.userName(),
-  };
-
-  static const _lineage = <String, List<String>>{
-    'choice': ['choice'],
-    'ai-prep': ['choice', 'ai-prep'],
-    'scan': ['choice', 'ai-prep', 'scan'],
-    'review': ['choice', 'ai-prep', 'scan', 'review'],
-    'name': ['choice', 'name'],
-  };
-
   @override
   List<String> encode(List<OnboardingRoute> stack) => switch (stack.last) {
     _OnboardingWelcome() => const [],
@@ -117,15 +94,19 @@ final class const OnboardingModuleCodec()
   };
 
   @override
-  List<OnboardingRoute>? decode(List<String> segments) {
-    if (segments case [] || [''] || ['/']) {
-      return const [OnboardingRoute.welcome()];
-    }
-    final branch = _lineage[segments.last];
-    if (branch == null) return null;
-    return [
-      const OnboardingRoute.welcome(),
-      for (final step in branch) _routes[step]!,
-    ];
-  }
+  List<OnboardingRoute>? decode(List<String> segments) => switch (segments) {
+    [] || [''] || ['/'] => const [.welcome()],
+    ['choice'] => const [.welcome(), .setupChoice()],
+    ['ai-prep'] => const [.welcome(), .setupChoice(), .aiPrep()],
+    ['scan'] => const [.welcome(), .setupChoice(), .aiPrep(), .documentScan()],
+    ['review'] => const [
+      .welcome(),
+      .setupChoice(),
+      .aiPrep(),
+      .documentScan(),
+      .extractedReview(),
+    ],
+    ['name'] => const [.welcome(), .setupChoice(), .userName()],
+    _ => null,
+  };
 }
