@@ -22,13 +22,10 @@ Widget _buildOnboardingApp({
   required OnboardingRepository repo,
   VoidCallback? onCompleted,
 }) {
-  final module = OnboardingModule(
-    onboardingRepo: repo,
-    onCompleted: onCompleted,
-  );
+  final module = OnboardingModule(repo, onCompleted);
 
   final routerConfig = KaiselRouterConfig<OnboardingRoute>(
-    initial: const OnboardingWelcome(),
+    initial: const OnboardingRoute.welcome(),
     builder: (context, route) => module.buildPage(context, route),
   );
 
@@ -133,23 +130,16 @@ void main() {
       await tester.tap(manualBtn);
       await tester.pumpAndSettle();
 
-      // Screen 3B: Manual Name Screen
+      // Screen 3B: User Name Screen
       expect(find.text('What should Arca call you?'), findsOneWidget);
       final micFinder = find.bySemanticsLabel('Dictate name with voice');
       await tester.ensureVisible(micFinder);
       await tester.tap(micFinder);
       await tester.pumpAndSettle();
 
-      final continueBtn = find.text('Continue →');
-      await tester.ensureVisible(continueBtn);
-      await tester.tap(continueBtn);
-      await tester.pumpAndSettle();
-
-      // Screen 4B: Manual Vitals Screen
-      expect(find.text('Basic Vitals'), findsOneWidget);
-      final finishBtn = find.text('Complete Setup & Create Vault →');
-      await tester.ensureVisible(finishBtn);
-      await tester.tap(finishBtn);
+      final completeBtn = find.text('Complete Setup & Create Vault →');
+      await tester.ensureVisible(completeBtn);
+      await tester.tap(completeBtn);
       await tester.pumpAndSettle();
 
       expect(repo.completed, isTrue);

@@ -4,9 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:arca/features/onboarding/presentation/screens/ai_prep_screen.dart';
 import 'package:arca/features/onboarding/presentation/screens/document_scan_screen.dart';
 import 'package:arca/features/onboarding/presentation/screens/extracted_review_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/manual_name_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/manual_vitals_screen.dart';
 import 'package:arca/features/onboarding/presentation/screens/setup_choice_screen.dart';
+import 'package:arca/features/onboarding/presentation/screens/user_name_screen.dart';
 import 'package:arca/features/onboarding/presentation/screens/welcome_screen.dart';
 
 Widget _wrap(Widget child) =>
@@ -201,7 +200,7 @@ void main() {
     });
   });
 
-  group('ManualNameScreen Tests', () {
+  group('UserNameScreen Tests', () {
     testWidgets(
       'renders text field with microphone button and fires onContinue',
       (tester) async {
@@ -211,7 +210,7 @@ void main() {
 
         await tester.pumpWidget(
           _wrap(
-            ManualNameScreen(
+            UserNameScreen(
               onContinue: (name) => enteredName = name,
               onVoiceInput: () => voiceInputCalled = true,
             ),
@@ -232,7 +231,7 @@ void main() {
         await tester.enterText(textField, 'Jane Doe');
         await tester.pumpAndSettle();
 
-        final continueBtn = find.text('Continue →');
+        final continueBtn = find.text('Complete Setup & Create Vault →');
         await tester.ensureVisible(continueBtn);
         await tester.tap(continueBtn);
         expect(enteredName, 'Jane Doe');
@@ -246,7 +245,7 @@ void main() {
         String? enteredName;
 
         await tester.pumpWidget(
-          _wrap(ManualNameScreen(onContinue: (name) => enteredName = name)),
+          _wrap(UserNameScreen(onContinue: (name) => enteredName = name)),
         );
         await tester.pumpAndSettle();
 
@@ -257,46 +256,11 @@ void main() {
 
         expect(find.text('Alex Morgan'), findsOneWidget);
 
-        final continueBtn = find.text('Continue →');
+        final continueBtn = find.text('Complete Setup & Create Vault →');
         await tester.ensureVisible(continueBtn);
         await tester.tap(continueBtn);
         expect(enteredName, 'Alex Morgan');
       },
     );
-  });
-
-  group('ManualVitalsScreen Tests', () {
-    testWidgets('renders vitals fields and fires onFinish and onSkip', (
-      tester,
-    ) async {
-      _setViewport(tester);
-      var finishCalled = false;
-      var skipCalled = false;
-
-      await tester.pumpWidget(
-        _wrap(
-          ManualVitalsScreen(
-            onFinish: () => finishCalled = true,
-            onSkip: () => skipCalled = true,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Basic Vitals'), findsOneWidget);
-      expect(find.text('Date of Birth (YYYY-MM-DD)'), findsOneWidget);
-      expect(find.text('Blood Type'), findsOneWidget);
-      expect(find.text('Known Allergies or Reactions'), findsOneWidget);
-
-      final finishBtn = find.text('Complete Setup & Create Vault →');
-      await tester.ensureVisible(finishBtn);
-      await tester.tap(finishBtn);
-      expect(finishCalled, isTrue);
-
-      final skipBtn = find.text('Skip for Now');
-      await tester.ensureVisible(skipBtn);
-      await tester.tap(skipBtn);
-      expect(skipCalled, isTrue);
-    });
   });
 }
