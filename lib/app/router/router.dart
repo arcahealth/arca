@@ -42,7 +42,7 @@ abstract final class ArcaRouter {
       guards: [ArcaRouteGuards.onboarding(onboardingRepo)],
       builder: (context, route) => switch (route) {
         OnboardingMount() => KaiselModuleMount<OnboardingRoute>(
-          module: OnboardingModule(onboardingRepo: onboardingRepo),
+          module: OnboardingModule(onboardingRepo),
         ),
       },
     );
