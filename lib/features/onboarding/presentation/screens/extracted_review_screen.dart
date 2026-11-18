@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/design_system/arca_design_system.dart';
+import 'package:arca/core/design_system/arca_design_system.dart';
 
 /// Review screen presenting the data extracted from a scanned document.
 ///
@@ -35,14 +35,15 @@ class const ExtractedReviewScreen({
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Review',
-        leading: onBack != null
-            ? ArcaButton(
-                label: '←',
-                variant: .ghost,
-                semanticsLabel: 'Go back to scan screen',
-                onPressed: onBack,
-              )
-            : null,
+        leading: NullableBuilder.orNull(
+          onBack,
+          (cb) => ArcaButton(
+            label: '←',
+            variant: .ghost,
+            semanticsLabel: 'Go back to scan screen',
+            onPressed: cb,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -67,17 +68,14 @@ class const ExtractedReviewScreen({
                 child: Column(
                   crossAxisAlignment: .start,
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: .spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Extracted Information',
                           style: ArcaTypography.titleMedium,
                         ),
-                        const ArcaBadge(
-                          label: '100% On-Device',
-                          variant: .normal,
-                        ),
+                        ArcaBadge(label: '100% On-Device', variant: .normal),
                       ],
                     ),
                     const SizedBox(height: ArcaSpacing.md),

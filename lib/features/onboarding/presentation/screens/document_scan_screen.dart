@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/design_system/arca_design_system.dart';
+import 'package:arca/core/design_system/arca_design_system.dart';
 
 /// Document capture viewfinder screen for prescription or lab report scanning.
 ///
@@ -17,14 +17,15 @@ class const DocumentScanScreen({
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Document Scan',
-        leading: onBack != null
-            ? ArcaButton(
-                label: '←',
-                variant: .ghost,
-                semanticsLabel: 'Go back to intelligence prep',
-                onPressed: onBack,
-              )
-            : null,
+        leading: NullableBuilder.orNull(
+          onBack,
+          (cb) => ArcaButton(
+            label: '←',
+            variant: .ghost,
+            semanticsLabel: 'Go back to intelligence prep',
+            onPressed: cb,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -52,29 +53,29 @@ class const DocumentScanScreen({
                     borderRadius: ArcaRadii.lg,
                     border: Border.all(color: ArcaColors.primary, width: 2.0),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Column(
                       mainAxisSize: .min,
                       children: [
-                        Container(
+                        SizedBox(
                           width: 56,
                           height: 56,
-                          decoration: BoxDecoration(
-                            color: ArcaColors.primarySubtle,
-                            borderRadius: ArcaRadii.md,
-                          ),
-                          alignment: .center,
-                          child: const Text(
-                            '📄',
-                            style: TextStyle(fontSize: 28),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: ArcaColors.primarySubtle,
+                              borderRadius: ArcaRadii.md,
+                            ),
+                            child: Center(
+                              child: Text('📄', style: TextStyle(fontSize: 28)),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: ArcaSpacing.md),
-                        const Text(
+                        SizedBox(height: ArcaSpacing.md),
+                        Text(
                           'Align document within frame',
                           style: ArcaTypography.titleMedium,
                         ),
-                        const SizedBox(height: ArcaSpacing.xs),
+                        SizedBox(height: ArcaSpacing.xs),
                         Text(
                           'Ensure good lighting & legible text',
                           style: ArcaTypography.caption,

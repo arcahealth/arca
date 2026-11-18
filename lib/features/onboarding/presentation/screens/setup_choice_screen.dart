@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/design_system/arca_design_system.dart';
+import 'package:arca/core/design_system/arca_design_system.dart';
 
 /// Screen allowing the user to choose between automatic document extraction or manual entry.
 ///
@@ -17,14 +17,15 @@ class const SetupChoiceScreen({
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Setup',
-        leading: onBack != null
-            ? ArcaButton(
-                label: '←',
-                variant: .ghost,
-                semanticsLabel: 'Go back to welcome screen',
-                onPressed: onBack,
-              )
-            : null,
+        leading: NullableBuilder.orNull(
+          onBack,
+          (cb) => ArcaButton(
+            label: '←',
+            variant: .ghost,
+            semanticsLabel: 'Go back to welcome screen',
+            onPressed: cb,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -50,21 +51,21 @@ class const SetupChoiceScreen({
                 child: Column(
                   crossAxisAlignment: .start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Text('⚡', style: TextStyle(fontSize: 22.0)),
-                        const SizedBox(width: ArcaSpacing.xs),
-                        const Expanded(
+                        Text('⚡', style: TextStyle(fontSize: 22.0)),
+                        SizedBox(width: ArcaSpacing.xs),
+                        Expanded(
                           child: Text(
                             'Automatic Setup',
                             style: ArcaTypography.titleMedium,
                           ),
                         ),
-                        const ArcaBadge(label: 'Recommended', variant: .normal),
+                        ArcaBadge(label: 'Recommended', variant: .normal),
                       ],
                     ),
                     const SizedBox(height: ArcaSpacing.xs),
-                    Text(
+                    const Text(
                       'Scan a prescription or lab report. On-device AI extracts your name, medications, and details in one step.',
                       style: ArcaTypography.bodyMedium,
                     ),
@@ -85,11 +86,11 @@ class const SetupChoiceScreen({
                 child: Column(
                   crossAxisAlignment: .start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const Text('✍️', style: TextStyle(fontSize: 22.0)),
-                        const SizedBox(width: ArcaSpacing.xs),
-                        const Expanded(
+                        Text('✍️', style: TextStyle(fontSize: 22.0)),
+                        SizedBox(width: ArcaSpacing.xs),
+                        Expanded(
                           child: Text(
                             'Manual Setup',
                             style: ArcaTypography.titleMedium,
@@ -98,8 +99,8 @@ class const SetupChoiceScreen({
                       ],
                     ),
                     const SizedBox(height: ArcaSpacing.xs),
-                    Text(
-                      'Walk through standard profile setup step-by-step. Enter your name and vitals using keyboard or voice dictation.',
+                    const Text(
+                      'Walk through standard profile setup step-by-step. Enter your name using keyboard or voice dictation.',
                       style: ArcaTypography.bodyMedium,
                     ),
                     const SizedBox(height: ArcaSpacing.md),

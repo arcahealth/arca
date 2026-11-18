@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/design_system/arca_design_system.dart';
+import 'package:arca/core/design_system/arca_design_system.dart';
 
 /// Minimal first-launch welcome screen greeting the user.
 ///
@@ -68,15 +68,18 @@ class const WelcomeScreen({
                 semanticsLabel: 'Get started with Arca setup',
                 onPressed: onStart,
               ),
-              if (onSkip != null) ...[
-                const SizedBox(height: ArcaSpacing.sm),
-                ArcaButton(
-                  label: 'Skip Setup',
-                  variant: .ghost,
-                  semanticsLabel: 'Skip onboarding setup and enter Arca',
-                  onPressed: onSkip,
+              NullableBuilder(
+                value: onSkip,
+                builder: (context, skip) => Padding(
+                  padding: const EdgeInsets.only(top: ArcaSpacing.sm),
+                  child: ArcaButton(
+                    label: 'Skip Setup',
+                    variant: .ghost,
+                    semanticsLabel: 'Skip onboarding setup and enter Arca',
+                    onPressed: skip,
+                  ),
                 ),
-              ],
+              ),
             ],
           ),
         ),
