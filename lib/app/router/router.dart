@@ -41,8 +41,8 @@ abstract final class ArcaRouter {
       codec: codec(),
       guards: [ArcaRouteGuards.onboarding(onboardingRepo)],
       builder: (context, route) => switch (route) {
-        OnboardingMount() => const KaiselModuleMount<OnboardingRoute>(
-          module: OnboardingModule(),
+        OnboardingMount() => KaiselModuleMount<OnboardingRoute>(
+          module: OnboardingModule(onboardingRepo),
         ),
       },
     );

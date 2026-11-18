@@ -32,25 +32,58 @@ void main() {
       expect(path.isEmpty, isTrue);
     });
 
-    test('decodes [] to [OnboardingWelcome()]', () {
-      final stack = codec.decode([]);
-      expect(stack, isNotNull);
-      expect(stack!.length, 1);
-      expect(stack.first, isA<OnboardingWelcome>());
+    test('encodes and decodes all onboarding flow sub-routes dynamically', () {
+      expect(codec.encode([const .setupChoice()]), ['choice']);
+      expect(codec.encode([const .aiPrep()]), ['ai-prep']);
+      expect(codec.encode([const .documentScan()]), ['scan']);
+      expect(codec.encode([const .extractedReview()]), ['review']);
+      expect(codec.encode([const .userName()]), ['name']);
+
+      final choiceStack = codec.decode(['choice']);
+      expect(choiceStack, isNotNull);
+      expect(choiceStack!.length, 2);
+      expect(choiceStack.last, const OnboardingRoute.setupChoice());
+
+      final aiPrepStack = codec.decode(['ai-prep']);
+      expect(aiPrepStack, isNotNull);
+      expect(aiPrepStack!.length, 3);
+      expect(aiPrepStack.last, const OnboardingRoute.aiPrep());
+
+      final scanStack = codec.decode(['scan']);
+      expect(scanStack, isNotNull);
+      expect(scanStack!.length, 4);
+      expect(scanStack.last, const OnboardingRoute.documentScan());
+
+      final reviewStack = codec.decode(['review']);
+      expect(reviewStack, isNotNull);
+      expect(reviewStack!.length, 5);
+      expect(reviewStack.last, const OnboardingRoute.extractedReview());
+
+      final nameStack = codec.decode(['name']);
+      expect(nameStack, isNotNull);
+      expect(nameStack!.length, 3);
+      expect(nameStack.last, const OnboardingRoute.userName());
     });
 
-    test("decodes [''] to [OnboardingWelcome()]", () {
+    test('decodes [] to [OnboardingRoute.welcome()]', () {
       final stack = codec.decode([]);
       expect(stack, isNotNull);
       expect(stack!.length, 1);
-      expect(stack.first, isA<OnboardingWelcome>());
+      expect(stack.first, const OnboardingRoute.welcome());
     });
 
-    test("decodes ['/'] to [OnboardingWelcome()]", () {
-      final stack = codec.decode([]);
+    test("decodes [''] to [OnboardingRoute.welcome()]", () {
+      final stack = codec.decode(['']);
       expect(stack, isNotNull);
       expect(stack!.length, 1);
-      expect(stack.first, isA<OnboardingWelcome>());
+      expect(stack.first, const OnboardingRoute.welcome());
+    });
+
+    test("decodes ['/'] to [OnboardingRoute.welcome()]", () {
+      final stack = codec.decode(['/']);
+      expect(stack, isNotNull);
+      expect(stack!.length, 1);
+      expect(stack.first, const OnboardingRoute.welcome());
     });
 
     test('decodes unrecognised path to null', () {

@@ -16,6 +16,7 @@ class const ArcaTextField({
   final TextInputType? keyboardType,
   final bool obscureText = false,
   final String? semanticsLabel,
+  final Widget? trailing,
 }) extends StatefulWidget {
   @override
   State<ArcaTextField> createState() => _ArcaTextFieldState();
@@ -101,36 +102,46 @@ class _ArcaTextFieldState extends State<ArcaTextField> {
                   width: _isFocused ? 1.5 : 1.0,
                 ),
               ),
-              child: Stack(
-                alignment: .centerLeft,
+              child: Row(
                 children: [
-                  EditableText(
-                    controller: widget.controller,
-                    focusNode: _effectiveFocusNode,
-                    style: ArcaTypography.bodyLarge,
-                    cursorColor: ArcaColors.primary,
-                    backgroundCursorColor: ArcaColors.surfaceElevated,
-                    keyboardType: widget.keyboardType,
-                    obscureText: widget.obscureText,
-                    onChanged: widget.onChanged,
-                  ),
-                  if (widget.hintText != null)
-                    ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: widget.controller,
-                      builder: (context, value, _) {
-                        if (value.text.isNotEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return IgnorePointer(
-                          child: Text(
-                            widget.hintText!,
-                            style: ArcaTypography.bodyLarge.copyWith(
-                              color: ArcaColors.textMuted,
-                            ),
+                  Expanded(
+                    child: Stack(
+                      alignment: .centerLeft,
+                      children: [
+                        EditableText(
+                          controller: widget.controller,
+                          focusNode: _effectiveFocusNode,
+                          style: ArcaTypography.bodyLarge,
+                          cursorColor: ArcaColors.primary,
+                          backgroundCursorColor: ArcaColors.surfaceElevated,
+                          keyboardType: widget.keyboardType,
+                          obscureText: widget.obscureText,
+                          onChanged: widget.onChanged,
+                        ),
+                        if (widget.hintText != null)
+                          ValueListenableBuilder<TextEditingValue>(
+                            valueListenable: widget.controller,
+                            builder: (context, value, _) {
+                              if (value.text.isNotEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return IgnorePointer(
+                                child: Text(
+                                  widget.hintText!,
+                                  style: ArcaTypography.bodyLarge.copyWith(
+                                    color: ArcaColors.textMuted,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                      ],
                     ),
+                  ),
+                  if (widget.trailing != null) ...[
+                    const SizedBox(width: ArcaSpacing.xs),
+                    widget.trailing!,
+                  ],
                 ],
               ),
             ),
