@@ -1,12 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:arca/features/onboarding/presentation/screens/ai_prep_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/document_scan_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/extracted_review_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/setup_choice_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/user_name_screen.dart';
-import 'package:arca/features/onboarding/presentation/screens/welcome_screen.dart';
+import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 
 Widget _wrap(Widget child) =>
     Directionality(textDirection: TextDirection.ltr, child: child);
@@ -176,6 +171,10 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           ExtractedReviewScreen(
+            extractedName: 'Alex Morgan',
+            extractedDob: '1988-04-12',
+            extractedMedication: 'Amoxicillin 500mg',
+            extractedAllergy: 'Penicillin',
             onConfirm: () => confirmCalled = true,
             onEditManually: () => editCalled = true,
           ),
@@ -197,6 +196,21 @@ void main() {
       await tester.ensureVisible(editBtn);
       await tester.tap(editBtn);
       expect(editCalled, isTrue);
+    });
+
+    testWidgets('renders empty defaults when extracted data omitted', (
+      tester,
+    ) async {
+      _setViewport(tester);
+
+      await tester.pumpWidget(
+        _wrap(ExtractedReviewScreen(onConfirm: () {}, onEditManually: () {})),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Review Profile'), findsOneWidget);
+      expect(find.text('Full Name'), findsOneWidget);
+      expect(find.text('Date of Birth'), findsOneWidget);
     });
   });
 

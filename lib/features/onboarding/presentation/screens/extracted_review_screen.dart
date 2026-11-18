@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/widgets/widgets.dart';
 
 /// Review screen presenting the data extracted from a scanned document.
 ///
@@ -11,10 +12,10 @@ class const ExtractedReviewScreen({
   required final VoidCallback onEditManually,
   super.key,
   final VoidCallback? onBack,
-  final String extractedName = 'Alex Morgan',
-  final String extractedDob = '1988-04-12',
-  final String extractedMedication = 'Amoxicillin 500mg',
-  final String extractedAllergy = 'Penicillin',
+  final String extractedName = '',
+  final String extractedDob = '',
+  final String extractedMedication = '',
+  final String extractedAllergy = '',
 }) extends StatelessWidget {
   Widget _buildFieldRow(String label, String value) {
     return Padding(
@@ -35,13 +36,13 @@ class const ExtractedReviewScreen({
     return ArcaScaffold(
       header: ArcaHeader(
         title: 'Review',
-        leading: NullableBuilder.orNull(
-          onBack,
-          (cb) => ArcaButton(
+        leading: NullableBuilder(
+          value: onBack,
+          builder: (context, back) => ArcaButton(
             label: '←',
             variant: .ghost,
             semanticsLabel: 'Go back to scan screen',
-            onPressed: cb,
+            onPressed: back,
           ),
         ),
       ),

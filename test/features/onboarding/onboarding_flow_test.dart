@@ -91,7 +91,7 @@ void main() {
 
         // Screen 5A: Extracted Review Screen
         expect(find.text('Review Profile'), findsOneWidget);
-        expect(find.text('Alex Morgan'), findsOneWidget);
+        expect(find.text('100% On-Device'), findsOneWidget);
         final confirmBtn = find.text('Confirm & Create Vault →');
         await tester.ensureVisible(confirmBtn);
         await tester.tap(confirmBtn);
