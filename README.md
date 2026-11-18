@@ -2,16 +2,20 @@
 
 > **Automated health tracking and private family medical records—processed entirely on-device.**
 
-Arca is an offline-first, privacy-focused health tracking companion and longitudinal medical journal. It eliminates the friction, fragmentation, and privacy risks of managing personal and family health data by combining background biometrics, scanned medical documents, and visit logs into a single, unified timeline—without routing sensitive health records through third-party cloud servers.
+Arca is an offline-first, privacy-focused health tracking companion and longitudinal medical journal. It eliminates the friction, fragmentation, and privacy risks of managing personal and family health data by processing records strictly on-device without routing sensitive data through third-party servers.
 
 ---
 
-## Core Capabilities
+## Current Capabilities
 
-- **Zero-Friction Ingestion & Sync**: Automated background aggregation of daily vitals and clinical metrics from Apple HealthKit and Google Health Connect, plus manual logging for visits, active medications, and symptoms.
-- **On-Device Document Intelligence**: Local document transformation of paper lab reports and prescriptions into structured data using local OCR and quantized models—processed strictly on-device.
-- **Multi-Member Family Archive**: Permanent, longitudinal health vault supporting distinct profiles (e.g., self, children, aging parents) with structured multi-year chronological trends and seamless vault switching.
-- **Extreme Simplicity & Trust**: Clean journal interface with absolute data sovereignty—no remote account requirements, zero server-side telemetry, and total user ownership of exports and local backups.
+- **First-Launch Onboarding**: Welcome flow introducing Arca's core privacy guarantees and clinical vault principles (`WelcomeScreen`).
+- **Decoupled Foundation Design System**: Bespoke design system built strictly atop `package:flutter/widgets.dart` with custom tokens (colors, typography, spacing, radii) and accessible primitive widgets (`ArcaScaffold`, `ArcaHeader`, `ArcaButton`, `ArcaCard`, `ArcaBadge`, `ArcaTextField`, `ArcaProgressBar`).
+- **On-Device SQLite Storage**: Local encrypted SQLite database backed by `sqlite_async` with background isolate query execution and schema migrations (`ArcaDatabaseMigrations`).
+- **Onboarding Persistence**: Key-value persistence for onboarding status backed by `SharedPreferencesAsync`.
+- **DAG Dependency Injection**: Zero-codegen graph-based dependency injection engine bridged to Flutter via `CircuitProvider` (`circuitry_flutter`).
+- **Type-Safe Sealed Navigation**: Stack-as-state routing powered by `kaisel` with exhaustive Dart 3 pattern matching and URL stack codecs.
+
+Planned capabilities (background biometrics sync, on-device OCR, multi-member family archive) are tracked in [`docs/plan.md`](docs/plan.md).
 
 ---
 
@@ -21,8 +25,7 @@ Arca is an offline-first, privacy-focused health tracking companion and longitud
 2. **Deterministic State Transitions**: Built with `flutter_bloc` for explicit event-driven state handling, testable pipelines, and clear clinical auditability across family profiles.
 3. **Dart 3 Sealed Navigation**: Uses `kaisel` for type-safe routing powered by Dart 3 sealed classes, exhaustive pattern matching, and a stack-as-state model rather than URL strings or code generation.
 4. **On-Device Relational Storage**: Local encrypted SQLite database backed by `sqlite_async` (omitting deprecated `sqlite3_flutter_libs`) with background isolate execution and schema migrations for responsive clinical queries.
-
-5. **Modern Language Idioms & Collections/Async Baseline**: Built with Dart 3.13 primary constructors and dot-shorthands across domain entities, routes, and widgets. Backed by canonical packages (`collection` and `async`) for priority queues, binary search, deep equality, and cancelable asynchronous pipelines.
+5. **Modern Language Idioms & Collections/Async Baseline**: Built with Dart 3.14 primary constructors and dot-shorthands across domain entities, routes, and widgets. Backed by canonical packages (`collection` and `async`) for priority queues, binary search, deep equality, and cancelable asynchronous pipelines.
 
 ---
 
@@ -48,15 +51,15 @@ arca/
 │   │   └── onboarding/            # OnboardingRepository, onboardingRepoWire (SharedPrefsOnboardingRepository)
 │   └── features/                  # Self-contained feature modules
 │       └── welcome/               # First-launch welcome & privacy value pillars (WelcomeScreen)
-└── test/                          # Unit, SQLite, router, widget, and accessibility tests (20 tests)
+└── test/                          # Unit, SQLite, router, widget, and accessibility tests
 ```
 
 ---
 
 ## Prerequisites & Setup
 
-- **Flutter SDK**: `>= 3.47.0`
-- **Dart SDK**: `>= 3.13.0`
+- **Flutter SDK**: `>= 3.50.0`
+- **Dart SDK**: `>= 3.14.0`
 - **Android**: Min SDK 26 (Android 8.0), Target SDK 34+
 - **iOS**: Min iOS 16.0+
 
@@ -90,7 +93,7 @@ flutter analyze --fatal-infos --fatal-warnings
 ### Run Tests
 
 ```bash
-# Run entire test suite (unit, SQLite, route codec, widget, and accessibility)
+# Run entire test suite
 flutter test
 ```
 

@@ -32,11 +32,11 @@ lib/
 
 ### 2. Decoupled Route Orchestration via Constructor Callbacks
 - Presentation screens never import `AppRoute`, `routes.dart`, or `package:kaisel/kaisel.dart`.
-- Screens express navigation intent exclusively through constructor callbacks (`onStartSetup`, `onSkip`, `onBack`, `onComplete`, `onVaultSelected`, `onRecordSelected`).
-- The router in `lib/app/router.dart` is the sole orchestrator wiring these callbacks to `context.push()` / `context.pop()`, preventing navigation leakage and enabling isolated widget testing.
+- Screens express navigation intent exclusively through constructor callbacks (`onStartSetup`, `onSkip`).
+- The router in `lib/app/router/` is the sole orchestrator wiring these callbacks to `context.push()` / `context.pop()`, preventing navigation leakage and enabling isolated widget testing.
 
 ### 3. Reactive Cross-Module Data Sharing via Core Broadcast Streams
-- When multiple features need to observe shared domain state (such as active vault changes or model download progress), core repositories expose broadcast streams (`StreamController.broadcast()`).
+- When multiple features need to observe shared domain state, core repositories expose broadcast streams (`StreamController.broadcast()`).
 - Feature BLoCs subscribe to these repository streams, achieving reactive synchronization without inter-BLoC dependencies.
 
 ### 4. Interface-Driven Dependency Injection
@@ -46,7 +46,7 @@ lib/
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
 ### 5. Circuitry Dependency Injection Engine (`package:circuitry_flutter`)
-- Zero-codegen, pure Dart 3.13+ graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG) and bridged to Flutter via `CircuitProvider`. Consumed as a dedicated package from the `circuitry` monorepo.
+- Zero-codegen, pure Dart graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG) and bridged to Flutter via `CircuitProvider`. Consumed as `package:circuitry_flutter`.
 - **Flutter Bridge (`CircuitProvider`, `CircuitState`):**
   - Sealed `CircuitState` hierarchy (`CircuitBuilding`, `CircuitReady`, `CircuitFailure`) for pattern-matched UI rendering.
   - `CircuitProvider` manages async DAG compilation (`Circuit.build`), provides the resolved `Circuit` via internal `_CircuitScope extends InheritedWidget`, and automatically disposes the circuit on unmount.
@@ -98,34 +98,31 @@ Core (Design System)               │                  Core (Database)
 
 Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 - **Routes as Values**: Routes are immutable sealed classes extending `KaiselRoute`:
-  - `WelcomeRoute()`: First-launch greeting & privacy value pillars
-  - `SetupWizardRoute()`: Multi-step vault and edge AI capability setup
-  - `AiDownloadRoute(selectedCapabilityIds)`: First-session AI model download progress
-  - `VaultSelectionRoute()`: Vault switcher & empty-vault route guard
-  - `JournalRoute()`: Primary timeline & health vault dashboard
-  - `RecordDetailRoute(recordId)`: Clinical detail view
-- **Exhaustive Pattern Matching**: The screen builder in `lib/app/router.dart` uses a Dart 3 `switch` expression over the sealed route hierarchy, guaranteeing at compile-time that every route is handled.
-- **Deep Linking**: `AppStackCodec` implements `KaiselStackCodec<AppRoute>`, decoding incoming deep links (`/records/:id`, `/welcome`, `/setup`, `/ai-download`, `/vaults`) into a multi-frame stack (`[JournalRoute(), RecordDetailRoute(id)]`) to preserve natural back navigation.
+  - `ArcaRoute` (`OnboardingMount`): Top-level mount point for onboarding flow.
+  - `OnboardingRoute` (`OnboardingWelcome`): First-launch greeting & privacy value pillars (`WelcomeScreen`).
+- **Exhaustive Pattern Matching**: The screen builder in `lib/app/router/router.dart` and `lib/app/router/onboarding_routes.dart` uses Dart 3 `switch` expressions over sealed route hierarchies, guaranteeing at compile-time that every route is handled.
+- **Deep Linking**: `AppStackCodec` implements `KaiselStackCodec<ArcaRoute>`, decoding incoming deep links (`/onboarding`) into `[OnboardingMount()]`. `OnboardingModuleCodec` decodes nested paths to preserve natural back navigation.
 
 ---
 
 ## Libraries and Dependencies
 
-| Dependency | Version | Architectural Purpose |
-| --- | --- | --- |
-| `circuitry_flutter` | `path` | Zero-codegen DAG-based dependency injection engine and Flutter bridge (`CircuitProvider`). |
-| `flutter_bloc` | `^9.1.1` | Predictable, event-driven unidirectional state management for clinical records. |
-| `kaisel` | `^1.1.0` | Dart 3 native navigation using sealed classes and stack-as-state model. |
-| `collection` | `^1.19.1` | Official Dart collection utilities: `PriorityQueue`, `HeapPriorityQueue`, `binarySearch`, `ListEquality`, `SetEquality`. |
-| `async` | `^2.13.0` | Asynchronous operations, stream groups/splitters, cancelable operations, and async caches. |
-| `sqlite_async` | `^0.14.8` | High-performance asynchronous SQLite database engine with background isolate execution (transitively manages native `sqlite3` bindings). |
-| `path_manager` | `^0.7.1+1` | Locates local app support directory for the encrypted SQLite database file. |
-| `path` | `^1.9.1` | Cross-platform file path manipulation. |
-| `shared_preferences` | `^2.5.6` | Lightweight key-value persistence for active vault selection. |
-| `flutter_lints` | `^6.0.0` | Standard Dart/Flutter static analysis rule set. |
-| `bloc_test` | `^10.0.0` | Streamlined unit testing for BLoC state transitions. |
-| `shared_preferences_platform_interface` | `^2.4.2` | Platform interface for mocking asynchronous key-value persistence in test harnesses. |
-| `flutter_test` | SDK | Widget and accessibility harness for UI validation. |
+| Dependency | Architectural Purpose |
+| --- | --- |
+| `circuitry_flutter` | Zero-codegen DAG-based dependency injection engine and Flutter bridge (`CircuitProvider`). |
+| `circuitry_devtools_extension` | DevTools extension for inspecting Circuitry dependency graphs. |
+| `flutter_bloc` | Predictable, event-driven unidirectional state management for clinical records. |
+| `kaisel` | Dart 3 native navigation using sealed classes and stack-as-state model. |
+| `collection` | Official Dart collection utilities: `PriorityQueue`, `HeapPriorityQueue`, `binarySearch`, `ListEquality`, `SetEquality`. |
+| `async` | Asynchronous operations, stream groups/splitters, cancelable operations, and async caches. |
+| `sqlite_async` | High-performance asynchronous SQLite database engine with background isolate execution (transitively manages native `sqlite3` bindings). |
+| `path_manager` | Locates local app support directory for the encrypted SQLite database file. |
+| `path` | Cross-platform file path manipulation. |
+| `shared_preferences` | Lightweight key-value persistence for onboarding completion and active vault selection. |
+| `flutter_lints` | Standard Dart/Flutter static analysis rule set. |
+| `bloc_test` | Streamlined unit testing for BLoC state transitions. |
+| `shared_preferences_platform_interface` | Platform interface for mocking asynchronous key-value persistence in test harnesses. |
+| `flutter_test` | Widget and accessibility harness for UI validation. |
 
 ---
 
@@ -133,7 +130,7 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 
 - **Shared (Dart / Flutter)**:
   - Clinical domain entities and validation rules
-  - Journal & vault state machines and diagnostic event handlers
+  - Vault state machines and diagnostic event handlers
   - Encryption, indexes, and SQLite schema migrations
   - Custom foundation design system and screen rendering
 - **Native Platform (Android / iOS)**:
@@ -147,8 +144,8 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 
 ```bash
 # Inner loop: verify single touched feature
-flutter analyze lib/features/vaults
-flutter test test/features/vaults/vault_bloc_test.dart
+flutter analyze lib/features/welcome
+flutter test test/features/welcome/welcome_screen_test.dart
 
 # Outer gate: full check
 dart format --output=none --set-exit-if-changed .

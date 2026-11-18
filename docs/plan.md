@@ -1,364 +1,65 @@
 # Plan
 
-## Done
-- [x] Migrate Arca to External `circuitry_flutter` Package and Decommission `lib/core/di/`
-  - Requirements:
-    - Add `circuitry_flutter` path dependency in `pubspec.yaml` pointing to `../circuitry/packages/circuitry_flutter`.
-    - Update all imports in `lib/core/database/`, `lib/core/onboarding/`, `lib/app/`, and `test/` from `package:arca/core/di/...` to `package:circuitry_flutter/circuitry_flutter.dart`.
-    - Delete decommissioned `lib/core/di/di.dart` and `lib/core/di/circuit_provider.dart`.
-    - Replace `test/core/di/` (which tested internal engine specs now owned by the `circuitry` monorepo) with `test/app/app_composition_test.dart` validating `ArcaApp` integration with `CircuitProvider`.
-    - Synchronize `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
-    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-  - Sub-steps:
-    - [x] Add `circuitry_flutter` dependency in `pubspec.yaml` and run `flutter pub get`.
-    - [x] Update imports in `lib/core/database/database_service.dart`, `lib/core/onboarding/repositories/onboarding_repository.dart`, `lib/app/router/router.dart`, and `lib/app/app.dart`.
-    - [x] Update `test/core/database/database_service_test.dart` imports.
-    - [x] Create `test/app/app_composition_test.dart` for `ArcaApp` and remove `test/core/di/` and `lib/core/di/`.
-    - [x] Run `flutter analyze` and `flutter test`.
-    - [x] Sync `docs/decisions.md`, `docs/architecture.md`, `README.md`, and mark plan complete.
-    - [x] Run full verification gate.
-- [x] Flutter Bridge (`CircuitProvider` and `CircuitState`) for Wire & Circuit Dependency Injection
-  - Requirements:
-    - Implement `CircuitState` sealed hierarchy (`CircuitBuilding`, `CircuitReady`, `CircuitFailure`) with const constructors and redirecting factories.
-    - Implement `CircuitProvider` base sealed class with default factory `CircuitProvider({wires, builder})` and `CircuitProvider.value({value, child})`.
-    - Provide explicit static accessors `CircuitProvider.of(context)` (throwing `StateError` if not found/ready) and `CircuitProvider.maybeOf(context)`. Disallow `BuildContext` extensions.
-    - Implement `CircuitValueProvider` for pure synchronous injection of an existing `Circuit` without lifecycle disposal on unmount.
-    - Implement `CircuitWireProvider` delegating to private stateful `_CircuitWireStateful` managing async compilation, unmount disposal, in-flight race prevention, dynamic widget updates via `didUpdateWidget`, and providing `Circuit` through `_CircuitScope` when ready.
-    - Refactor `lib/app/app.dart` composition root to use `CircuitProvider`, convert `ArcaApp` to `StatelessWidget`, extract static default wires, pattern match states via Dart 3 switch expression, provide splash/error fallbacks, and remove unused `flutter_bloc` import.
-    - Add comprehensive unit and widget tests in `test/core/di/circuit_provider_test.dart` (21 tests).
-    - Synchronize `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
-    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-  - Sub-steps:
-    - [x] Implement `lib/core/di/circuit_provider.dart` with sealed `CircuitState`, `CircuitProvider`, `CircuitWireProvider`, `CircuitValueProvider`, and `_CircuitScope`.
-    - [x] Update `lib/app/app.dart` to use `CircuitProvider` and Dart 3 pattern matching with fallback `WidgetsApp`.
-    - [x] Implement `test/core/di/circuit_provider_test.dart` covering lifecycles, unmount disposal, failures, accessors, value injection, and `ArcaApp` integration.
-    - [x] Run inner loop tests and fix all warnings.
-    - [x] Update `docs/decisions.md`, `docs/architecture.md`, `README.md`, and `docs/plan.md`.
-    - [x] Run full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Combine Factory Pattern & DAG Wire Configuration for Database Initialization
-  - Requirements:
-    - Eliminate two-phase initialization and mutable `SqliteDatabase? _db` in `DatabaseManager` and `DatabaseService`.
-    - Introduce `DatabaseConfig` holding vault path configuration and its own `AsyncWire<DatabaseConfig>` recipe resolving the filesystem path via `PathManager`.
-    - Refactor `DatabaseManager` to be immutable with `final SqliteDatabase db` and provide a static asynchronous factory `DatabaseManager.open(DatabaseConfig config)`.
-    - Remove `initialize()` from the `DatabaseService` interface and `DatabaseManager` implementation to prevent interface leakage and temporal coupling.
-    - Wire `DatabaseService` via `AsyncWire.takes<DatabaseConfig>().to(DatabaseManager.open, onDispose: (s) => s.close())`.
-    - Update `ArcaApp` composition root in `lib/app/app.dart` to include `DatabaseConfig.wire` in default wires.
-    - Update `test/core/database/database_service_test.dart` to test `DatabaseConfig`, `DatabaseManager.open`, and DAG circuit resolution without platform channel mocking.
-    - Sync `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
-    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-  - Sub-steps:
-    - [x] Update `docs/plan.md` with in-progress task.
-    - [x] Refactor `lib/core/database/database_service.dart` with `DatabaseConfig`, immutable `DatabaseManager`, and `AsyncWire.takes<DatabaseConfig>().to(DatabaseManager.open)`.
-    - [x] Update `lib/app/app.dart` default wires to register `DatabaseConfig.wire`.
-    - [x] Update `test/core/database/database_service_test.dart`.
-    - [x] Run inner loop analyzer and tests.
-    - [x] Update `docs/decisions.md`, `docs/architecture.md`, `README.md`, and mark plan complete.
-    - [x] Run full verification gate.
-- [x] Migrate Composition Root to Wire & Circuit Dependency Injection
-  - Requirements:
-    - Replace legacy `ArcaContainer` with declarative `CircuitWire` recipes in `lib/app/app.dart`.
-    - Update `ArcaApp` to accept `wires` and cache `_circuitBuilder = Circuit.build(widget.wires)` in `initState()`.
-    - Pattern match `FutureBuilder` snapshot using `AsyncSnapshot<Circuit>(connectionState: .done, data: final circuit?)` to provide `Circuit` and configure `WidgetsApp.router`.
-    - Define declarative wires: `primaryDBWire` in `lib/core/database/database_service.dart`, `onboardingRepoWire` in `lib/core/onboarding/repositories/onboarding_repository.dart`, and `appRouterWire` in `lib/app/router/router.dart`.
-    - Colocate `DatabaseManager` with `DatabaseService` in `lib/core/database/database_service.dart` and remove standalone `database_manager.dart`.
-    - Remove obsolete `lib/app/app_container.dart`.
-    - Update database service tests and pass strict verification gate.
-  - Sub-steps:
-    - [x] Define `primaryDBWire`, `onboardingRepoWire`, and `appRouterWire`.
-    - [x] Colocate `DatabaseManager` in `database_service.dart` and remove `database_manager.dart`.
-    - [x] Refactor `ArcaApp` in `lib/app/app.dart` to use `FutureBuilder<Circuit>` with pattern matching.
-    - [x] Remove `lib/app/app_container.dart`.
-    - [x] Clean up test imports in `test/core/database/database_service_test.dart`.
-    - [x] Update `docs/plan.md`, `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
-    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Wire & Circuit Minimal v1 Specification
-  - Requirements:
-    - Pure Dart 3.13+ zero-codegen, graph-based dependency injection library backed by an internal Directed Acyclic Graph (DAG) in `lib/core/di/di.dart`.
-    - Vertex keys as record tuples `typedef WireKey = (Type type, Enum? tag);` supporting untagged `(T, null)` and tagged `(T, K)` where `K extends Enum` with Dart dot-shorthands.
-    - Base sealed class `CircuitWire` with `key`, `dependencies`, and `disposeInstance(Object? instance)`.
-    - Synchronous lazy singleton `Wire<T>` and parallel-wave asynchronous `AsyncWire<T>`.
-    - Accumulator-based chaining builders `WireBuilder<Acc>` and `AsyncWireBuilder<Acc>` with `takes<Next>()`, `takesTagged<Next, K>(tag)`, and `to(...)` (1-dep direct/tear-off unpacking, multi-dep tuple unpacking).
-    - Pure singleton lifecycle model: all wires are singletons; sync wires lazily constructed on first access or when required by an `AsyncWire` during build.
-    - `Circuit.build(wires)`: DAG validation (duplicate keys -> `DuplicateWireException`, missing keys -> `MissingWireException`, cycle detection with cycle paths -> `CircularDependencyException`) followed by parallel topological wave resolution of `AsyncWire`s using `Future.wait`.
-    - Synchronous runtime lookups via `circuit.get<T>()` and `circuit.getTagged<T, K>(tag)` throwing `DisposedCircuitException` if disposed, `WireNotFoundException` if not found.
-    - Idempotent reverse topological wave disposal (`leaves -> roots`) awaiting `onDispose` callbacks in parallel waves, aggregating disposal failures into `DisposalException`.
-    - Comprehensive unit test suites in `test/core/di/wire_test.dart` and `test/core/di/circuit_test.dart`.
-  - Sub-steps:
-    - [x] Implement Wire & Circuit minimal v1 in `lib/core/di/di.dart`.
-    - [x] Delete legacy `test/core/di/dependency_graph_test.dart`.
-    - [x] Create `test/core/di/wire_test.dart` testing recipes, keys, tagging, accumulator chaining, and unpacker resolution.
-    - [x] Create `test/core/di/circuit_test.dart` testing lifecycle, DAG validation, wave execution, laziness, and reverse topological disposal.
-    - [x] Update `docs/decisions.md` with ADR.
-    - [x] Update `docs/architecture.md` and `README.md`.
-    - [x] Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Compiled Dependency Graph System
-  - Requirements:
-    - Pure Dart 3.13+ runtime dependency management system without reflection, mirrors, code generation, or `Function.apply`.
-    - Typed dependency tokens (`Dependency<T>`) supporting independent registrations of the same generic type.
-    - Two-phase lifecycle: mutable `DependencyRegistry` and compiled immutable `DependencyGraph`.
-    - Strict validation at compile time: cycle detection, missing dependencies, duplicate detection, and sync/async boundary enforcement (sync providers cannot depend on async providers).
-    - Restricted factory boundary: `Dependencies` only allows access to explicitly declared `requires`.
-    - Lazy synchronous and asynchronous resolution (`resolve`, `resolveAsync`) with in-flight future deduplication.
-    - Reference-counted instance ownership with permanent (`retain`) and ephemeral (`acquire`) handles.
-    - Deterministic cascading disposal and recreation of unused instances when ref count reaches zero.
-    - Graph-wide idempotent disposal in reverse topological dependency order with failure collection and handle invalidation.
-    - Comprehensive read-only diagnostics (`diagnostics`, `dump`).
-    - Self-contained single-file implementation in `lib/core/di/di.dart`.
-    - Self-contained comprehensive test suite in `test/core/di/dependency_graph_test.dart`.
-  - Sub-steps:
-    - [x] Record plan entry in `docs/plan.md` and architectural decisions in `docs/decisions.md`.
-    - [x] Implement `lib/core/di/di.dart` covering all 7 milestones in a single self-contained file.
-    - [x] Implement `test/core/di/dependency_graph_test.dart` validating all invariants, edge cases, and lifecycles (37 tests).
-    - [x] Update `docs/architecture.md` and `README.md`.
-    - [x] Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Extract `ArcaContainer` and Flatten Container Lifecycle State
-  - Requirements:
-    - Move the dependency container from `lib/app/app.dart` into `lib/app/app_container.dart`.
-    - Replace sealed `ArcaAppContainerState` subclasses with `ArcaContainerState { idle, preparing, ready, failure }`.
-    - Expose `ValueListenable<ArcaContainerState>` instead of the mutable notifier.
-    - Wrap bootstrap in `try`/`catch` so failures surface as `.failure` rather than a wedged `.preparing`.
-    - Colocate `SharedPrefsOnboardingRepository` with `OnboardingRepository` and expose `lib/core/onboarding/onboarding.dart` barrel.
-    - Keep `ArcaApp` as the DI edge rendering the splash fallback until the container is ready.
-    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-  - Sub-steps:
-    - [x] Create `lib/app/app_container.dart` with `ArcaContainer` and `ArcaContainerState`.
-    - [x] Update `ArcaApp` to consume `ArcaContainer` and match `.ready` via dot-shorthand.
-    - [x] Merge `shared_prefs_onboarding_repository.dart` into `onboarding_repository.dart` and add `onboarding.dart`.
-    - [x] Update `test/core/onboarding/onboarding_repository_test.dart` imports.
-    - [x] Sync `docs/architecture.md`, `docs/decisions.md`, `README.md`.
-    - [x] Full verification gate passes (17/17 tests, zero analyzer issues).
-- [x] Migrate `SharedPrefsOnboardingRepository` to `SharedPreferencesAsync`
-  - Requirements:
-    - Update `SharedPrefsOnboardingRepository` to use `SharedPreferencesAsync`.
-    - Decommission redundant `InMemoryOnboardingRepository`.
-    - Add `MockSharedPreferencesAsync` platform double for test harnesses.
-    - Fix `orderedEquals` verification with `isMethodCall` matchers and boolean values.
-    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-  - Sub-steps:
-    - [x] Refactor `SharedPrefsOnboardingRepository` to consume `SharedPreferencesAsync`.
-    - [x] Delete `lib/core/onboarding/repositories/in_memory_onboarding_repository.dart`.
-    - [x] Implement `test/test_utils/shared_preferences.dart` (`MockSharedPreferencesAsync`).
-    - [x] Update `test/core/onboarding/onboarding_repository_test.dart` and `test/app/router_orchestration_test.dart`.
-    - [x] Update `docs/architecture.md`, `docs/decisions.md`, `docs/plan.md`.
-- [x] Cleanup Legacy Modules, Repositories, and Routes
-  - Requirements:
-    - Remove legacy feature modules: `journal`, `setup_wizard`, `model_downloader`, `vaults`.
-    - Remove domain repositories and models: `core/vault/`, `core/downloader/`, `core/ai/`.
-    - Clean up `lib/app/routes.dart` and `lib/app/router.dart` to retain only `WelcomeRoute` and `WelcomeScreen`.
-    - Update `ArcaAppContainer` and `ArcaApp` to inject only active infrastructure dependencies.
-    - Preserve design system accessibility test harness and welcome flow tests.
-    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-  - Sub-steps:
-    - [x] Remove feature modules in `lib/features/` and `test/features/`.
-    - [x] Remove domain repositories in `lib/core/` and `test/core/`.
-    - [x] Update `routes.dart` and `router.dart` for `WelcomeRoute`.
-    - [x] Refactor `ArcaAppContainer` and `ArcaApp` in `lib/app/app.dart`.
-    - [x] Retain `ArcaButton` accessibility test in `test/core/design_system/accessibility_test.dart`.
-    - [x] Update `docs/plan.md`, `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
-    - [x] Full verification gate passes (11/11 tests, zero analyzer issues).
-- [x] Adopt `ArcaAppContainer` Dependency Container and Update Test Harnesses
-  - Requirements:
-    - Encapsulate application dependency lifecycle and asynchronous bootstrapping into `ArcaAppContainer` with sealed `ArcaAppContainerState` (`idle`, `init`, `ready`, `failure`).
-    - Streamline `lib/main.dart` entrypoint to `runApp(const ArcaApp())` without manual bootstrapping.
-    - Update `ArcaApp` to inject `ArcaAppContainer` and reactively render `WidgetsApp.router` when ready with a typed `pageRouteBuilder` fallback for unready state.
-    - Update widget and end-to-end orchestration test suites to instantiate, configure with fakes/in-memory services, and await `ArcaAppContainer.init()` before pumping `ArcaApp(appContainer: container)`.
-    - Pass strict verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-  - Sub-steps:
-    - [x] Integrate `ArcaAppContainer` and `ArcaApp` state management in `lib/app/app.dart`.
-    - [x] Streamline `lib/main.dart` to launch `const ArcaApp()`.
-    - [x] Refactor `test/app/router_orchestration_test.dart` to use `ArcaAppContainer`.
-    - [x] Refactor `test/features/journal/journal_screen_test.dart` to use `ArcaAppContainer`.
-    - [x] Refactor `test/features/journal/accessibility_test.dart` to use `ArcaAppContainer`.
-    - [x] Update documentation across `docs/decisions.md`, `docs/architecture.md`, `docs/plan.md`, and `README.md`.
-    - [x] Full verification gate passes (48/48 tests, zero lint warnings/infos).
-- [x] Align Downloader Contract to `DownloadService<K, T>` and Concise Verbs
-  - Requirements:
-    - Align interface and implementation names to `DownloadService<K, T>` and `DownloadManager<K, T>`.
-    - Rename `queueDownloads`, `pauseDownload`, `resumeDownload` to `queue`, `pause`, `resume`.
-    - Fix `_defaultKeyOf` value casting bug (`target as R`).
-    - Clean up Dart 3.13 primary constructor and scoping in `DownloadManager`.
-    - Update all feature BLoCs, screens, tests, and documentation.
-  - Sub-steps:
-    - [x] Rename `downloader_service.dart` to `download_service.dart` and `DownloaderService` to `DownloadService`.
-    - [x] Update `DownloadManager` declaring parameters and fix `_defaultKeyOf`.
-    - [x] Update `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc`.
-    - [x] Rename `downloader_service_test.dart` to `download_service_test.dart` and add pause/resume tests.
-    - [x] Update all feature test suites (48/48 passed).
-    - [x] Sync `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
-- [x] Generic Downloader Service Architecture (`DownloadService<K, T>`)
-  - Requirements:
-    - Refactor `lib/core/model_downloader` into generic `lib/core/downloader/`.
-    - Provide `DownloadService<K extends Object, T extends Object>` and `DownloadManager<K extends Object, T extends Object>`.
-    - Maintain `DownloadProgress<T extends Object>` with non-nullable target payload.
-    - Wire `DownloadService<AIKind, AIKind>` through `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc`.
-    - Update all unit and widget tests, passing the full verification gate.
-  - Sub-steps:
-    - [x] Create `lib/core/downloader/models/download_progress.dart` (`DownloadStatus`, `DownloadProgress<T>`).
-    - [x] Create `lib/core/downloader/services/download_service.dart` (`DownloadService<K, T>`).
-    - [x] Create `lib/core/downloader/services/download_manager.dart` (`DownloadManager<K, T>`).
-    - [x] Delete `lib/core/model_downloader/`.
-    - [x] Update `ArcaApp`, `SetupWizardBloc`, and `ModelDownloaderBloc` to inject `DownloadService<AIKind, AIKind>`.
-    - [x] Update all test suites and verify 48/48 passed.
-    - [x] Update `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
-- [x] Core AI Domain Separation from Model Downloader
-  - Requirements:
-    - Relocate `AIKind` and `AIModel` to `lib/core/ai/models/ai_model.dart`.
-    - Retain generic `DownloadProgress<T>` and `DownloadStatus` in `lib/core/model_downloader/models/download_progress.dart`.
-    - Update all feature BLoCs, screens, tests, and documentation.
-  - Sub-steps:
-    - [x] Create `lib/core/ai/models/ai_model.dart`.
-    - [x] Create `lib/core/model_downloader/models/download_progress.dart`.
-    - [x] Remove old `lib/core/model_downloader/models/ai_model.dart`.
-    - [x] Update `ModelDownloadService`, `ModelDownloadManager`, `SetupWizardBloc`, and `ModelDownloaderBloc`.
-    - [x] Update all test suites and pass full verification gate (46/46 passed).
-    - [x] Sync `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
-- [x] ModelKind and ModelDownloadManager Architecture Alignment
-  - Requirements:
-    - Rename `AIKind` to `ModelKind` for consistency.
-    - Adopt `ModelDownloadManager` implementing `ModelDownloadService`.
-    - Update all feature BLoCs, screens, tests, and documentation.
-  - Sub-steps:
-    - [x] Rename `AIKind` to `ModelKind` in `lib/core/model_downloader/models/ai_model.dart`.
-    - [x] Rename and refactor `ModelDownloadManager` and `ModelDownloadService`.
-    - [x] Update composition root `ArcaApp`, `ModelDownloaderBloc`, and `SetupWizardBloc`.
-    - [x] Update tests and verify full suite passes (46/46 passed).
-    - [x] Synchronize `docs/architecture.md`, `README.md`, `docs/decisions.md`, and `docs/plan.md`.
-- [x] AI Model Domain Simplification & Generic DownloadProgress
-  - Requirements:
-    - Replace bloated capability enum with lean `AIKind` (`ocr`, `asr`).
-    - Introduce generic `DownloadStatus` (`queued`, `downloading`, `paused`, `ready`, `failed`).
-    - Define generic `DownloadProgress<T extends Object>` with non-nullable target `T target`.
-    - Provide `AIModel` data class decoupled from static embedded catalogs.
-    - Consolidate state into `ModelDownloaderService` directly exposing `Map<AIKind, DownloadProgress<AIKind>>` and `downloadsStream`.
-  - Sub-steps:
-    - [x] Create `lib/core/model_downloader/models/ai_model.dart` with `AIKind`, `DownloadStatus`, `DownloadProgress<T>`, and `AIModel`.
-    - [x] Remove old `lib/core/model_downloader/models/ai_model_capability.dart`.
-    - [x] Refactor `ModelDownloaderService` and `InMemoryModelDownloaderService` to manage and emit `downloads`.
-    - [x] Update `ModelDownloaderBloc`, `ModelDownloaderUIState`, and `SetupWizardBloc`.
-    - [x] Modernize UI in `SetupWizardScreen` and `ModelDownloadScreen`.
-    - [x] Update and verify all unit and widget tests (46/46 passed).
-    - [x] Sync `docs/architecture.md`, `docs/decisions.md`, `README.md`, and `docs/plan.md`.
-- [x] Model Downloader Service Architectural Refactoring
-  - Requirements:
-    - Transition `ModelDownloaderRepository` to `ModelDownloaderService` per mobile convention Rule 19 ("a repository when it is data, a service when it is behavior").
-    - Relocate contracts and implementations from `repositories/` to `services/`.
-    - Update all feature BLoCs (`ModelDownloaderBloc`, `SetupWizardBloc`), composition root (`ArcaApp`), and test suites.
-  - Sub-steps:
-    - [x] Create `lib/core/model_downloader/services/model_downloader_service.dart`.
-    - [x] Create `lib/core/model_downloader/services/in_memory_model_downloader_service.dart`.
-    - [x] Remove old `lib/core/model_downloader/repositories/` directory and files.
-    - [x] Update `ModelDownloaderBloc`, `SetupWizardBloc`, and `ArcaApp`.
-    - [x] Migrate and rename test suites to test services.
-    - [x] Update `docs/architecture.md`, `docs/decisions.md`, `README.md`, and `docs/plan.md`.
-    - [x] Pass full verification gate (`analyze_files`, tests).
-- [x] Legacy Profile Aliases & Redirections Removal
-  - Requirements:
-    - Eliminate all backwards-compatibility aliases, typedefs, wrappers, and method redirections relating to `profile`.
-    - Clean up composition root (`ArcaApp`), state getters, and selection screen labels.
-  - Sub-steps:
-    - [x] Remove `Profile` and `ProfileRelationship` typedefs from `lib/core/vault/models/vault.dart`.
-    - [x] Remove profile redirection methods and typedefs from `VaultRepository`, `InMemoryVaultRepository`, and `SqliteVaultRepository`.
-    - [x] Remove `ProfileBloc`, `ProfileEvent`, and `ProfileState` aliases and compatibility getters from BLoC.
-    - [x] Remove `MemberSwitcherBar` compatibility wrapper and `ArcaApp.profileRepository`.
-    - [x] Update `docs/architecture.md`, `docs/decisions.md`, and `README.md`.
-    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Dependency Simplification: Rely Solely on `sqlite_async` & Clean Up Documentation
-  - Requirements:
-    - Remove redundant direct `sqlite3` dependency from `pubspec.yaml`, relying directly on `sqlite_async` (which transitively embeds `sqlite3`).
-    - Remove direct `sqlite3/common.dart` imports from repository implementations by leveraging `Map<String, dynamic>` semantics.
-    - Synchronize `README.md` to remove legacy DS&A test references and update test counts to 46.
-  - Sub-steps:
-    - [x] Refactor `SqliteVaultRepository` and `SqliteJournalRepository` to eliminate direct `package:sqlite3` imports.
-    - [x] Remove `sqlite3` from `pubspec.yaml` and update `pubspec.lock`.
-    - [x] Update `README.md`, `docs/architecture.md`, and `docs/decisions.md`.
-    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Dart 3.13 Primary Constructors & Dot-Shorthands Modernization
-  - Requirements:
-    - Migrate domain models, entities, routes, BLoC states/events, and widgets to use Dart 3.13 primary constructor syntax (`class Foo(...)`, `class const Bar(...)`, semicolon bodies).
-    - Adopt dot-shorthands across enum accesses, switch cases, and widget arguments (`textDirection: .ltr`, `.center`, `.start`, `.vital`, `.primary`, etc.).
-    - Maintain 100% backward behavioral compatibility and pass all existing and new tests.
-  - Sub-steps:
-    - [x] Modernize domain entities and models in `lib/core/` (`Vault`, `ClinicalRecord`, `AiModelCapability`, `ModelDownloadState`).
-    - [x] Modernize router, sealed routes, and composition root in `lib/app/`.
-    - [x] Modernize design system foundation widgets (`ArcaScaffold`, `ArcaHeader`, `ArcaButton`, `ArcaCard`, `ArcaBadge`, `ArcaTextField`, `ArcaProgressBar`).
-    - [x] Modernize feature presentation screens (`WelcomeScreen`, `SetupWizardScreen`, `VaultSelectionScreen`, `VaultSwitcherBar`, `ModelDownloadScreen`, `JournalScreen`, `RecordDetailScreen`).
-    - [x] Modernize BLoC events and states across all feature modules.
-    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Canonical Packages: `collection` & `async` Integration
-  - Requirements:
-    - Add `collection: ^1.19.1` and `async: ^2.13.0` to `pubspec.yaml` for collection algorithms, priority queues, and stream/async operations across Arca.
-    - Leverage canonical collection utilities and async primitives where needed in application state and repositories without introducing unneeded third-party libraries.
-  - Sub-steps:
-    - [x] Update `pubspec.yaml` with `collection` and `async` and run `flutter pub get`.
-    - [x] Update `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
-    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Interface-Driven Dependency Injection Architecture
-  - Requirements:
-    - Enforce abstract interfaces (`abstract interface class`) over concrete implementations across all constructors, screens, BLoCs, and services.
-    - Provide services and repositories by interface type in `MultiRepositoryProvider`.
-    - Extract `DatabaseService` interface for SQLite database lifecycle and migrations.
-    - Guarantee full mockability and test isolation across unit and widget tests.
-  - Sub-steps:
-    - [x] Create `DatabaseService` interface and make `DatabaseManager` implement it.
-    - [x] Add `void dispose()` to `VaultRepository` interface.
-    - [x] Update `RecordDetailScreen` to accept optional `JournalRepository` interface with `context.read<JournalRepository>()` fallback.
-    - [x] Inject `DatabaseService` and interfaces into `ArcaApp` and wire production entrypoint in `lib/main.dart`.
-    - [x] Add `database_service_test.dart` and refactor tests to declare interface types (46 total tests).
-    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Feature Module Decoupling & Isolation Architecture
-  - Requirements:
-    - Eliminate broad container modules; enforce dedicated single-purpose feature modules (`welcome`, `setup_wizard`, `model_downloader`, `vaults`, `journal`).
-    - Enforce zero cross-feature imports (`lib/features/A` never imports `lib/features/B`).
-    - Move cross-cutting domain entities and repositories into `lib/core/` (`lib/core/vault/`, `lib/core/onboarding/`, `lib/core/model_downloader/`).
-    - Decouple screens from navigation routers: screens expose constructor callbacks (`onStartSetup`, `onSkip`, `onBack`, `onComplete`, `onVaultSelected`, `onRecordSelected`), leaving `lib/app/router.dart` as the sole route orchestrator.
-    - Inter-module reactivity via core repository broadcast streams (`vaultsStream`, `activeVaultIdStream`, `progressStream`).
-  - Sub-steps:
-    - [x] Migrate core domain entities and repository interfaces with broadcast stream controllers to `lib/core/`.
-    - [x] Refactor feature modules to be self-contained with constructor callbacks and zero cross-module imports.
-    - [x] Update `lib/app/router.dart` and `lib/app/routes.dart` to wire all constructor callbacks.
-    - [x] Build comprehensive automated test suite (44 unit, widget, and orchestration tests).
-    - [x] Pass full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Onboarding & Setup Wizard UX Flow with Vault Guard & AI Capability Downloader
-  - Requirements:
-    - First-launch welcome screen introducing Arca's on-device privacy guarantee and clinical vault concept.
-    - Multi-step setup wizard:
-      - Step 1: Health Vault / Profile setup (optional; create one or multiple family vaults with name, relationship, blood type, allergies, DOB, or skip).
-      - Step 2: On-device AI capabilities selection (optional; selectable cards for OCR Lab Parser, Speech/Dictation ASR, Clinical Entity Recognition with download sizes).
-    - Completion step: Marks onboarding done in persistent preferences so it won't show again.
-    - AI Capabilities Download screen: Shown immediately after setup only if at least one AI capability was selected (otherwise skipped). Supports foreground progress viewing or background downloading with non-intrusive status indicator on Dashboard.
-    - Route Guard & Vault Resolver:
-      - 0 Vaults available -> Redirect to Vault Selection screen in empty state ("No vaults found. Tap to create a vault"). Creating vault sets it as active and redirects to Dashboard.
-      - 1 Vault available -> Automatically set as active and navigate to Dashboard.
-      - >1 Vaults available -> Navigate to Vault Selection screen for user to choose which vault to open.
-    - Terminology shift: Establish "Health Vault" (or "Vault") as the core multi-member container and "Clinical Timeline / Records" for chronological health events, transitioning away from personal diary connotations of "Journal".
-  - Sub-steps:
-    - [x] Create foundation UI components: `ArcaTextField` and `ArcaProgressBar` in `lib/core/design_system/widgets/`.
-    - [x] Create `OnboardingRepository` contract and implementations (`SharedPrefsOnboardingRepository`, `InMemoryOnboardingRepository`).
-    - [x] Create `AiCapability` models and `AiDownloadBloc` managing state and simulated background download tasks.
-    - [x] Create `OnboardingBloc` to manage wizard state transitions.
-    - [x] Implement screens: `WelcomeScreen`, `SetupWizardScreen`, `AiDownloadScreen`, `VaultSelectionScreen`.
-    - [x] Add `AiDownloadIndicatorBar` widget for persistent non-intrusive dashboard notifications.
-    - [x] Update `AppRoute` sealed class hierarchy, `AppStackCodec`, and `createAppRouter` with exhaustive pattern matching.
-    - [x] Wire dependencies and route guard in `lib/app/app.dart`.
-    - [x] Update `docs/decisions.md`, `docs/architecture.md`, and `README.md`.
-    - [x] Write comprehensive unit, widget, and accessibility tests for the onboarding flow and route guards (51 total tests).
-    - [x] Full verification gate (`dart format`, `flutter analyze --fatal-infos --fatal-warnings`, `flutter test`).
-- [x] Initialized Flutter project for Arca targeting Android & iOS (`health.arca.app`)
-- [x] Recorded baseline architectural choices in `docs/decisions.md`
-- [x] Decoupled Foundation Design System: Design tokens (`ArcaColors`, `ArcaSpacing`, `ArcaRadii`, `ArcaTypography`) and basic primitives (`ArcaScaffold`, `ArcaHeader`, `ArcaButton`, `ArcaCard`, `ArcaBadge`) built strictly on `package:flutter/widgets.dart`
-- [x] Added core dependencies (`flutter_bloc`, `kaisel`, `sqlite_async`, `sqlite3`, `path_provider`, `path`, `shared_preferences`, `bloc_test`)
-- [x] Feature-first architecture: `lib/features/journal/` with domain models, repository interfaces, fake implementations, and BLoC
-- [x] Dart 3 sealed navigation: `kaisel` router configuration (`AppRoute`, `AppStackCodec`, `JournalRoute`, `RecordDetailRoute`)
-- [x] Composition root: `ArcaApp` using `WidgetsApp.router` with `MultiRepositoryProvider` and `MultiBlocProvider`
-- [x] On-Device SQLite Storage Layer: `DatabaseManager` and `ArcaDatabaseMigrations` via `sqlite_async` with background isolate execution and `SqliteJournalRepository`
-- [x] Multi-Member Family Archive: `Profile` domain model, `SqliteProfileRepository`, `ProfileBloc`, and `MemberSwitcherBar` with active profile switching and timeline filtering
-- [x] Automated test harness: 24 tests spanning unit tests, SQLite integration tests, route codec tests, widget navigation, profile switching, and accessibility baseline tests
-- [x] Accessibility baseline: 48x48 dp minimum tap targets, semantic labels, and resilience to 2.0x font scaling without overflow
-- [x] CI workflow: `.github/workflows/ci.yml` running formatting checks, linter, and full test suite
-- [x] Project documentation: `README.md`, `docs/architecture.md`, `docs/decisions.md`, and `AGENTS.md`
+## Done this release
+- Migrate Arca to external `circuitry_flutter` package and decommission `lib/core/di/`.
+- Implement `CircuitProvider` and `CircuitState` Flutter bridge for Wire & Circuit DI.
+- Combine `DatabaseConfig.wire` and `DatabaseManager.open` static async factory.
+- Adopt `SharedPreferencesAsync` in `SharedPrefsOnboardingRepository`.
+- Clean up prototype feature modules to isolate `WelcomeScreen` and onboarding router.
 
 ## Next
-- [ ] Apple HealthKit & Google Health Connect background ingestion sync services
-- [ ] On-device OCR document processing pipeline (scanned lab panels and prescriptions)
-- [ ] Longitudinal clinical trend analysis & chart visualization
-- [ ] Encrypted local SQLite backup & export tool
+
+### Multi-member health vault and setup wizard
+
+- **Release:** 0.2.0
+- **Goal:** Guide first-launch users through vault setup and establish profile containers for family members.
+- **Requirements:**
+  - Create multi-step wizard after welcome screen with optional vault configuration.
+  - Implement route guard directing empty vaults to setup and multi-vaults to selection.
+  - Persist active vault selection and family profiles in local SQLite database.
+- **Approach:** Add `setup_wizard` and `vaults` feature modules using BLoC, constructor callbacks, and core SQLite repositories.
+- **Acceptance:** User completes wizard, creates a vault, and reaches the health dashboard; tests verify flow and route guard.
+
+### Apple HealthKit & Google Health Connect background sync
+
+- **Release:** 0.3.0
+- **Goal:** Ingest biometrics and clinical metrics in the background from native health stores.
+- **Requirements:**
+  - Request granular health permissions with clear rationale.
+  - Periodic background sync workers for steps, heart rate, sleep, and vitals.
+  - Normalize HealthKit and Health Connect samples into clinical domain records.
+- **Approach:** Native platform method channels feeding background isolates that write directly to local SQLite database.
+- **Acceptance:** Biometric records sync into database without UI lag; mocked channels pass integration tests.
+
+### On-device OCR document processing pipeline
+
+- **Release:** 0.4.0
+- **Goal:** Transform paper lab reports and prescriptions into structured records on-device.
+- **Requirements:**
+  - Process camera/document scans using local quantized vision/OCR models.
+  - Extract clinical entities (dates, test names, numeric values, reference ranges).
+  - Zero network transmission during extraction.
+- **Approach:** Dedicated processing service with background isolates and progress streaming to UI.
+- **Acceptance:** Scanned lab image parses into structured clinical record in SQLite with confidence scores.
+
+### Longitudinal clinical trend analysis & visualization
+
+- **Release:** 0.5.0
+- **Goal:** Render longitudinal trends and charts for lab markers and biometric vitals.
+- **Requirements:**
+  - Query time-series biometric and lab data efficiently from SQLite indexes.
+  - Render accessible, scalable charts using foundation design system primitives.
+  - Support range zooming and metric comparisons across family members.
+- **Approach:** Domain use cases for time-series aggregation feeding presentation BLoCs and custom canvas widgets.
+- **Acceptance:** Charts render under 16ms frame budget across 2+ years of simulated data.
+
+### Encrypted local SQLite backup & export tool
+
+- **Release:** 0.6.0
+- **Goal:** Provide secure, sovereign backup and export of entire health vault.
+- **Requirements:**
+  - Export password-encrypted archive containing database and attached scans.
+  - Validate checksum and schema compatibility before restoring backup.
+  - Zero external server dependencies for backup creation or restore.
+- **Approach:** Stream encrypted zip archive directly to user-selected filesystem destination.
+- **Acceptance:** Export and import round-trip restores complete vault state without data corruption.
