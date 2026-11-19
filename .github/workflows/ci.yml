@@ -27,9 +27,6 @@ jobs:
       - name: Verify code formatting
         run: dart format --output=none --set-exit-if-changed .
 
-      - name: Create asset placeholder directories
-        run: mkdir -p assets/models/ocr assets/models/pii
-
       - name: Run static analysis
         run: flutter analyze --fatal-infos --fatal-warnings
 
