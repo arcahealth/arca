@@ -1,10 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:arca/core/ai/ai.dart';
 import 'package:arca/core/capture/capture.dart';
 import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 
 import '../../test_utils/fake_document_capture_service.dart';
+import '../../test_utils/fake_document_inference_pipeline.dart';
 
 Widget _wrap(Widget child) => Directionality(textDirection: TextDirection.ltr, child: child);
 
@@ -320,6 +322,102 @@ void main() {
 
         expect(find.text('Action Required'), findsNothing);
         expect(find.text('Align document within frame'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Proceed to Review triggers inferencePipeline and fires onExtractionComplete with extracted profile',
+      (tester) async {
+        _setViewport(tester);
+        final fakeCapture = FakeDocumentCaptureService(
+          scanResult: const DocumentCaptureResult.success(['/tmp/doc.jpg']),
+        );
+        final fakeInference = FakeDocumentInferencePipeline(
+          result: const DocumentInferenceResult.success(
+            ExtractedProfileData(
+              patientName: 'Alex Morgan',
+              dateOfBirth: '1988-04-12',
+              medications: ['Amoxicillin 500mg'],
+              allergies: ['Penicillin'],
+            ),
+          ),
+        );
+        ExtractedProfileData? extractedData;
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeCapture,
+              inferencePipeline: fakeInference,
+              onExtractionComplete: (data) => extractedData = data,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 1. Scan document
+        final scanBtn = find.text('Start Document Scan');
+        await tester.ensureVisible(scanBtn);
+        await tester.tap(scanBtn);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Ready for OCR'), findsOneWidget);
+
+        // 2. Tap Proceed to Review
+        final proceedBtn = find.text('Proceed to Review');
+        await tester.ensureVisible(proceedBtn);
+        await tester.tap(proceedBtn);
+        await tester.pumpAndSettle();
+
+        expect(fakeInference.processCalls, 1);
+        expect(fakeInference.lastProcessedFiles, ['/tmp/doc.jpg']);
+        expect(extractedData?.patientName, 'Alex Morgan');
+        expect(extractedData?.medications, ['Amoxicillin 500mg']);
+      },
+    );
+
+    testWidgets(
+      'displays error card when inference fails during document extraction',
+      (tester) async {
+        _setViewport(tester);
+        final fakeCapture = FakeDocumentCaptureService(
+          scanResult: const DocumentCaptureResult.success(['/tmp/corrupted.jpg']),
+        );
+        final fakeInference = FakeDocumentInferencePipeline(
+          result: const DocumentInferenceResult.failure(
+            'Failed to decode model tensors.',
+          ),
+        );
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeCapture,
+              inferencePipeline: fakeInference,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Scan document
+        final scanBtn = find.text('Start Document Scan');
+        await tester.ensureVisible(scanBtn);
+        await tester.tap(scanBtn);
+        await tester.pumpAndSettle();
+
+        // Proceed to Review
+        final proceedBtn = find.text('Proceed to Review');
+        await tester.ensureVisible(proceedBtn);
+        await tester.tap(proceedBtn);
+        await tester.pumpAndSettle();
+
+        expect(fakeInference.processCalls, 1);
+        expect(find.text('Action Required'), findsOneWidget);
+        expect(find.text('Failed to decode model tensors.'), findsOneWidget);
       },
     );
   });

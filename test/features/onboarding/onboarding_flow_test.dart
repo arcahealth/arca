@@ -3,8 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kaisel/kaisel.dart';
 
 import 'package:arca/app/router/onboarding_routes.dart';
+import 'package:arca/core/ai/ai.dart';
+import 'package:arca/core/capture/capture.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
+
+import '../../test_utils/fake_document_capture_service.dart';
+import '../../test_utils/fake_document_inference_pipeline.dart';
 
 final class FakeOnboardingRepository implements OnboardingRepository {
   bool completed = false;
@@ -21,8 +26,15 @@ final class FakeOnboardingRepository implements OnboardingRepository {
 Widget _buildOnboardingApp({
   required OnboardingRepository repo,
   VoidCallback? onCompleted,
+  DocumentInferencePipeline? inferencePipeline,
+  DocumentCaptureService? captureService,
 }) {
-  final module = OnboardingModule(repo, onCompleted);
+  final module = OnboardingModule(
+    repo,
+    onCompleted,
+    inferencePipeline,
+    captureService,
+  );
 
   final routerConfig = KaiselRouterConfig<OnboardingRoute>(
     initial: const OnboardingRoute.welcome(),
@@ -90,6 +102,69 @@ void main() {
 
         expect(repo.completed, isTrue);
         expect(completedCalled, isTrue);
+      },
+    );
+
+    testWidgets(
+      'navigates through document capture with AI inference pipeline populating overview',
+      (tester) async {
+        _setViewport(tester);
+        final repo = FakeOnboardingRepository();
+        final fakeCapture = FakeDocumentCaptureService(
+          scanResult: const DocumentCaptureResult.success([
+            '/tmp/prescription_scan.jpg',
+          ]),
+        );
+        final fakeInference = FakeDocumentInferencePipeline(
+          result: const DocumentInferenceResult.success(
+            ExtractedProfileData(
+              patientName: 'Sarah Connor',
+              dateOfBirth: '1985-02-28',
+              medications: ['Lisinopril 10mg'],
+              allergies: ['Sulfa'],
+              confidence: 0.95,
+            ),
+          ),
+        );
+
+        await tester.pumpWidget(
+          _buildOnboardingApp(
+            repo: repo,
+            inferencePipeline: fakeInference,
+            captureService: fakeCapture,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Screen 1: Welcome Screen
+        final scanBtn = find.text('Scan Document');
+        await tester.ensureVisible(scanBtn);
+        await tester.tap(scanBtn);
+        await tester.pumpAndSettle();
+
+        // Screen 2: Document Scan Screen
+        expect(find.text('Scan Document'), findsOneWidget);
+
+        // Click Start Document Scan to capture
+        final startScanBtn = find.text('Start Document Scan');
+        await tester.ensureVisible(startScanBtn);
+        await tester.tap(startScanBtn);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Ready for OCR'), findsOneWidget);
+
+        // Click Proceed to Review to trigger AI pipeline
+        final proceedBtn = find.text('Proceed to Review');
+        await tester.ensureVisible(proceedBtn);
+        await tester.tap(proceedBtn);
+        await tester.pumpAndSettle();
+
+        // Screen 3: Overview Screen with AI extracted values
+        expect(find.text('Profile Overview'), findsOneWidget);
+        expect(find.text('Sarah Connor'), findsOneWidget);
+        expect(find.text('1985-02-28'), findsOneWidget);
+        expect(find.text('Lisinopril 10mg'), findsOneWidget);
+        expect(find.text('Sulfa'), findsOneWidget);
       },
     );
 

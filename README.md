@@ -12,11 +12,12 @@ Arca is an offline-first, privacy-focused health tracking companion and longitud
 - **Decoupled Foundation Design System**: Bespoke design system built strictly atop `package:flutter/widgets.dart` with custom tokens (colors, typography, spacing, radii) and accessible primitive widgets (`ArcaScaffold`, `ArcaHeader`, `ArcaButton`, `ArcaCard`, `ArcaBadge`, `ArcaTextField`, `ArcaProgressBar`).
 - **On-Device SQLite Storage**: Local encrypted SQLite database backed by `sqlite_async` with background isolate query execution and schema migrations (`ArcaDatabaseMigrations`).
 - **On-Device Document & Image Acquisition**: Native document scanning with automatic edge detection and deskewing (`cunning_document_scanner`), along with camera capture and photo gallery picking (`image_picker`) governed by decoupled `DocumentCaptureService`.
+- **On-Device AI Document Inference Pipeline**: Complete offline OCR and PII extraction pipeline (`DocumentInferencePipeline`) combining WordPiece BERT tokenization (`BertTokenizer`), text extraction (`OcrEngine`), and clinical entity parsing (`PiiExtractor`) for extracting patient names, DOBs, medications, and allergies.
 - **Onboarding Persistence**: Key-value persistence for onboarding status backed by `SharedPreferencesAsync`.
 - **DAG Dependency Injection**: Zero-codegen graph-based dependency injection engine bridged to Flutter via `CircuitProvider` (`circuitry_flutter`).
 - **Type-Safe Sealed Navigation**: Stack-as-state routing powered by `kaisel` with exhaustive Dart 3 pattern matching and URL stack codecs.
 
-Planned capabilities (background biometrics sync, on-device OCR, multi-member family archive) are tracked in [`docs/plan.md`](docs/plan.md).
+Planned capabilities (background biometrics sync, multi-member family archive) are tracked in [`docs/plan.md`](docs/plan.md).
 
 ---
 
@@ -47,7 +48,8 @@ arca/
 │   │   ├── app.dart               # ArcaApp: CircuitProvider + WidgetsApp.router
 │   │   └── router/                # ArcaRouter, sealed ArcaRoute/OnboardingRoute, stack codecs & ArcaRouter.wire
 │   ├── core/                      # Shared design system, database, and domain infrastructure
-│   │   ├── ai/                    # ArcaModelAssets for bundled PP-OCRv6 OCR & MiniLM-L6 PII models
+│   │   ├── ai/                    # On-device AI assets, BertTokenizer, OcrEngine, PiiExtractor & DocumentInferencePipeline
+│   │   ├── capture/               # DocumentCaptureService, native scanning, camera snapshot, gallery & file picking
 │   │   ├── database/              # DatabaseConfig, DatabaseService, DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
 │   │   └── onboarding/            # OnboardingRepository, onboardingRepoWire (SharedPrefsOnboardingRepository)

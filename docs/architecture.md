@@ -15,13 +15,13 @@ lib/
 │       ├── router.dart            # ArcaRouter, ArcaRouteGuards, AppStackCodec & ArcaRouter.wire
 │       └── onboarding_routes.dart # OnboardingRoute, OnboardingModule & OnboardingModuleCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
-│   ├── ai/                        # On-device AI assets (ArcaModelAssets for PP-OCRv6 & MiniLM-L6 PII)
+│   ├── ai/                        # On-device AI assets, BertTokenizer, OcrEngine, PiiExtractor & DocumentInferencePipeline
 │   ├── capture/                   # On-device document scanning, camera, photo & file picking (DocumentCaptureService)
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseConfig, DatabaseService, DatabaseManager, migrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
 │   └── onboarding/                # OnboardingRepository, onboardingRepoWire (onboarding.dart barrel)
 └── features/                      # Isolated, self-contained feature modules
-    └── onboarding/                # Inverted and manual onboarding flow (Welcome, SetupChoice, AiPrep, DocumentScan, ExtractedReview, UserName)
+    └── onboarding/                # Inverted and manual onboarding flow (Welcome, DocumentScan, ExtractedReview, UserName)
 ```
 
 ---
@@ -43,7 +43,7 @@ lib/
 
 ### 4. Interface-Driven Dependency Injection
 - Screens, BLoCs, router parameters, and service consumers accept abstract interfaces (`abstract interface class`), never concrete implementations.
-- Storage configuration (`DatabaseConfig`), repositories (`OnboardingRepository`), services (`DatabaseService`), and routing (`ArcaRouter`) are declared via declarative `CircuitWire` recipes (`DatabaseConfig.wire`, `DatabaseService.wire`, `OnboardingRepository.wire`, `ArcaRouter.wire`) and resolved through `Circuit.build(wires)`.
+- Storage configuration (`DatabaseConfig`), repositories (`OnboardingRepository`), services (`DatabaseService`), AI inference (`DocumentInferencePipeline`), and routing (`ArcaRouter`) are declared via declarative `CircuitWire` recipes (`DatabaseConfig.wire`, `DatabaseService.wire`, `OnboardingRepository.wire`, `DocumentInferencePipeline.wire`, `ArcaRouter.wire`) and resolved through `Circuit.build(wires)`.
 - The composition root exposes `Circuit` to the widget tree via `CircuitProvider`, forwarding to interface-typed accessors.
 - Test suites interact with interfaces, allowing in-memory fakes or mocks without coupling tests to implementation details.
 
