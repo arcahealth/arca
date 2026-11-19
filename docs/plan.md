@@ -8,6 +8,7 @@
 - Clean up prototype feature modules to isolate `WelcomeScreen` and onboarding router.
 - Implement inverted onboarding UI/UX flow with automatic document scan and manual voice/text paths.
 - Streamline onboarding to 3-step scan/manual paths leveraging bundled onnxruntime and RapidOCR.
+- Bundle recommended PP-OCRv6 OCR and MiniLM-L6 PII ONNX models and companion assets.
 
 ## Next
 

@@ -15,6 +15,7 @@ lib/
 │       ├── router.dart            # ArcaRouter, ArcaRouteGuards, AppStackCodec & ArcaRouter.wire
 │       └── onboarding_routes.dart # OnboardingRoute, OnboardingModule & OnboardingModuleCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
+│   ├── ai/                        # On-device AI assets (ArcaModelAssets for PP-OCRv6 & MiniLM-L6 PII)
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseConfig, DatabaseService, DatabaseManager, migrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
 │   └── onboarding/                # OnboardingRepository, onboardingRepoWire (onboarding.dart barrel)
@@ -111,6 +112,7 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 | --- | --- |
 | `circuitry_flutter` | Zero-codegen DAG-based dependency injection engine and Flutter bridge (`CircuitProvider`). |
 | `circuitry_devtools_extension` | DevTools extension for inspecting Circuitry dependency graphs. |
+| `flutter_onnxruntime` | On-device cross-platform ONNX Runtime execution engine for PP-OCRv6 and MiniLM-L6 PII models. |
 | `flutter_bloc` | Predictable, event-driven unidirectional state management for clinical records. |
 | `kaisel` | Dart 3 native navigation using sealed classes and stack-as-state model. |
 | `collection` | Official Dart collection utilities: `PriorityQueue`, `HeapPriorityQueue`, `binarySearch`, `ListEquality`, `SetEquality`. |

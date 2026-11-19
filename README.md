@@ -46,6 +46,7 @@ arca/
 │   │   ├── app.dart               # ArcaApp: CircuitProvider + WidgetsApp.router
 │   │   └── router/                # ArcaRouter, sealed ArcaRoute/OnboardingRoute, stack codecs & ArcaRouter.wire
 │   ├── core/                      # Shared design system, database, and domain infrastructure
+│   │   ├── ai/                    # ArcaModelAssets for bundled PP-OCRv6 OCR & MiniLM-L6 PII models
 │   │   ├── database/              # DatabaseConfig, DatabaseService, DatabaseManager, migrations, SQLite connection pool
 │   │   ├── design_system/         # Tokens (colors, typography, spacing) and basic widgets
 │   │   └── onboarding/            # OnboardingRepository, onboardingRepoWire (SharedPrefsOnboardingRepository)
