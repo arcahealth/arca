@@ -94,3 +94,9 @@ Superseded by 2026-11-15: Flutter Bridge (CircuitProvider and CircuitState) for 
   2. `Welcome` -> `Manual Entry` (information gathering) -> `Overview` (with edit) -> `Vault Created`
 - **Reason:** On-device bundling eliminates network dependency and initialization latency during first launch, reducing user onboarding friction by 40% and unifying review/edit state at a single overview screen.
 - **Alternative rejected:** Post-install model downloading, multi-step preparation screens, and separate confirmation screens without edit back-routing.
+
+## 2026-11-19: On-Device Document Scanning, Camera Capture, and Image Picker Abstraction
+- **Status:** agreed
+- **Choice:** Abstract document scanning and image acquisition behind a decoupled `DocumentCaptureService` interface in `lib/core/capture/` using `cunning_document_scanner` (VisionKit on iOS, ML Kit on Android) for edge-detected document scanning, and `image_picker` for direct camera snapshot and photo gallery selection.
+- **Reason:** Provides clinical document edge detection, deskewing, and multi-page scanning natively without bespoke camera controller boilerplate, while offering camera capture and photo gallery picking with zero-network, 100% on-device execution. The interface seam keeps the UI completely decoupled from native plugin dependencies and easily testable via in-memory fakes.
+- **Alternative rejected:** Building custom CameraX/AVFoundation camera preview widgets; relying exclusively on a single unspecialized photo picker without document border detection.

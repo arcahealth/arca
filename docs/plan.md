@@ -12,6 +12,20 @@
 
 ## Next
 
+### Document scanning, camera capture, and photo picker pipeline
+
+- **Release:** 0.2.0
+- **Goal:** Enable offline on-device document scanning with automatic edge detection, direct camera photo capture, and gallery image selection for medical prescriptions and lab reports.
+- **Requirements:**
+  - Provide `DocumentCaptureService` interface with `DocumentCaptureResult` and `DocumentCaptureFailure`.
+  - Implement native document scanning (`cunning_document_scanner`) with VisionKit on iOS and ML Kit on Android.
+  - Implement photo capture and gallery picker (`image_picker`).
+  - Wire `DocumentCaptureService` in Circuitry DI DAG (`documentCaptureWire`).
+  - Update `DocumentScanScreen` to provide dedicated actions for document scan, camera capture, and gallery selection with loading and error feedback.
+  - Configure iOS camera and photo library usage descriptions in `Info.plist` and Android manifest camera permissions.
+- **Approach:** Core capture service with interface-driven abstraction, Circuitry wire integration, and accessible presentation controls with >=48x48 dp touch targets.
+- **Acceptance:** Unit and widget tests verify capture outcomes (success, canceled, failure) and screen interactions; zero analyzer warnings.
+
 ### Multi-member health vault and setup wizard
 
 - **Release:** 0.2.0
