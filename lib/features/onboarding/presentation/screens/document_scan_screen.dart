@@ -81,23 +81,25 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
 
     return ArcaScaffold(
       bottomBar: ArcaBottomBar(
-        leading: widget.onBack != null
-            ? ArcaButton(
-                label: 'Back',
-                leadingIcon: const PhosphorIcon(
-                  PhosphorIconsBold.arrowLeft,
-                  size: 18,
-                ),
-                variant: .secondary,
-                semanticsLabel: 'Go back',
-                onPressed: widget.onBack,
-              )
-            : ArcaButton(
-                label: 'Enter Details Manually Instead',
-                variant: .ghost,
-                semanticsLabel: 'Switch to manual profile entry flow',
-                onPressed: widget.onSwitchToManual,
-              ),
+        leading: NullableBuilder(
+          widget.onBack,
+          builder: (context, onBack) => ArcaButton(
+            label: 'Back',
+            leadingIcon: const PhosphorIcon(
+              PhosphorIconsBold.arrowLeft,
+              size: 18,
+            ),
+            variant: .secondary,
+            semanticsLabel: 'Go back',
+            onPressed: onBack,
+          ),
+          fallback: ArcaButton(
+            label: 'Enter Details Manually Instead',
+            variant: .ghost,
+            semanticsLabel: 'Switch to manual profile entry flow',
+            onPressed: widget.onSwitchToManual,
+          ),
+        ),
         trailing: ArcaButton(
           label: hasCaptured ? 'Proceed to Review' : 'Capture & Extract Details',
           trailingIcon: const PhosphorIcon(
@@ -319,15 +321,18 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                 semanticsLabel: 'Select PDF or document file from storage',
                 onPressed: _isCapturing ? null : () => _handleCapture(.files),
               ),
-              if (widget.onBack != null) ...[
-                const SizedBox(height: ArcaSpacing.lg),
-                ArcaButton(
-                  label: 'Enter Details Manually Instead',
-                  variant: .ghost,
-                  semanticsLabel: 'Switch to manual profile entry flow',
-                  onPressed: widget.onSwitchToManual,
+              NullableBuilder(
+                widget.onBack,
+                builder: (context, _) => Padding(
+                  padding: const EdgeInsets.only(top: ArcaSpacing.lg),
+                  child: ArcaButton(
+                    label: 'Enter Details Manually Instead',
+                    variant: .ghost,
+                    semanticsLabel: 'Switch to manual profile entry flow',
+                    onPressed: widget.onSwitchToManual,
+                  ),
                 ),
-              ],
+              ),
             ],
           ),
         ),
