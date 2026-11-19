@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:circuitry_flutter/circuitry_flutter.dart';
-
-import 'default_document_capture_service.dart';
+import 'package:cunning_document_scanner/cunning_document_scanner.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// Source selection for capturing health documents or images.
 enum DocumentCaptureSource {
@@ -12,8 +14,11 @@ enum DocumentCaptureSource {
   /// Direct camera photo snapshot.
   camera,
 
-  /// Image selection from photo gallery or files.
+  /// Image selection from photo gallery.
   gallery,
+
+  /// Document or PDF file selection from file storage.
+  files,
 }
 
 /// Sealed result returned by document and image capture operations.
@@ -51,6 +56,24 @@ final class const DocumentCaptureUnsupported([final String? message]) extends Do
 /// Unknown or unexpected exception during capture.
 final class const DocumentCaptureUnknownError(final String message) extends DocumentCaptureFailure;
 
+/// Function signature for launching the platform document scanner.
+typedef DocumentScannerLauncher = Future<ScanResult?> Function({
+  int noOfPages,
+  ScannerSource scannerSource,
+  ScanOutput output,
+});
+
+/// Function signature for launching the platform image picker or camera.
+typedef ImagePickerLauncher = Future<XFile?> Function({
+  required ImageSource source,
+});
+
+/// Function signature for launching the platform file picker.
+typedef FilePickerLauncher = Future<List<PlatformFile>> Function({
+  FileType type,
+  List<String>? allowedExtensions,
+});
+
 /// Abstract interface for scanning documents, capturing photos, and selecting images.
 abstract interface class DocumentCaptureService {
   /// Declarative Circuitry Wire recipe for [DocumentCaptureService].
@@ -65,9 +88,191 @@ abstract interface class DocumentCaptureService {
   /// Chooses an image from the photo library or gallery.
   Future<DocumentCaptureResult> pickImage();
 
+  /// Chooses document or PDF files from storage.
+  Future<DocumentCaptureResult> pickFiles({
+    List<String>? allowedExtensions = const ['pdf', 'png', 'jpg', 'jpeg'],
+  });
+
   /// Captures documents or images from the requested [source].
   Future<DocumentCaptureResult> capture({
     required DocumentCaptureSource source,
     int maxPages = 100,
   });
+}
+
+/// Default production implementation of [DocumentCaptureService] using
+/// [CunningDocumentScanner], [ImagePicker], and [FilePicker].
+final class DefaultDocumentCaptureService([
+  final DocumentScannerLauncher? scannerLauncher,
+  final ImagePickerLauncher? pickerLauncher,
+  final FilePickerLauncher? filePickerLauncher,
+]) implements DocumentCaptureService {
+  this
+    : _scannerLauncher = scannerLauncher ?? _defaultScannerLauncher,
+      _pickerLauncher = pickerLauncher ?? _defaultPickerLauncher,
+      _filePickerLauncher = filePickerLauncher ?? _defaultFilePickerLauncher;
+
+  final DocumentScannerLauncher _scannerLauncher;
+  final ImagePickerLauncher _pickerLauncher;
+  final FilePickerLauncher _filePickerLauncher;
+
+  static Future<ScanResult?> _defaultScannerLauncher({
+    int noOfPages = 100,
+    ScannerSource scannerSource = ScannerSource.camera,
+    ScanOutput output = ScanOutput.images,
+  }) => CunningDocumentScanner.scanDocuments(
+    noOfPages: noOfPages,
+    scannerSource: scannerSource,
+    output: output,
+  );
+
+  static Future<XFile?> _defaultPickerLauncher({required ImageSource source}) =>
+      ImagePicker().pickImage(source: source);
+
+  static Future<List<PlatformFile>> _defaultFilePickerLauncher({
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+  }) => FilePicker.pickFiles(
+    type: type,
+    allowedExtensions: allowedExtensions,
+  );
+
+  @override
+  Future<DocumentCaptureResult> scanDocument({int maxPages = 100}) async {
+    try {
+      final result = await _scannerLauncher(
+        noOfPages: maxPages,
+        scannerSource: ScannerSource.camera,
+        output: ScanOutput.images,
+      );
+      if (result == null || result.images.isEmpty) {
+        return const DocumentCaptureResult.canceled();
+      }
+      return DocumentCaptureResult.success(result.images);
+    } on CunningDocumentScannerException catch (e) {
+      if (e.code == 'permission_denied') {
+        return DocumentCaptureResult.failure(
+          DocumentCaptureFailure.permissionDenied(e.message),
+        );
+      }
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.message),
+      );
+    } on PlatformException catch (e) {
+      if (_isPermissionDenied(e)) {
+        return DocumentCaptureResult.failure(
+          DocumentCaptureFailure.permissionDenied(e.message),
+        );
+      }
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.message ?? 'Scanning failed'),
+      );
+    } catch (e) {
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.toString()),
+      );
+    }
+  }
+
+  @override
+  Future<DocumentCaptureResult> capturePhoto() async {
+    try {
+      final file = await _pickerLauncher(source: ImageSource.camera);
+      if (file == null) {
+        return const DocumentCaptureResult.canceled();
+      }
+      return DocumentCaptureResult.success([file.path]);
+    } on PlatformException catch (e) {
+      if (_isPermissionDenied(e)) {
+        return DocumentCaptureResult.failure(
+          DocumentCaptureFailure.permissionDenied(e.message),
+        );
+      }
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.message ?? 'Camera capture failed'),
+      );
+    } catch (e) {
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.toString()),
+      );
+    }
+  }
+
+  @override
+  Future<DocumentCaptureResult> pickImage() async {
+    try {
+      final file = await _pickerLauncher(source: ImageSource.gallery);
+      if (file == null) {
+        return const DocumentCaptureResult.canceled();
+      }
+      return DocumentCaptureResult.success([file.path]);
+    } on PlatformException catch (e) {
+      if (_isPermissionDenied(e)) {
+        return DocumentCaptureResult.failure(
+          DocumentCaptureFailure.permissionDenied(e.message),
+        );
+      }
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.message ?? 'Photo selection failed'),
+      );
+    } catch (e) {
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.toString()),
+      );
+    }
+  }
+
+  @override
+  Future<DocumentCaptureResult> pickFiles({
+    List<String>? allowedExtensions = const ['pdf', 'png', 'jpg', 'jpeg'],
+  }) async {
+    try {
+      final files = await _filePickerLauncher(
+        type: allowedExtensions != null ? FileType.custom : FileType.any,
+        allowedExtensions: allowedExtensions,
+      );
+      if (files.isEmpty) {
+        return const DocumentCaptureResult.canceled();
+      }
+      final paths = files.map((f) => f.path).whereType<String>().toList();
+      if (paths.isEmpty) {
+        return const DocumentCaptureResult.canceled();
+      }
+      return DocumentCaptureResult.success(paths);
+    } on PlatformException catch (e) {
+      if (_isPermissionDenied(e)) {
+        return DocumentCaptureResult.failure(
+          DocumentCaptureFailure.permissionDenied(e.message),
+        );
+      }
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.message ?? 'File selection failed'),
+      );
+    } catch (e) {
+      return DocumentCaptureResult.failure(
+        DocumentCaptureFailure.unknown(e.toString()),
+      );
+    }
+  }
+
+  @override
+  Future<DocumentCaptureResult> capture({
+    required DocumentCaptureSource source,
+    int maxPages = 100,
+  }) => switch (source) {
+    .documentScan => scanDocument(maxPages: maxPages),
+    .camera => capturePhoto(),
+    .gallery => pickImage(),
+    .files => pickFiles(),
+  };
+
+  bool _isPermissionDenied(PlatformException e) {
+    final code = e.code.toLowerCase();
+    final message = (e.message ?? '').toLowerCase();
+    return code.contains('permission') ||
+        code.contains('denied') ||
+        code == 'camera_access_denied' ||
+        code == 'photo_access_denied' ||
+        message.contains('permission');
+  }
 }

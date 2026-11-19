@@ -16,7 +16,7 @@ lib/
 │       └── onboarding_routes.dart # OnboardingRoute, OnboardingModule & OnboardingModuleCodec
 ├── core/                          # Shared domain entities, repository contracts & infrastructure
 │   ├── ai/                        # On-device AI assets (ArcaModelAssets for PP-OCRv6 & MiniLM-L6 PII)
-│   ├── capture/                   # On-device document scanning, camera & photo capture (DocumentCaptureService, DefaultDocumentCaptureService)
+│   ├── capture/                   # On-device document scanning, camera, photo & file picking (DocumentCaptureService)
 │   ├── database/                  # On-device SQLite infrastructure (DatabaseConfig, DatabaseService, DatabaseManager, migrations)
 │   ├── design_system/             # Foundation UI (ArcaScaffold, ArcaHeader, ArcaButton, ArcaCard, ArcaBadge, ArcaTextField, ArcaProgressBar)
 │   └── onboarding/                # OnboardingRepository, onboardingRepoWire (onboarding.dart barrel)
@@ -113,6 +113,7 @@ Instead of string/URL-based routing or code-generation, Arca uses `kaisel`:
 | --- | --- |
 | `cunning_document_scanner` | Native on-device document scanning (VisionKit on iOS, ML Kit on Android) with edge detection and deskewing. |
 | `image_picker` | Platform photo library selection and fallback camera photo capture. |
+| `file_picker` | Platform document and file selection (PDFs, images) from storage. |
 | `circuitry_flutter` | Zero-codegen DAG-based dependency injection engine and Flutter bridge (`CircuitProvider`). |
 | `circuitry_devtools_extension` | DevTools extension for inspecting Circuitry dependency graphs. |
 | `flutter_onnxruntime` | On-device cross-platform ONNX Runtime execution engine for PP-OCRv6 and MiniLM-L6 PII models. |
