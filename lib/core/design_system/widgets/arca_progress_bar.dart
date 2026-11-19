@@ -3,10 +3,13 @@ import 'package:flutter/widgets.dart';
 import '../tokens/tokens.dart';
 
 /// Accessible, foundation-first linear progress indicator.
+///
+/// Follows Swiss minimalism: sleek 2px hairline, subtle track,
+/// and stark high-contrast progress fill without heavy framing borders.
 class const ArcaProgressBar({
   required final double value,
   super.key,
-  final double height = 8.0,
+  final double height = 2.0,
   final Color backgroundColor = ArcaColors.surfaceElevated,
   final Color progressColor = ArcaColors.primary,
   final String? semanticsLabel,
@@ -24,7 +27,6 @@ class const ArcaProgressBar({
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: ArcaRadii.none,
-          border: Border.all(color: ArcaColors.border, width: 2.0),
         ),
         clipBehavior: .antiAlias,
         child: LayoutBuilder(
