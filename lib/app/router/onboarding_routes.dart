@@ -8,23 +8,29 @@ import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 /// Sealed application route hierarchy for the onboarding module.
 sealed class const OnboardingRoute() extends KaiselRoute {
   const factory welcome() = _OnboardingWelcome;
-  const factory setupChoice() = _OnboardingSetupChoice;
-  const factory aiPrep() = _OnboardingAiPrep;
   const factory documentScan() = _OnboardingDocumentScan;
-  const factory extractedReview() = _OnboardingExtractedReview;
+  const factory extractedReview({
+    String extractedName,
+    String extractedDob,
+    String extractedMedication,
+    String extractedAllergy,
+  }) = _OnboardingExtractedReview;
   const factory userName({String? initialName}) = _OnboardingUserName;
 }
 
 final class const _OnboardingWelcome() extends OnboardingRoute;
-final class const _OnboardingSetupChoice() extends OnboardingRoute;
-final class const _OnboardingAiPrep() extends OnboardingRoute;
 final class const _OnboardingDocumentScan() extends OnboardingRoute;
-final class const _OnboardingExtractedReview() extends OnboardingRoute;
+final class const _OnboardingExtractedReview({
+  final String extractedName = '',
+  final String extractedDob = '',
+  final String extractedMedication = '',
+  final String extractedAllergy = '',
+}) extends OnboardingRoute;
 
 final class const _OnboardingUserName({final String? initialName})
     extends OnboardingRoute;
 
-/// Self-contained routing module managing the inverted and manual onboarding flows.
+/// Self-contained routing module managing the streamlined scan and manual onboarding flows.
 final class const OnboardingModule([
   final OnboardingRepository? onboardingRepo,
   final VoidCallback? onCompleted,
@@ -40,42 +46,51 @@ final class const OnboardingModule([
 
     return switch (route) {
       _OnboardingWelcome() => WelcomeScreen(
-        onStart: () => context.push(const OnboardingRoute.setupChoice()),
+        onScan: () => context.push(const OnboardingRoute.documentScan()),
+        onManualEntry: () => context.push(const OnboardingRoute.userName()),
         onSkip: () async {
           await repo.setCompletedOnboarding(true);
           onCompleted?.call();
         },
       ),
-      _OnboardingSetupChoice() => SetupChoiceScreen(
-        onChooseAuto: () => context.push(const OnboardingRoute.aiPrep()),
-        onChooseManual: () => context.push(const OnboardingRoute.userName()),
-        onBack: () => context.pop(),
-      ),
-      _OnboardingAiPrep() => AiPrepScreen(
-        onReady: () => context.push(const OnboardingRoute.documentScan()),
-        onBack: () => context.pop(),
-      ),
       _OnboardingDocumentScan() => DocumentScanScreen(
-        onCapture: () => context.push(const OnboardingRoute.extractedReview()),
+        onCapture: () => context.push(
+          const OnboardingRoute.extractedReview(
+            extractedName: 'Alex Morgan',
+            extractedDob: '1988-04-12',
+            extractedMedication: 'Amoxicillin 500mg',
+            extractedAllergy: 'Penicillin',
+          ),
+        ),
         onSwitchToManual: () => context.push(const OnboardingRoute.userName()),
-        onBack: () => context.pop(),
-      ),
-      _OnboardingExtractedReview() => ExtractedReviewScreen(
-        onConfirm: () async {
-          await repo.setCompletedOnboarding(true);
-          onCompleted?.call();
-        },
-        onEditManually: () => context.push(const OnboardingRoute.userName()),
         onBack: () => context.pop(),
       ),
       _OnboardingUserName(:final initialName) => UserNameScreen(
         initialName: initialName,
-        onContinue: (name) async {
-          await repo.setCompletedOnboarding(true);
-          onCompleted?.call();
-        },
+        onContinue: (name) =>
+            context.push(OnboardingRoute.extractedReview(extractedName: name)),
         onBack: () => context.pop(),
       ),
+      _OnboardingExtractedReview(
+        :final extractedName,
+        :final extractedDob,
+        :final extractedMedication,
+        :final extractedAllergy,
+      ) =>
+        ExtractedReviewScreen(
+          extractedName: extractedName,
+          extractedDob: extractedDob,
+          extractedMedication: extractedMedication,
+          extractedAllergy: extractedAllergy,
+          onConfirm: () async {
+            await repo.setCompletedOnboarding(true);
+            onCompleted?.call();
+          },
+          onEditManually: () => context.push(
+            OnboardingRoute.userName(initialName: extractedName),
+          ),
+          onBack: () => context.pop(),
+        ),
     };
   }
 }
@@ -86,27 +101,17 @@ final class const OnboardingModuleCodec()
   @override
   List<String> encode(List<OnboardingRoute> stack) => switch (stack.last) {
     _OnboardingWelcome() => const [],
-    _OnboardingSetupChoice() => const ['choice'],
-    _OnboardingAiPrep() => const ['ai-prep'],
     _OnboardingDocumentScan() => const ['scan'],
-    _OnboardingExtractedReview() => const ['review'],
-    _OnboardingUserName() => const ['name'],
+    _OnboardingUserName() => const ['manual'],
+    _OnboardingExtractedReview() => const ['overview'],
   };
 
   @override
   List<OnboardingRoute>? decode(List<String> segments) => switch (segments) {
     [] || [''] || ['/'] => const [.welcome()],
-    ['choice'] => const [.welcome(), .setupChoice()],
-    ['ai-prep'] => const [.welcome(), .setupChoice(), .aiPrep()],
-    ['scan'] => const [.welcome(), .setupChoice(), .aiPrep(), .documentScan()],
-    ['review'] => const [
-      .welcome(),
-      .setupChoice(),
-      .aiPrep(),
-      .documentScan(),
-      .extractedReview(),
-    ],
-    ['name'] => const [.welcome(), .setupChoice(), .userName()],
+    ['scan'] => const [.welcome(), .documentScan()],
+    ['manual'] => const [.welcome(), .userName()],
+    ['overview'] => const [.welcome(), .documentScan(), .extractedReview()],
     _ => null,
   };
 }

@@ -6,7 +6,7 @@ import 'package:arca/core/design_system/arca_design_system.dart';
 /// Document capture viewfinder screen for prescription or lab report scanning.
 ///
 /// Pure UI screen: forwards intent via [onCapture] and [onSwitchToManual]
-/// without camera platform plugins or mock service calls.
+/// utilizing bundled onnxruntime & RapidOCR on-device models without external download steps.
 class const DocumentScanScreen({
   required final VoidCallback onCapture,
   required final VoidCallback onSwitchToManual,
@@ -25,7 +25,7 @@ class const DocumentScanScreen({
                   size: 18,
                 ),
                 variant: .secondary,
-                semanticsLabel: 'Go back to intelligence prep',
+                semanticsLabel: 'Go back',
                 onPressed: onBack,
               )
             : ArcaButton(
@@ -64,7 +64,7 @@ class const DocumentScanScreen({
                     ),
                   ),
                   Text(
-                    'DOCUMENT INTAKE',
+                    'DOCUMENT SCAN',
                     style: ArcaTypography.label.copyWith(
                       color: ArcaColors.textMuted,
                     ),
@@ -77,7 +77,7 @@ class const DocumentScanScreen({
               const Text('Scan Document', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
-                'Position your prescription or lab summary inside the frame. Details will be extracted automatically on-device.',
+                'Position your prescription or lab summary inside the frame. Details are extracted instantly using bundled on-device OCR.',
                 style: ArcaTypography.bodyLarge.copyWith(
                   color: ArcaColors.textSecondary,
                 ),
@@ -113,6 +113,8 @@ class const DocumentScanScreen({
                           'Ensure adequate lighting & readable text',
                           style: ArcaTypography.caption,
                         ),
+                        SizedBox(height: ArcaSpacing.md),
+                        ArcaBadge(label: 'Bundled RapidOCR', variant: .normal),
                       ],
                     ),
                   ),

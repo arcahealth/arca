@@ -6,16 +6,80 @@ import 'package:arca/core/widgets/widgets.dart';
 
 /// Minimal first-launch welcome screen greeting the user.
 ///
-/// Follows Swiss / Neo-brutalist typographic minimalism: bold left-aligned hierarchy,
+/// Follows Swiss typographic minimalism: stark left-aligned hierarchy,
 /// crisp architectural divider rules, and clean, clinical copy.
+/// Provides direct entry points to on-device scan or manual profile setup.
 class const WelcomeScreen({
   super.key,
+  final VoidCallback? onScan,
+  final VoidCallback? onManualEntry,
   final VoidCallback? onStart,
   final VoidCallback? onSkip,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final effectiveScan = onScan ?? onStart;
+
     return ArcaScaffold(
+      bottomBar: ArcaBottomBar(
+        showTopDivider: false,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ArcaSpacing.lg,
+          vertical: ArcaSpacing.md,
+        ),
+        child: Column(
+          mainAxisSize: .min,
+          crossAxisAlignment: .stretch,
+          children: [
+            Row(
+              children: [
+                if (onManualEntry != null) ...[
+                  Expanded(
+                    child: ArcaButton(
+                      label: 'Enter Manually',
+                      leadingIcon: const PhosphorIcon(
+                        PhosphorIconsBold.pencilSimple,
+                        size: 18,
+                      ),
+                      variant: .secondary,
+                      semanticsLabel: 'Enter health details manually',
+                      onPressed: onManualEntry,
+                    ),
+                  ),
+                  const SizedBox(width: ArcaSpacing.md),
+                ],
+                Expanded(
+                  child: ArcaButton(
+                    label: onManualEntry != null
+                        ? 'Scan Document'
+                        : 'Get Started',
+                    trailingIcon: const PhosphorIcon(
+                      PhosphorIconsBold.scan,
+                      size: 18,
+                    ),
+                    variant: .primary,
+                    semanticsLabel:
+                        'Scan prescription or document with on-device OCR',
+                    onPressed: effectiveScan,
+                  ),
+                ),
+              ],
+            ),
+            NullableBuilder(
+              onSkip,
+              builder: (context, skip) => Padding(
+                padding: const EdgeInsets.only(top: ArcaSpacing.xs),
+                child: ArcaButton(
+                  label: 'Skip Setup',
+                  variant: .ghost,
+                  semanticsLabel: 'Skip onboarding setup and enter Arca',
+                  onPressed: skip,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -58,28 +122,6 @@ class const WelcomeScreen({
                 ),
               ),
               const Spacer(flex: 2),
-              ArcaButton(
-                label: 'Get Started',
-                trailingIcon: const PhosphorIcon(
-                  PhosphorIconsBold.arrowRight,
-                  size: 18,
-                ),
-                variant: .primary,
-                semanticsLabel: 'Get started with Arca setup',
-                onPressed: onStart,
-              ),
-              NullableBuilder(
-                onSkip,
-                builder: (context, skip) => Padding(
-                  padding: const EdgeInsets.only(top: ArcaSpacing.sm),
-                  child: ArcaButton(
-                    label: 'Skip Setup',
-                    variant: .ghost,
-                    semanticsLabel: 'Skip onboarding setup and enter Arca',
-                    onPressed: skip,
-                  ),
-                ),
-              ),
             ],
           ),
         ),

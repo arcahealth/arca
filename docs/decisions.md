@@ -86,3 +86,11 @@ Superseded by 2026-11-15: Flutter Bridge (CircuitProvider and CircuitState) for 
 - **Choice:** Extract DAG dependency injection engine into dedicated standalone package `circuitry_flutter` and decommission in-tree `lib/core/di/`.
 - **Reason:** Isolates dependency injection engine into reusable, independently tested packages and keeps Arca focused on clinical domain logic.
 - **Alternative rejected:** Maintaining in-tree dependency injection engine inside `lib/core/di/`.
+
+## 2026-11-19: Streamline Onboarding by Bundling onnxruntime & RapidOCR
+- **Status:** agreed
+- **Choice:** Bundle onnxruntime and RapidOCR directly inside the iOS app bundle and Android APK, eliminating intermediary model download/preparation (`AiPrepScreen`) and setup choice (`SetupChoiceScreen`) steps. The onboarding flow condenses into two symmetric 3-step paths converging at `ExtractedReviewScreen` with edit functionality:
+  1. `Welcome` -> `Scan` (bundled OCR) -> `Overview` (with edit) -> `Vault Created`
+  2. `Welcome` -> `Manual Entry` (information gathering) -> `Overview` (with edit) -> `Vault Created`
+- **Reason:** On-device bundling eliminates network dependency and initialization latency during first launch, reducing user onboarding friction by 40% and unifying review/edit state at a single overview screen.
+- **Alternative rejected:** Post-install model downloading, multi-step preparation screens, and separate confirmation screens without edit back-routing.

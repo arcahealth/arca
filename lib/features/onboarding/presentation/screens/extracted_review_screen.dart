@@ -3,7 +3,7 @@ import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
 
-/// Review screen presenting the data extracted from a scanned document.
+/// Overview screen presenting the profile and health records with edit functionality.
 ///
 /// Allows confirming the profile into the vault via [onConfirm] or stepping
 /// through the manual inputs via [onEditManually] with prefilled values.
@@ -55,7 +55,7 @@ class const ExtractedReviewScreen({
             size: 18,
           ),
           variant: .primary,
-          semanticsLabel: 'Confirm extracted profile and create vault',
+          semanticsLabel: 'Confirm profile and create vault',
           onPressed: onConfirm,
         ),
       ),
@@ -78,7 +78,7 @@ class const ExtractedReviewScreen({
                     ),
                   ),
                   Text(
-                    'RECORD VERIFICATION',
+                    'VAULT OVERVIEW',
                     style: ArcaTypography.label.copyWith(
                       color: ArcaColors.textMuted,
                     ),
@@ -88,10 +88,10 @@ class const ExtractedReviewScreen({
               const ArcaDivider(
                 margin: EdgeInsets.symmetric(vertical: ArcaSpacing.md),
               ),
-              const Text('Review Profile', style: ArcaTypography.display),
+              const Text('Profile Overview', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
-                'Arca extracted these records directly from your document. You can confirm to build your vault now or adjust any field manually.',
+                'Review your profile and health records. You can edit any details or confirm to initialize your encrypted vault.',
                 style: ArcaTypography.bodyLarge.copyWith(
                   color: ArcaColors.textSecondary,
                 ),
@@ -106,7 +106,7 @@ class const ExtractedReviewScreen({
                       mainAxisAlignment: .spaceBetween,
                       children: [
                         Text(
-                          'Extracted Information',
+                          'Profile Information',
                           style: ArcaTypography.titleMedium,
                         ),
                         ArcaBadge(label: '100% On-Device', variant: .normal),

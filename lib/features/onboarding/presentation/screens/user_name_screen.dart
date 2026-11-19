@@ -83,13 +83,13 @@ class _UserNameScreenState extends State<UserNameScreen> {
           ),
         ),
         trailing: ArcaButton(
-          label: 'Complete Setup & Create Vault',
+          label: 'Continue to Overview',
           trailingIcon: const PhosphorIcon(
             PhosphorIconsBold.arrowRight,
             size: 18,
           ),
           variant: .primary,
-          semanticsLabel: 'Complete onboarding and create vault',
+          semanticsLabel: 'Continue to profile overview',
           onPressed: () {
             final text = _controller.text.trim();
             widget.onContinue(text.isNotEmpty ? text : 'Alex');
