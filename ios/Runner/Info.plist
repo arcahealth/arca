@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Arca needs camera access to scan and capture prescriptions, lab reports, and clinical documents on-device.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Arca needs access to your photo library to select medical records and prescription documents on-device.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
