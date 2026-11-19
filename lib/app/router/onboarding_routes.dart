@@ -2,7 +2,6 @@ import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaisel/kaisel.dart';
 
-import 'package:arca/core/capture/capture.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 
@@ -34,7 +33,6 @@ final class const _OnboardingUserName({final String? initialName}) extends Onboa
 final class const OnboardingModule([
   final OnboardingRepository? onboardingRepo,
   final VoidCallback? onCompleted,
-  final DocumentCaptureService? captureService,
 ]) extends RouteModule<OnboardingRoute> {
   @override
   List<OnboardingRoute> get initialStack => const [.welcome()];
@@ -53,10 +51,6 @@ final class const OnboardingModule([
         },
       ),
       _OnboardingDocumentScan() => DocumentScanScreen(
-        captureService:
-            captureService ??
-            CircuitProvider.maybeOf(context)?.get<DocumentCaptureService>() ??
-            DefaultDocumentCaptureService(),
         onImagesCaptured: (paths) => context.push(
           const OnboardingRoute.extractedReview(
             extractedName: 'Alex Morgan',

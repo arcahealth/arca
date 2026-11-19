@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
@@ -76,9 +75,6 @@ typedef FilePickerLauncher = Future<List<PlatformFile>> Function({
 
 /// Abstract interface for scanning documents, capturing photos, and selecting images.
 abstract interface class DocumentCaptureService {
-  /// Declarative Circuitry Wire recipe for [DocumentCaptureService].
-  static Wire<DocumentCaptureService> get wire => .new(DefaultDocumentCaptureService.new);
-
   /// Scans physical documents using the platform document scanner (VisionKit / ML Kit).
   Future<DocumentCaptureResult> scanDocument({int maxPages = 100});
 

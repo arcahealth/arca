@@ -270,9 +270,9 @@ void main() {
       expect(filesCount, 1);
     });
 
-    test('DocumentCaptureService.wire is registered and constructs service', () {
-      final wire = DocumentCaptureService.wire;
-      expect(wire, isNotNull);
+    test('DefaultDocumentCaptureService instantiates cleanly with defaults', () {
+      final service = DefaultDocumentCaptureService();
+      expect(service, isA<DocumentCaptureService>());
     });
   });
 }

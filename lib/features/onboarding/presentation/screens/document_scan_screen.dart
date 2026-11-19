@@ -11,7 +11,7 @@ import 'package:arca/core/widgets/widgets.dart';
 /// capture, photo gallery selection, and PDF/document file imports.
 final class const DocumentScanScreen({
   super.key,
-  required final DocumentCaptureService captureService,
+  final DocumentCaptureService? captureService,
   required final VoidCallback onCapture,
   required final VoidCallback onSwitchToManual,
   final ValueChanged<List<String>>? onImagesCaptured,
@@ -22,9 +22,16 @@ final class const DocumentScanScreen({
 }
 
 class _DocumentScanScreenState extends State<DocumentScanScreen> {
+  late final DocumentCaptureService _captureService;
   bool _isCapturing = false;
   String? _errorMessage;
   List<String> _capturedPaths = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _captureService = widget.captureService ?? DefaultDocumentCaptureService();
+  }
 
   Future<void> _handleCapture(DocumentCaptureSource source) async {
     setState(() {
@@ -33,7 +40,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
     });
 
     try {
-      final result = await widget.captureService.capture(source: source);
+      final result = await _captureService.capture(source: source);
       if (!mounted) return;
 
       switch (result) {

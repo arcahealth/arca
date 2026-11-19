@@ -85,7 +85,6 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           DocumentScanScreen(
-            captureService: FakeDocumentCaptureService(),
             onCapture: () => captureCalled = true,
             onSwitchToManual: () => manualCalled = true,
           ),
