@@ -1,14 +1,19 @@
-import 'package:flutter/widgets.dart' show BorderRadius, Radius;
+import 'package:flutter/widgets.dart' show BorderRadius;
 
-/// Corner radius tokens for rounded surfaces, cards, and buttons.
+/// Corner radius tokens for Arca.
+///
+/// Follows Swiss Design and Neo-brutalist principles: pure geometric sharp corners
+/// without decorative rounded curves or pill shapes.
 abstract final class ArcaRadii {
-  static const double rawSm = 6.0;
-  static const double rawMd = 12.0;
-  static const double rawLg = 16.0;
-  static const double rawPill = 999.0;
+  static const double rawNone = 0.0;
+  static const double rawSm = 0.0;
+  static const double rawMd = 0.0;
+  static const double rawLg = 0.0;
+  static const double rawPill = 0.0;
 
-  static const BorderRadius sm = BorderRadius.all(Radius.circular(rawSm));
-  static const BorderRadius md = BorderRadius.all(Radius.circular(rawMd));
-  static const BorderRadius lg = BorderRadius.all(Radius.circular(rawLg));
-  static const BorderRadius pill = BorderRadius.all(Radius.circular(rawPill));
+  static const BorderRadius none = BorderRadius.zero;
+  static const BorderRadius sm = BorderRadius.zero;
+  static const BorderRadius md = BorderRadius.zero;
+  static const BorderRadius lg = BorderRadius.zero;
+  static const BorderRadius pill = BorderRadius.zero;
 }

@@ -32,13 +32,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Welcome to Arca'), findsOneWidget);
-      expect(
-        find.textContaining('Your private, offline-first health vault'),
-        findsOneWidget,
-      );
+      expect(find.text('ARCA'), findsOneWidget);
+      expect(find.textContaining('Your medical records'), findsOneWidget);
 
-      final startBtn = find.text('Get Started →');
+      final startBtn = find.text('Get Started');
       await tester.ensureVisible(startBtn);
       await tester.tap(startBtn);
       expect(startCalled, isTrue);
@@ -71,20 +68,20 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Choose Setup Mode'), findsOneWidget);
-        expect(find.text('Automatic Setup'), findsOneWidget);
+        expect(find.text('Automatic Extraction'), findsOneWidget);
         expect(find.text('Manual Setup'), findsOneWidget);
 
-        final autoBtn = find.text('Scan Document →');
+        final autoBtn = find.text('Scan Document');
         await tester.ensureVisible(autoBtn);
         await tester.tap(autoBtn);
         expect(autoCalled, isTrue);
 
-        final manualBtn = find.text('Enter Manually →');
+        final manualBtn = find.text('Enter Manually');
         await tester.ensureVisible(manualBtn);
         await tester.tap(manualBtn);
         expect(manualCalled, isTrue);
 
-        final backBtn = find.text('←');
+        final backBtn = find.text('Back');
         await tester.ensureVisible(backBtn);
         await tester.tap(backBtn);
         expect(backCalled, isTrue);
@@ -112,15 +109,15 @@ void main() {
 
       expect(find.text('On-Device Intelligence'), findsOneWidget);
       expect(find.text('Local OCR Engine'), findsOneWidget);
-      expect(find.text('PII Sanitizer & Vault Redactor'), findsOneWidget);
-      expect(find.text('Clinical Voice ASR'), findsOneWidget);
+      expect(find.text('Clinical Entity Parser'), findsOneWidget);
+      expect(find.text('Hardware Vault Encryption'), findsOneWidget);
 
-      final readyBtn = find.text('Proceed to Document Capture →');
+      final readyBtn = find.text('Proceed to Document Capture');
       await tester.ensureVisible(readyBtn);
       await tester.tap(readyBtn);
       expect(readyCalled, isTrue);
 
-      final backBtn = find.text('←');
+      final backBtn = find.text('Back');
       await tester.ensureVisible(backBtn);
       await tester.tap(backBtn);
       expect(backCalled, isTrue);
@@ -148,7 +145,7 @@ void main() {
       expect(find.text('Scan Document'), findsOneWidget);
       expect(find.text('Align document within frame'), findsOneWidget);
 
-      final captureBtn = find.text('Capture & Extract Details →');
+      final captureBtn = find.text('Capture & Extract Details');
       await tester.ensureVisible(captureBtn);
       await tester.tap(captureBtn);
       expect(captureCalled, isTrue);
@@ -187,12 +184,12 @@ void main() {
       expect(find.text('Amoxicillin 500mg'), findsOneWidget);
       expect(find.text('100% On-Device'), findsOneWidget);
 
-      final confirmBtn = find.text('Confirm & Create Vault →');
+      final confirmBtn = find.text('Confirm & Create Vault');
       await tester.ensureVisible(confirmBtn);
       await tester.tap(confirmBtn);
       expect(confirmCalled, isTrue);
 
-      final editBtn = find.text('Adjust Manually');
+      final editBtn = find.text('Edit Details Manually');
       await tester.ensureVisible(editBtn);
       await tester.tap(editBtn);
       expect(editCalled, isTrue);
@@ -232,7 +229,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('What should Arca call you?'), findsOneWidget);
+        expect(find.text('Personal Identity'), findsOneWidget);
 
         final micFinder = find.bySemanticsLabel('Dictate name with voice');
         expect(micFinder, findsOneWidget);
@@ -245,7 +242,7 @@ void main() {
         await tester.enterText(textField, 'Jane Doe');
         await tester.pumpAndSettle();
 
-        final continueBtn = find.text('Complete Setup & Create Vault →');
+        final continueBtn = find.text('Complete Setup & Create Vault');
         await tester.ensureVisible(continueBtn);
         await tester.tap(continueBtn);
         expect(enteredName, 'Jane Doe');
@@ -270,7 +267,7 @@ void main() {
 
         expect(find.text('Alex Morgan'), findsOneWidget);
 
-        final continueBtn = find.text('Complete Setup & Create Vault →');
+        final continueBtn = find.text('Complete Setup & Create Vault');
         await tester.ensureVisible(continueBtn);
         await tester.tap(continueBtn);
         expect(enteredName, 'Alex Morgan');

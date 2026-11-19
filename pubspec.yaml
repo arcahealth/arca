@@ -18,6 +18,7 @@ dependencies:
   sqlite_async: ^0.14.8
   path_manager: ^1.0.0
   circuitry_flutter: ^0.2.0
+  phosphoricons_flutter: ^1.1.1
 
 dev_dependencies:
   flutter_test:

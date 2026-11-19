@@ -75,14 +75,8 @@ class _ArcaTextFieldState extends State<ArcaTextField> {
         mainAxisSize: .min,
         children: [
           if (widget.label != null) ...[
-            Text(
-              widget.label!,
-              style: ArcaTypography.caption.copyWith(
-                color: ArcaColors.textSecondary,
-                fontWeight: .w600,
-              ),
-            ),
-            const SizedBox(height: ArcaSpacing.xxs),
+            Text(widget.label!, style: ArcaTypography.label),
+            const SizedBox(height: ArcaSpacing.xs),
           ],
           GestureDetector(
             onTap: () => _effectiveFocusNode.requestFocus(),
@@ -96,11 +90,22 @@ class _ArcaTextFieldState extends State<ArcaTextField> {
               ),
               decoration: BoxDecoration(
                 color: ArcaColors.surface,
-                borderRadius: ArcaRadii.md,
+                borderRadius: ArcaRadii.none,
                 border: Border.all(
-                  color: _isFocused ? ArcaColors.primary : ArcaColors.border,
-                  width: _isFocused ? 1.5 : 1.0,
+                  color: _isFocused
+                      ? ArcaColors.border
+                      : ArcaColors.borderSubtle,
+                  width: 2.0,
                 ),
+                boxShadow: _isFocused
+                    ? const [
+                        BoxShadow(
+                          color: ArcaColors.border,
+                          offset: Offset(3.0, 3.0),
+                          blurRadius: 0,
+                        ),
+                      ]
+                    : null,
               ),
               child: Row(
                 children: [

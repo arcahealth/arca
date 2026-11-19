@@ -35,9 +35,13 @@ void main() {
       // Must settle cleanly without microtask infinite loop
       await tester.pumpAndSettle();
 
-      expect(find.text('Welcome to Arca'), findsOneWidget);
+      expect(find.text('ARCA'), findsOneWidget);
+      expect(
+        find.text('Your medical records.\nEncrypted on your device.'),
+        findsOneWidget,
+      );
 
-      final startBtn = find.text('Get Started →');
+      final startBtn = find.text('Get Started');
       expect(startBtn, findsOneWidget);
       await tester.tap(startBtn);
       await tester.pumpAndSettle();

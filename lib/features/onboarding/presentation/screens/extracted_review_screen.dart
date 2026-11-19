@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/widgets/widgets.dart';
@@ -25,7 +26,10 @@ class const ExtractedReviewScreen({
         children: [
           Text(label, style: ArcaTypography.caption),
           const SizedBox(height: ArcaSpacing.xxs),
-          Text(value, style: ArcaTypography.titleMedium),
+          Text(
+            value.isNotEmpty ? value : '—',
+            style: ArcaTypography.titleMedium,
+          ),
         ],
       ),
     );
@@ -35,11 +39,12 @@ class const ExtractedReviewScreen({
   Widget build(BuildContext context) {
     return ArcaScaffold(
       header: ArcaHeader(
-        title: 'Review',
+        title: 'Review Data',
         leading: NullableBuilder(
           onBack,
           builder: (context, back) => ArcaButton(
-            label: '←',
+            label: 'Back',
+            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
             variant: .ghost,
             semanticsLabel: 'Go back to scan screen',
             onPressed: back,
@@ -58,7 +63,7 @@ class const ExtractedReviewScreen({
               const Text('Review Profile', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
-                'Arca extracted these details directly from your document. You can confirm to build your vault now or adjust any field manually.',
+                'Arca extracted these records directly from your document. You can confirm to build your vault now or adjust any field manually.',
                 style: ArcaTypography.bodyLarge.copyWith(
                   color: ArcaColors.textSecondary,
                 ),
@@ -92,16 +97,20 @@ class const ExtractedReviewScreen({
               ),
               const SizedBox(height: ArcaSpacing.xxl),
               ArcaButton(
-                label: 'Confirm & Create Vault →',
+                label: 'Confirm & Create Vault',
+                icon: const PhosphorIcon(
+                  PhosphorIconsBold.arrowRight,
+                  size: 18,
+                ),
                 variant: .primary,
                 semanticsLabel: 'Confirm extracted profile and create vault',
                 onPressed: onConfirm,
               ),
               const SizedBox(height: ArcaSpacing.sm),
               ArcaButton(
-                label: 'Adjust Manually',
-                variant: .secondary,
-                semanticsLabel: 'Step through and edit details manually',
+                label: 'Edit Details Manually',
+                variant: .ghost,
+                semanticsLabel: 'Edit profile fields manually',
                 onPressed: onEditManually,
               ),
             ],

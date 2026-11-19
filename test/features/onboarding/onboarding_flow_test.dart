@@ -62,29 +62,33 @@ void main() {
         await tester.pumpAndSettle();
 
         // Screen 1: Welcome Screen
-        expect(find.text('Welcome to Arca'), findsOneWidget);
-        final startBtn = find.text('Get Started →');
+        expect(find.text('ARCA'), findsOneWidget);
+        expect(
+          find.text('Your medical records.\nEncrypted on your device.'),
+          findsOneWidget,
+        );
+        final startBtn = find.text('Get Started');
         await tester.ensureVisible(startBtn);
         await tester.tap(startBtn);
         await tester.pumpAndSettle();
 
         // Screen 2: Setup Choice Screen
         expect(find.text('Choose Setup Mode'), findsOneWidget);
-        final scanBtn = find.text('Scan Document →');
+        final scanBtn = find.text('Scan Document');
         await tester.ensureVisible(scanBtn);
         await tester.tap(scanBtn);
         await tester.pumpAndSettle();
 
         // Screen 3A: AI Preparation Screen
         expect(find.text('On-Device Intelligence'), findsOneWidget);
-        final proceedBtn = find.text('Proceed to Document Capture →');
+        final proceedBtn = find.text('Proceed to Document Capture');
         await tester.ensureVisible(proceedBtn);
         await tester.tap(proceedBtn);
         await tester.pumpAndSettle();
 
         // Screen 4A: Document Scan Screen
         expect(find.text('Scan Document'), findsOneWidget);
-        final captureBtn = find.text('Capture & Extract Details →');
+        final captureBtn = find.text('Capture & Extract Details');
         await tester.ensureVisible(captureBtn);
         await tester.tap(captureBtn);
         await tester.pumpAndSettle();
@@ -92,7 +96,7 @@ void main() {
         // Screen 5A: Extracted Review Screen
         expect(find.text('Review Profile'), findsOneWidget);
         expect(find.text('100% On-Device'), findsOneWidget);
-        final confirmBtn = find.text('Confirm & Create Vault →');
+        final confirmBtn = find.text('Confirm & Create Vault');
         await tester.ensureVisible(confirmBtn);
         await tester.tap(confirmBtn);
         await tester.pumpAndSettle();
@@ -118,26 +122,26 @@ void main() {
       await tester.pumpAndSettle();
 
       // Screen 1: Welcome Screen
-      final startBtn = find.text('Get Started →');
+      final startBtn = find.text('Get Started');
       await tester.ensureVisible(startBtn);
       await tester.tap(startBtn);
       await tester.pumpAndSettle();
 
       // Screen 2: Setup Choice Screen
       expect(find.text('Choose Setup Mode'), findsOneWidget);
-      final manualBtn = find.text('Enter Manually →');
+      final manualBtn = find.text('Enter Manually');
       await tester.ensureVisible(manualBtn);
       await tester.tap(manualBtn);
       await tester.pumpAndSettle();
 
       // Screen 3B: User Name Screen
-      expect(find.text('What should Arca call you?'), findsOneWidget);
+      expect(find.text('Personal Identity'), findsOneWidget);
       final micFinder = find.bySemanticsLabel('Dictate name with voice');
       await tester.ensureVisible(micFinder);
       await tester.tap(micFinder);
       await tester.pumpAndSettle();
 
-      final completeBtn = find.text('Complete Setup & Create Vault →');
+      final completeBtn = find.text('Complete Setup & Create Vault');
       await tester.ensureVisible(completeBtn);
       await tester.tap(completeBtn);
       await tester.pumpAndSettle();

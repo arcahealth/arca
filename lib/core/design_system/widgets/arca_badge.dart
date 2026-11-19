@@ -36,12 +36,16 @@ class const ArcaBadge({
       ),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: ArcaRadii.pill,
-        border: Border.all(color: text.withValues(alpha: 0.3), width: 0.5),
+        borderRadius: ArcaRadii.none,
+        border: Border.all(color: text, width: 1.5),
       ),
       child: Text(
         label,
-        style: ArcaTypography.caption.copyWith(color: text, fontWeight: .w600),
+        style: ArcaTypography.caption.copyWith(
+          color: text,
+          fontWeight: .w700,
+          letterSpacing: 0.8,
+        ),
       ),
     );
   }

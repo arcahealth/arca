@@ -1,12 +1,13 @@
 import 'package:flutter/widgets.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/widgets/widgets.dart';
 
 /// Minimal first-launch welcome screen greeting the user.
 ///
-/// Forwards user navigation intent strictly via constructor callbacks [onStart]
-/// and [onSkip] without dependencies on other features or router state.
+/// Follows Swiss / Neo-brutalist typographic minimalism: bold left-aligned hierarchy,
+/// crisp architectural divider rules, and clean, clinical copy.
 class const WelcomeScreen({
   super.key,
   final VoidCallback? onStart,
@@ -24,47 +25,44 @@ class const WelcomeScreen({
           child: Column(
             crossAxisAlignment: .stretch,
             children: [
-              const Spacer(),
-              Center(
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: ArcaColors.primarySubtle,
-                    borderRadius: ArcaRadii.lg,
-                    border: Border.all(
-                      color: ArcaColors.primary.withValues(alpha: 0.3),
-                      width: 2.0,
+              Row(
+                mainAxisAlignment: .spaceBetween,
+                children: [
+                  Text(
+                    'ARCA',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textPrimary,
                     ),
                   ),
-                  alignment: .center,
-                  child: const Text(
-                    'A',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: .bold,
-                      color: ArcaColors.primary,
+                  Text(
+                    'HEALTH VAULT',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textMuted,
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: ArcaSpacing.xl),
-              const Text(
-                'Welcome to Arca',
-                style: ArcaTypography.display,
-                textAlign: .center,
+                ],
               ),
               const SizedBox(height: ArcaSpacing.sm),
+              Container(height: 2.0, color: ArcaColors.borderSubtle),
+              const Spacer(),
+              const Text(
+                'Your medical records.\nEncrypted on your device.',
+                style: ArcaTypography.display,
+              ),
+              const SizedBox(height: ArcaSpacing.md),
               Text(
-                'Your private, offline-first health vault.\nMedical records, vitals, and family profiles—processed entirely on your device with complete privacy.',
+                'A private health vault for your clinical records, prescriptions, and vitals. Everything is processed and stored on-device with zero cloud dependencies.',
                 style: ArcaTypography.bodyLarge.copyWith(
                   color: ArcaColors.textSecondary,
                 ),
-                textAlign: .center,
               ),
               const Spacer(flex: 2),
               ArcaButton(
-                label: 'Get Started →',
+                label: 'Get Started',
+                icon: const PhosphorIcon(
+                  PhosphorIconsBold.arrowRight,
+                  size: 18,
+                ),
                 variant: .primary,
                 semanticsLabel: 'Get started with Arca setup',
                 onPressed: onStart,

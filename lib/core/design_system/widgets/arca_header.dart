@@ -20,7 +20,7 @@ class const ArcaHeader({
       decoration: const BoxDecoration(
         color: ArcaColors.background,
         border: Border(
-          bottom: BorderSide(color: ArcaColors.borderSubtle, width: 1.0),
+          bottom: BorderSide(color: ArcaColors.borderSubtle, width: 2.0),
         ),
       ),
       child: LayoutBuilder(

@@ -23,7 +23,8 @@ class const ArcaProgressBar({
         height: height,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: ArcaRadii.pill,
+          borderRadius: ArcaRadii.none,
+          border: Border.all(color: ArcaColors.border, width: 2.0),
         ),
         clipBehavior: .antiAlias,
         child: LayoutBuilder(
@@ -35,7 +36,7 @@ class const ArcaProgressBar({
                 width: constraints.maxWidth * clampedValue,
                 decoration: BoxDecoration(
                   color: progressColor,
-                  borderRadius: ArcaRadii.pill,
+                  borderRadius: ArcaRadii.none,
                 ),
               ),
             );

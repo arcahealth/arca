@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/widgets/widgets.dart';
@@ -43,11 +44,12 @@ class const AiPrepScreen({
   Widget build(BuildContext context) {
     return ArcaScaffold(
       header: ArcaHeader(
-        title: 'Intelligence Prep',
+        title: 'Device Readiness',
         leading: NullableBuilder(
           onBack,
           builder: (context, back) => ArcaButton(
-            label: '←',
+            label: 'Back',
+            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
             variant: .ghost,
             semanticsLabel: 'Go back to setup choice',
             onPressed: back,
@@ -69,7 +71,7 @@ class const AiPrepScreen({
               ),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
-                'Arca prepares local models on your device to parse documents privately. No photos, text, or audio ever leave your phone.',
+                'Arca initializes local models directly on your hardware. Document text, images, and clinical metrics are never transmitted off-device.',
                 style: ArcaTypography.bodyLarge.copyWith(
                   color: ArcaColors.textSecondary,
                 ),
@@ -86,39 +88,38 @@ class const AiPrepScreen({
                   children: [
                     _buildAiComponentStatus(
                       title: 'Local OCR Engine',
-                      description: 'On-device text extraction for prescriptions & lab panels',
+                      description: 'On-device text recognition for prescriptions & reports',
                       badgeLabel: 'Ready',
                       badgeVariant: .normal,
                     ),
                     const SizedBox(height: ArcaSpacing.sm),
                     _buildAiComponentStatus(
-                      title: 'PII Sanitizer & Vault Redactor',
-                      description: 'Scrubs sensitive metadata before indexing',
+                      title: 'Clinical Entity Parser',
+                      description:
+                          'Identifies biometric values, dosages, and dates',
                       badgeLabel: 'Active',
                       badgeVariant: .normal,
                     ),
                     const SizedBox(height: ArcaSpacing.sm),
                     _buildAiComponentStatus(
-                      title: 'Clinical Voice ASR',
-                      description: 'Offline speech recognition for dictation',
-                      badgeLabel: 'Ready',
+                      title: 'Hardware Vault Encryption',
+                      description:
+                          'Local SQLite database encrypted with hardware key',
+                      badgeLabel: 'Active',
                       badgeVariant: .normal,
-                    ),
-                    const SizedBox(height: ArcaSpacing.sm),
-                    _buildAiComponentStatus(
-                      title: 'Clinical Chat Assistant',
-                      description: 'Optional deep clinical reasoning model',
-                      badgeLabel: 'Optional',
-                      badgeVariant: .neutral,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: ArcaSpacing.xxl),
               ArcaButton(
-                label: 'Proceed to Document Capture →',
+                label: 'Proceed to Document Capture',
+                icon: const PhosphorIcon(
+                  PhosphorIconsBold.arrowRight,
+                  size: 18,
+                ),
                 variant: .primary,
-                semanticsLabel: 'Proceed to document capture screen',
+                semanticsLabel: 'Proceed to document scan viewfinder',
                 onPressed: onReady,
               ),
             ],

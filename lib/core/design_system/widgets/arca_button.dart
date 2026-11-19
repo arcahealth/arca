@@ -28,18 +28,15 @@ class _ArcaButtonState extends State<ArcaButton> {
   bool get _isEnabled => widget.onPressed != null && !widget.isLoading;
 
   Color get _backgroundColor {
-    if (!_isEnabled) return ArcaColors.surfaceElevated.withValues(alpha: 0.4);
+    if (!_isEnabled) return ArcaColors.surfaceElevated;
     switch (widget.variant) {
       case .primary:
-        if (_isPressed) return ArcaColors.primarySubtle;
         if (_isHovered) return ArcaColors.primaryHover;
         return ArcaColors.primary;
       case .secondary:
-        if (_isPressed) return ArcaColors.surfaceElevated;
         if (_isHovered) return ArcaColors.surfaceElevated;
         return ArcaColors.surface;
       case .ghost:
-        if (_isPressed) return ArcaColors.surface;
         if (_isHovered) return ArcaColors.surfaceSubtle;
         return const Color(0x00000000);
     }
@@ -56,14 +53,27 @@ class _ArcaButtonState extends State<ArcaButton> {
     }
   }
 
-  Border? get _border {
-    if (widget.variant == .secondary) {
-      return Border.all(
-        color: _isEnabled ? ArcaColors.border : ArcaColors.borderSubtle,
-        width: 1.0,
-      );
+  Border get _border {
+    if (!_isEnabled) {
+      return Border.all(color: ArcaColors.borderSubtle, width: 2.0);
     }
-    return null;
+    switch (widget.variant) {
+      case .primary:
+        return Border.all(color: ArcaColors.textPrimary, width: 2.0);
+      case .secondary:
+        return Border.all(color: ArcaColors.border, width: 2.0);
+      case .ghost:
+        return Border.all(color: ArcaColors.borderSubtle, width: 2.0);
+    }
+  }
+
+  List<BoxShadow> get _boxShadow {
+    if (!_isEnabled || widget.variant == .ghost) return const [];
+    final shadowColor = widget.variant == .primary
+        ? ArcaColors.shadowSubtle
+        : ArcaColors.shadow;
+    final offset = _isPressed ? const Offset(1.0, 1.0) : const Offset(3.0, 3.0);
+    return [BoxShadow(color: shadowColor, offset: offset, blurRadius: 0)];
   }
 
   @override
@@ -89,45 +99,52 @@ class _ArcaButtonState extends State<ArcaButton> {
               : null,
           onTapCancel: () => setState(() => _isPressed = false),
           behavior: .opaque,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            constraints: const BoxConstraints(minHeight: 48.0, minWidth: 48.0),
-            padding: const EdgeInsets.symmetric(
-              horizontal: ArcaSpacing.md,
-              vertical: ArcaSpacing.sm,
-            ),
-            decoration: BoxDecoration(
-              color: _backgroundColor,
-              borderRadius: ArcaRadii.md,
-              border: _border,
-            ),
-            child: Center(
-              child: widget.isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Text('...', style: ArcaTypography.button),
-                    )
-                  : Row(
-                      mainAxisSize: .min,
-                      mainAxisAlignment: .center,
-                      children: [
-                        if (widget.icon != null) ...[
-                          widget.icon!,
-                          const SizedBox(width: ArcaSpacing.xs),
-                        ],
-                        Flexible(
-                          child: Text(
-                            widget.label,
-                            style: ArcaTypography.button.copyWith(
-                              color: _textColor,
+          child: Transform.translate(
+            offset: _isPressed ? const Offset(2.0, 2.0) : Offset.zero,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 60),
+              constraints: const BoxConstraints(
+                minHeight: 48.0,
+                minWidth: 48.0,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: ArcaSpacing.md,
+                vertical: ArcaSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: _backgroundColor,
+                borderRadius: ArcaRadii.none,
+                border: _border,
+                boxShadow: _boxShadow,
+              ),
+              child: Center(
+                child: widget.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Text('...', style: ArcaTypography.button),
+                      )
+                    : Row(
+                        mainAxisSize: .min,
+                        mainAxisAlignment: .center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              widget.label,
+                              style: ArcaTypography.button.copyWith(
+                                color: _textColor,
+                              ),
+                              maxLines: 1,
+                              overflow: .ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: .ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
+                          if (widget.icon != null) ...[
+                            const SizedBox(width: ArcaSpacing.xs),
+                            widget.icon!,
+                          ],
+                        ],
+                      ),
+              ),
             ),
           ),
         ),

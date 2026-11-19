@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/widgets/widgets.dart';
@@ -21,7 +22,8 @@ class const DocumentScanScreen({
         leading: NullableBuilder(
           onBack,
           builder: (context, back) => ArcaButton(
-            label: '←',
+            label: 'Back',
+            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
             variant: .ghost,
             semanticsLabel: 'Go back to intelligence prep',
             onPressed: back,
@@ -50,26 +52,25 @@ class const DocumentScanScreen({
                 aspectRatio: 3 / 4,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: ArcaColors.surfaceElevated,
-                    borderRadius: ArcaRadii.lg,
-                    border: Border.all(color: ArcaColors.primary, width: 2.0),
+                    color: ArcaColors.surface,
+                    borderRadius: ArcaRadii.none,
+                    border: Border.all(color: ArcaColors.border, width: 2.0),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: ArcaColors.borderSubtle,
+                        offset: Offset(4.0, 4.0),
+                        blurRadius: 0,
+                      ),
+                    ],
                   ),
                   child: const Center(
                     child: Column(
                       mainAxisSize: .min,
                       children: [
-                        SizedBox(
-                          width: 56,
-                          height: 56,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: ArcaColors.primarySubtle,
-                              borderRadius: ArcaRadii.md,
-                            ),
-                            child: Center(
-                              child: Text('📄', style: TextStyle(fontSize: 28)),
-                            ),
-                          ),
+                        PhosphorIcon(
+                          PhosphorIconsBold.fileText,
+                          size: 40,
+                          color: ArcaColors.textPrimary,
                         ),
                         SizedBox(height: ArcaSpacing.md),
                         Text(
@@ -78,7 +79,7 @@ class const DocumentScanScreen({
                         ),
                         SizedBox(height: ArcaSpacing.xs),
                         Text(
-                          'Ensure good lighting & legible text',
+                          'Ensure adequate lighting & readable text',
                           style: ArcaTypography.caption,
                         ),
                       ],
@@ -88,7 +89,11 @@ class const DocumentScanScreen({
               ),
               const SizedBox(height: ArcaSpacing.xl),
               ArcaButton(
-                label: 'Capture & Extract Details →',
+                label: 'Capture & Extract Details',
+                icon: const PhosphorIcon(
+                  PhosphorIconsBold.arrowRight,
+                  size: 18,
+                ),
                 variant: .primary,
                 semanticsLabel: 'Capture document and extract health details',
                 onPressed: onCapture,

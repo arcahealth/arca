@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/widgets/widgets.dart';
@@ -17,11 +18,12 @@ class const SetupChoiceScreen({
   Widget build(BuildContext context) {
     return ArcaScaffold(
       header: ArcaHeader(
-        title: 'Setup',
+        title: 'Setup Mode',
         leading: NullableBuilder(
           onBack,
           builder: (context, back) => ArcaButton(
-            label: '←',
+            label: 'Back',
+            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
             variant: .ghost,
             semanticsLabel: 'Go back to welcome screen',
             onPressed: back,
@@ -40,7 +42,7 @@ class const SetupChoiceScreen({
               const Text('Choose Setup Mode', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
-                'Everything happens 100% on-device once AI features are ready. No accounts, no cloud servers, and zero data leaves your hardware.',
+                'All extraction and encryption runs locally on this device. No data leaves your hardware.',
                 style: ArcaTypography.bodyLarge.copyWith(
                   color: ArcaColors.textSecondary,
                 ),
@@ -54,25 +56,33 @@ class const SetupChoiceScreen({
                   children: [
                     const Row(
                       children: [
-                        Text('⚡', style: TextStyle(fontSize: 22.0)),
-                        SizedBox(width: ArcaSpacing.xs),
+                        PhosphorIcon(
+                          PhosphorIconsBold.scan,
+                          size: 22,
+                          color: ArcaColors.textPrimary,
+                        ),
+                        SizedBox(width: ArcaSpacing.sm),
                         Expanded(
                           child: Text(
-                            'Automatic Setup',
+                            'Automatic Extraction',
                             style: ArcaTypography.titleMedium,
                           ),
                         ),
                         ArcaBadge(label: 'Recommended', variant: .normal),
                       ],
                     ),
-                    const SizedBox(height: ArcaSpacing.xs),
+                    const SizedBox(height: ArcaSpacing.sm),
                     const Text(
-                      'Scan a prescription or lab report. On-device AI extracts your name, medications, and details in one step.',
+                      'Scan a prescription or lab report. Details are parsed automatically into your vault.',
                       style: ArcaTypography.bodyMedium,
                     ),
                     const SizedBox(height: ArcaSpacing.md),
                     ArcaButton(
-                      label: 'Scan Document →',
+                      label: 'Scan Document',
+                      icon: const PhosphorIcon(
+                        PhosphorIconsBold.arrowRight,
+                        size: 18,
+                      ),
                       variant: .primary,
                       semanticsLabel: 'Choose automatic document scan setup',
                       onPressed: onChooseAuto,
@@ -89,8 +99,12 @@ class const SetupChoiceScreen({
                   children: [
                     const Row(
                       children: [
-                        Text('✍️', style: TextStyle(fontSize: 22.0)),
-                        SizedBox(width: ArcaSpacing.xs),
+                        PhosphorIcon(
+                          PhosphorIconsBold.pencilSimple,
+                          size: 22,
+                          color: ArcaColors.textPrimary,
+                        ),
+                        SizedBox(width: ArcaSpacing.sm),
                         Expanded(
                           child: Text(
                             'Manual Setup',
@@ -99,16 +113,20 @@ class const SetupChoiceScreen({
                         ),
                       ],
                     ),
-                    const SizedBox(height: ArcaSpacing.xs),
+                    const SizedBox(height: ArcaSpacing.sm),
                     const Text(
-                      'Walk through standard profile setup step-by-step. Enter your name using keyboard or voice dictation.',
+                      'Enter your name and details directly via text input or voice dictation.',
                       style: ArcaTypography.bodyMedium,
                     ),
                     const SizedBox(height: ArcaSpacing.md),
                     ArcaButton(
-                      label: 'Enter Manually →',
+                      label: 'Enter Manually',
+                      icon: const PhosphorIcon(
+                        PhosphorIconsBold.arrowRight,
+                        size: 18,
+                      ),
                       variant: .secondary,
-                      semanticsLabel: 'Choose manual setup flow',
+                      semanticsLabel: 'Choose manual profile entry setup',
                       onPressed: onChooseManual,
                     ),
                   ],

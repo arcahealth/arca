@@ -17,8 +17,15 @@ class const ArcaCard({
       padding: padding,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: ArcaRadii.md,
-        border: Border.all(color: borderColor, width: 1.0),
+        borderRadius: ArcaRadii.none,
+        border: Border.all(color: borderColor, width: 2.0),
+        boxShadow: const [
+          BoxShadow(
+            color: ArcaColors.borderSubtle,
+            offset: Offset(4.0, 4.0),
+            blurRadius: 0,
+          ),
+        ],
       ),
       child: child,
     );
