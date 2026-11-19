@@ -44,5 +44,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# On-device AI & ONNX model assets (bundled into release binary, not committed to git)
+*.onnx
+/assets/models/
+
 # Widget Preview related
 .widget_preview/
