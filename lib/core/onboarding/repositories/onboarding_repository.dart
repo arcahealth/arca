@@ -4,8 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Core repository contract managing user onboarding state.
 abstract interface class OnboardingRepository {
-  static Wire<OnboardingRepository> get wire =>
-      .new(SharedPrefsOnboardingRepository.new);
+  static Wire<OnboardingRepository> get wire => .new(SharedPrefsOnboardingRepository.new);
 
   /// Returns whether the initial onboarding flow has been completed.
   Future<bool> hasCompletedOnboarding();
@@ -15,8 +14,7 @@ abstract interface class OnboardingRepository {
 }
 
 /// SharedPreferences persistence for [OnboardingRepository].
-final class SharedPrefsOnboardingRepository([SharedPreferencesAsync? prefs])
-    implements OnboardingRepository {
+final class SharedPrefsOnboardingRepository([SharedPreferencesAsync? prefs]) implements OnboardingRepository {
   this : _prefs = prefs ?? SharedPreferencesAsync();
 
   @visibleForTesting

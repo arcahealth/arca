@@ -31,9 +31,7 @@ class _UserNameScreenState extends State<UserNameScreen> {
   @override
   void didUpdateWidget(UserNameScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialName != oldWidget.initialName &&
-        widget.initialName != null &&
-        _controller.text.isEmpty) {
+    if (widget.initialName != oldWidget.initialName && widget.initialName != null && _controller.text.isEmpty) {
       _controller.text = widget.initialName!;
     }
   }

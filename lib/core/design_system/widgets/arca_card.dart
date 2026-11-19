@@ -33,10 +33,7 @@ class _ArcaCardState extends State<ArcaCard> {
   @override
   Widget build(BuildContext context) {
     final effectiveBorderColor =
-        widget.borderColor ??
-        (_isHovered || _isPressed
-            ? ArcaColors.border
-            : ArcaColors.borderSubtle);
+        widget.borderColor ?? (_isHovered || _isPressed ? ArcaColors.border : ArcaColors.borderSubtle);
 
     final cardContent = AnimatedContainer(
       duration: const Duration(milliseconds: 100),

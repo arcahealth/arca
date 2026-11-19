@@ -61,17 +61,13 @@ class _ArcaButtonState extends State<ArcaButton> {
 
   Border? get _border {
     if (!_isEnabled) {
-      return widget.variant == .secondary
-          ? Border.all(color: ArcaColors.borderSubtle, width: 1.0)
-          : null;
+      return widget.variant == .secondary ? Border.all(color: ArcaColors.borderSubtle, width: 1.0) : null;
     }
     switch (widget.variant) {
       case .primary:
         return null;
       case .secondary:
-        final borderColor = _isHovered
-            ? ArcaColors.border
-            : ArcaColors.borderSubtle;
+        final borderColor = _isHovered ? ArcaColors.border : ArcaColors.borderSubtle;
         return Border.all(color: borderColor, width: 1.0);
       case .ghost:
         return null;
@@ -95,12 +91,8 @@ class _ArcaButtonState extends State<ArcaButton> {
         onShowHoverHighlight: (hovered) => setState(() => _isHovered = hovered),
         child: GestureDetector(
           onTap: _isEnabled ? widget.onPressed : null,
-          onTapDown: _isEnabled
-              ? (_) => setState(() => _isPressed = true)
-              : null,
-          onTapUp: _isEnabled
-              ? (_) => setState(() => _isPressed = false)
-              : null,
+          onTapDown: _isEnabled ? (_) => setState(() => _isPressed = true) : null,
+          onTapUp: _isEnabled ? (_) => setState(() => _isPressed = false) : null,
           onTapCancel: () => setState(() => _isPressed = false),
           behavior: .opaque,
           child: AnimatedOpacity(
