@@ -85,6 +85,7 @@ void main() {
       await tester.pumpWidget(
         _wrap(
           DocumentScanScreen(
+            captureService: FakeDocumentCaptureService(),
             onCapture: () => captureCalled = true,
             onSwitchToManual: () => manualCalled = true,
           ),
@@ -97,7 +98,8 @@ void main() {
       expect(find.text('Bundled RapidOCR'), findsOneWidget);
       expect(find.text('Start Document Scan'), findsOneWidget);
       expect(find.text('Take Photo'), findsOneWidget);
-      expect(find.text('Choose from Gallery'), findsOneWidget);
+      expect(find.text('Photo Gallery'), findsOneWidget);
+      expect(find.text('Import PDF or Document File'), findsOneWidget);
 
       final captureBtn = find.text('Capture & Extract Details');
       await tester.ensureVisible(captureBtn);
@@ -145,7 +147,7 @@ void main() {
           '/tmp/prescription_page2.jpg',
         ]);
         expect(
-          find.text('2 Document Page(s) Selected'),
+          find.text('2 Document File(s) Selected'),
           findsOneWidget,
         );
         expect(find.text('prescription_page1.jpg'), findsOneWidget);
@@ -184,13 +186,13 @@ void main() {
 
         expect(fakeService.photoCalls, 1);
         expect(capturedImages, ['/tmp/rx_snapshot.jpg']);
-        expect(find.text('1 Document Page(s) Selected'), findsOneWidget);
+        expect(find.text('1 Document File(s) Selected'), findsOneWidget);
         expect(find.text('rx_snapshot.jpg'), findsOneWidget);
       },
     );
 
     testWidgets(
-      'Choose from Gallery invokes captureService gallery and fires onImagesCaptured',
+      'Photo Gallery invokes captureService gallery and fires onImagesCaptured',
       (tester) async {
         _setViewport(tester);
         final fakeService = FakeDocumentCaptureService(
@@ -212,14 +214,48 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final galleryBtn = find.text('Choose from Gallery');
+        final galleryBtn = find.text('Photo Gallery');
         await tester.ensureVisible(galleryBtn);
         await tester.tap(galleryBtn);
         await tester.pumpAndSettle();
 
         expect(fakeService.pickCalls, 1);
         expect(capturedImages, ['/tmp/lab_report_gallery.png']);
-        expect(find.text('1 Document Page(s) Selected'), findsOneWidget);
+        expect(find.text('1 Document File(s) Selected'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Import PDF or Document File invokes captureService files and fires onImagesCaptured',
+      (tester) async {
+        _setViewport(tester);
+        final fakeService = FakeDocumentCaptureService(
+          filesResult: const DocumentCaptureResult.success([
+            '/tmp/clinical_summary.pdf',
+          ]),
+        );
+        List<String>? capturedImages;
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeService,
+              onImagesCaptured: (images) => capturedImages = images,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final fileBtn = find.text('Import PDF or Document File');
+        await tester.ensureVisible(fileBtn);
+        await tester.tap(fileBtn);
+        await tester.pumpAndSettle();
+
+        expect(fakeService.filesCalls, 1);
+        expect(capturedImages, ['/tmp/clinical_summary.pdf']);
+        expect(find.text('1 Document File(s) Selected'), findsOneWidget);
       },
     );
 

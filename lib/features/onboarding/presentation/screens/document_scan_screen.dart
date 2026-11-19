@@ -1,30 +1,22 @@
-import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/capture/capture.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
+import 'package:arca/core/widgets/widgets.dart';
 
 /// Document capture viewfinder screen for prescription or lab report scanning.
 ///
 /// Supports native document scanning with edge detection, direct camera photo
-/// capture, and photo gallery selection.
-class DocumentScanScreen extends StatefulWidget {
-  const DocumentScanScreen({
-    required this.onCapture,
-    required this.onSwitchToManual,
-    super.key,
-    this.captureService,
-    this.onImagesCaptured,
-    this.onBack,
-  });
-
-  final VoidCallback onCapture;
-  final VoidCallback onSwitchToManual;
-  final DocumentCaptureService? captureService;
-  final ValueChanged<List<String>>? onImagesCaptured;
-  final VoidCallback? onBack;
-
+/// capture, photo gallery selection, and PDF/document file imports.
+final class const DocumentScanScreen({
+  super.key,
+  required final DocumentCaptureService captureService,
+  required final VoidCallback onCapture,
+  required final VoidCallback onSwitchToManual,
+  final ValueChanged<List<String>>? onImagesCaptured,
+  final VoidCallback? onBack,
+}) extends StatefulWidget {
   @override
   State<DocumentScanScreen> createState() => _DocumentScanScreenState();
 }
@@ -34,11 +26,6 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
   String? _errorMessage;
   List<String> _capturedPaths = const [];
 
-  DocumentCaptureService _resolveCaptureService() =>
-      widget.captureService ??
-      CircuitProvider.maybeOf(context)?.get<DocumentCaptureService>() ??
-      DefaultDocumentCaptureService();
-
   Future<void> _handleCapture(DocumentCaptureSource source) async {
     setState(() {
       _isCapturing = true;
@@ -46,8 +33,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
     });
 
     try {
-      final service = _resolveCaptureService();
-      final result = await service.capture(source: source);
+      final result = await widget.captureService.capture(source: source);
       if (!mounted) return;
 
       switch (result) {
@@ -153,7 +139,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
               const Text('Scan Document', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
-                'Scan your prescription or lab summary using native document scanning, camera, or gallery. Details are extracted 100% on-device.',
+                'Scan your prescription or lab summary using native document scanning, camera, photo gallery, or PDF files. Details are extracted 100% on-device.',
                 style: ArcaTypography.bodyLarge.copyWith(
                   color: ArcaColors.textSecondary,
                 ),
@@ -205,7 +191,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                             ),
                             const SizedBox(height: ArcaSpacing.md),
                             Text(
-                              '${_capturedPaths.length} Document Page(s) Selected',
+                              '${_capturedPaths.length} Document File(s) Selected',
                               style: ArcaTypography.titleMedium,
                               textAlign: .center,
                             ),
@@ -249,28 +235,31 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                   ),
                 ),
               ),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: ArcaSpacing.md),
-                ArcaCard(
-                  borderColor: ArcaColors.warning,
-                  child: Column(
-                    crossAxisAlignment: .start,
-                    children: [
-                      const ArcaBadge(
-                        label: 'Action Required',
-                        variant: .warning,
-                      ),
-                      const SizedBox(height: ArcaSpacing.xs),
-                      Text(
-                        _errorMessage!,
-                        style: ArcaTypography.bodyMedium.copyWith(
-                          color: ArcaColors.textPrimary,
+              NullableBuilder(
+                _errorMessage,
+                builder: (context, error) => Padding(
+                  padding: const EdgeInsets.only(top: ArcaSpacing.md),
+                  child: ArcaCard(
+                    borderColor: ArcaColors.warning,
+                    child: Column(
+                      crossAxisAlignment: .start,
+                      children: [
+                        const ArcaBadge(
+                          label: 'Action Required',
+                          variant: .warning,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: ArcaSpacing.xs),
+                        Text(
+                          error,
+                          style: ArcaTypography.bodyMedium.copyWith(
+                            color: ArcaColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
+              ),
               const SizedBox(height: ArcaSpacing.lg),
               ArcaButton(
                 label: 'Start Document Scan',
@@ -280,7 +269,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                 ),
                 variant: .primary,
                 semanticsLabel: 'Scan document using native scanner',
-                onPressed: _isCapturing ? null : () => _handleCapture(DocumentCaptureSource.documentScan),
+                onPressed: _isCapturing ? null : () => _handleCapture(.documentScan),
               ),
               const SizedBox(height: ArcaSpacing.sm),
               Row(
@@ -294,23 +283,34 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                       ),
                       variant: .secondary,
                       semanticsLabel: 'Capture photo with camera',
-                      onPressed: _isCapturing ? null : () => _handleCapture(DocumentCaptureSource.camera),
+                      onPressed: _isCapturing ? null : () => _handleCapture(.camera),
                     ),
                   ),
                   const SizedBox(width: ArcaSpacing.sm),
                   Expanded(
                     child: ArcaButton(
-                      label: 'Choose from Gallery',
+                      label: 'Photo Gallery',
                       leadingIcon: const PhosphorIcon(
                         PhosphorIconsBold.images,
                         size: 18,
                       ),
                       variant: .secondary,
                       semanticsLabel: 'Choose document image from gallery',
-                      onPressed: _isCapturing ? null : () => _handleCapture(DocumentCaptureSource.gallery),
+                      onPressed: _isCapturing ? null : () => _handleCapture(.gallery),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: ArcaSpacing.sm),
+              ArcaButton(
+                label: 'Import PDF or Document File',
+                leadingIcon: const PhosphorIcon(
+                  PhosphorIconsBold.filePdf,
+                  size: 18,
+                ),
+                variant: .secondary,
+                semanticsLabel: 'Select PDF or document file from storage',
+                onPressed: _isCapturing ? null : () => _handleCapture(.files),
               ),
               if (widget.onBack != null) ...[
                 const SizedBox(height: ArcaSpacing.lg),

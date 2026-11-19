@@ -6,6 +6,8 @@ import 'package:arca/app/router/onboarding_routes.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 
+import '../../test_utils/fake_document_capture_service.dart';
+
 final class FakeOnboardingRepository implements OnboardingRepository {
   bool completed = false;
 
@@ -22,7 +24,7 @@ Widget _buildOnboardingApp({
   required OnboardingRepository repo,
   VoidCallback? onCompleted,
 }) {
-  final module = OnboardingModule(repo, onCompleted);
+  final module = OnboardingModule(repo, onCompleted, FakeDocumentCaptureService());
 
   final routerConfig = KaiselRouterConfig<OnboardingRoute>(
     initial: const OnboardingRoute.welcome(),

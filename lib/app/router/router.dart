@@ -1,4 +1,5 @@
 import 'package:arca/app/router/onboarding_routes.dart';
+import 'package:arca/core/capture/capture.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:kaisel/kaisel.dart';
@@ -34,9 +35,10 @@ abstract final class ArcaRouter {
   /// Constructs the top-level Kaisel router configuration with route guards and sealed-route pattern matching.
   static KaiselRouterConfig<ArcaRoute> create(
     OnboardingRepository onboardingRepo, {
+    DocumentCaptureService? captureService,
     ArcaRoute initial = const OnboardingMount(),
   }) {
-    final onboardingModule = OnboardingModule(onboardingRepo);
+    final onboardingModule = OnboardingModule(onboardingRepo, null, captureService);
     return KaiselRouterConfig<ArcaRoute>(
       initial: initial,
       codec: codec(),

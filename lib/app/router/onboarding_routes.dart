@@ -34,6 +34,7 @@ final class const _OnboardingUserName({final String? initialName}) extends Onboa
 final class const OnboardingModule([
   final OnboardingRepository? onboardingRepo,
   final VoidCallback? onCompleted,
+  final DocumentCaptureService? captureService,
 ]) extends RouteModule<OnboardingRoute> {
   @override
   List<OnboardingRoute> get initialStack => const [.welcome()];
@@ -52,7 +53,10 @@ final class const OnboardingModule([
         },
       ),
       _OnboardingDocumentScan() => DocumentScanScreen(
-        captureService: CircuitProvider.maybeOf(context)?.get<DocumentCaptureService>(),
+        captureService:
+            captureService ??
+            CircuitProvider.maybeOf(context)?.get<DocumentCaptureService>() ??
+            DefaultDocumentCaptureService(),
         onImagesCaptured: (paths) => context.push(
           const OnboardingRoute.extractedReview(
             extractedName: 'Alex Morgan',
