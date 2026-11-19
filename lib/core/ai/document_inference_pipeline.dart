@@ -64,15 +64,20 @@ final class DefaultDocumentInferencePipeline implements DocumentInferencePipelin
     String rawText,
     List<ExtractedEntity> entities,
   ) {
-    String? patientName;
+    String? firstName;
+    String? middleName;
+    String? lastName;
     String? dateOfBirth;
     final medications = <String>[];
     final allergies = <String>[];
 
-    // Check explicit patient_name entity first
     for (final entity in entities) {
-      if (entity.label == 'patient_name' && patientName == null) {
-        patientName = entity.value;
+      if (entity.label == 'first_name' && firstName == null) {
+        firstName = entity.value;
+      } else if (entity.label == 'middle_name' && middleName == null) {
+        middleName = entity.value;
+      } else if (entity.label == 'last_name' && lastName == null) {
+        lastName = entity.value;
       } else if (entity.label == 'date_of_birth' && dateOfBirth == null) {
         dateOfBirth = entity.value;
       } else if (entity.label == 'medication') {
@@ -86,19 +91,30 @@ final class DefaultDocumentInferencePipeline implements DocumentInferencePipelin
       }
     }
 
-    // Fallback: Combine first_name and last_name PII entities if patient_name was missing
-    if (patientName == null) {
-      final firstName = entities.where((e) => e.label == 'first_name').map((e) => e.value).firstOrNull;
-      final lastName = entities.where((e) => e.label == 'last_name').map((e) => e.value).firstOrNull;
+    // Fallback: If individual name components were not found, decompose full name entity
+    if (firstName == null && lastName == null) {
+      final fullName = entities
+          .where(
+            (e) => e.label == 'name' || e.label == 'patient_name' || e.label == 'user_name',
+          )
+          .map((e) => e.value)
+          .firstOrNull;
 
-      if (firstName != null && lastName != null) {
-        patientName = '$firstName $lastName';
-      } else if (firstName != null) {
-        patientName = firstName;
-      } else {
-        final userName = entities.where((e) => e.label == 'user_name').map((e) => e.value).firstOrNull;
-        if (userName != null) {
-          patientName = userName;
+      if (fullName != null) {
+        final parts = fullName.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+        if (parts.length == 1) {
+          firstName = parts.first;
+        } else if (parts.length == 2) {
+          firstName = parts[0];
+          lastName = parts[1];
+        } else if (parts.length == 3) {
+          firstName = parts[0];
+          middleName = parts[1];
+          lastName = parts[2];
+        } else if (parts.length > 3) {
+          firstName = parts[0];
+          middleName = parts.sublist(1, parts.length - 1).join(' ');
+          lastName = parts.last;
         }
       }
     }
@@ -109,7 +125,9 @@ final class DefaultDocumentInferencePipeline implements DocumentInferencePipelin
         : entities.map((e) => e.confidence).reduce((a, b) => a + b) / entities.length;
 
     return ExtractedProfileData(
-      patientName: patientName ?? '',
+      firstName: firstName ?? '',
+      middleName: middleName ?? '',
+      lastName: lastName ?? '',
       dateOfBirth: dateOfBirth ?? '',
       medications: List.unmodifiable(medications),
       allergies: List.unmodifiable(allergies),

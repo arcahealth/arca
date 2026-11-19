@@ -42,7 +42,9 @@ void main() {
       expect(result, isA<DocumentInferenceSuccess>());
       final success = result as DocumentInferenceSuccess;
       expect(success.data.isEmpty, isTrue);
-      expect(success.data.patientName, isEmpty);
+      expect(success.data.name, isEmpty);
+      expect(success.data.firstName, isEmpty);
+      expect(success.data.lastName, isEmpty);
     });
 
     test('successfully extracts profile and clinical records end-to-end', () async {
@@ -67,7 +69,9 @@ Allergies: Penicillin
       final success = result as DocumentInferenceSuccess;
       final profile = success.data;
 
-      expect(profile.patientName, 'Alex Morgan');
+      expect(profile.name, 'Alex Morgan');
+      expect(profile.firstName, 'Alex');
+      expect(profile.lastName, 'Morgan');
       expect(profile.dateOfBirth, '1988-04-12');
       expect(profile.medications, contains('Amoxicillin 500mg'));
       expect(profile.allergies, contains('Penicillin'));
@@ -97,7 +101,9 @@ Allergies: Penicillin
       expect(result, isA<DocumentInferenceSuccess>());
       final profile = (result as DocumentInferenceSuccess).data;
 
-      expect(profile.patientName, 'Sarah Connor');
+      expect(profile.name, 'Sarah Connor');
+      expect(profile.firstName, 'Sarah');
+      expect(profile.lastName, 'Connor');
       expect(profile.dateOfBirth, '1985-02-28');
       expect(profile.medications, ['Lisinopril 10mg']);
     });
@@ -113,6 +119,90 @@ Allergies: Penicillin
       expect(circuit.isInitialized<DocumentInferencePipeline>(), isTrue);
 
       await circuit.dispose();
+    });
+  });
+
+  group('ExtractedProfileData Model Tests', () {
+    test('supports empty concise factory constructor', () {
+      const data = ExtractedProfileData.empty();
+      expect(data.isEmpty, isTrue);
+      expect(data.isNotEmpty, isFalse);
+      expect(data.name, isEmpty);
+      expect(data.firstName, isEmpty);
+      expect(data.middleName, isEmpty);
+      expect(data.lastName, isEmpty);
+    });
+
+    test('assembles computed name from individual components', () {
+      const fullName = ExtractedProfileData(
+        firstName: 'John',
+        middleName: 'Fitzgerald',
+        lastName: 'Kennedy',
+      );
+      expect(fullName.name, 'John Fitzgerald Kennedy');
+
+      const firstAndLast = ExtractedProfileData(
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+      );
+      expect(firstAndLast.name, 'Ada Lovelace');
+
+      const firstOnly = ExtractedProfileData(firstName: 'Aristotle');
+      expect(firstOnly.name, 'Aristotle');
+    });
+
+    test('supports copyWith updates', () {
+      const original = ExtractedProfileData(
+        firstName: 'Alex',
+        lastName: 'Smith',
+        medications: ['Aspirin'],
+      );
+
+      final updated = original.copyWith(
+        lastName: 'Morgan',
+        allergies: const ['Penicillin'],
+      );
+
+      expect(updated.firstName, 'Alex');
+      expect(updated.lastName, 'Morgan');
+      expect(updated.name, 'Alex Morgan');
+      expect(updated.medications, ['Aspirin']);
+      expect(updated.allergies, ['Penicillin']);
+    });
+
+    test('implements value equality and hashCode', () {
+      const a = ExtractedProfileData(
+        firstName: 'Alex',
+        lastName: 'Morgan',
+        medications: ['Amoxicillin 500mg'],
+        allergies: ['Penicillin'],
+      );
+      const b = ExtractedProfileData(
+        firstName: 'Alex',
+        lastName: 'Morgan',
+        medications: ['Amoxicillin 500mg'],
+        allergies: ['Penicillin'],
+      );
+      const c = ExtractedProfileData(
+        firstName: 'Alex',
+        lastName: 'Smith',
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a, isNot(equals(c)));
+    });
+
+    test('supports DocumentInferenceResult concise factory constructors', () {
+      const success = DocumentInferenceResult.success(
+        ExtractedProfileData(firstName: 'Jane', lastName: 'Doe'),
+      );
+      expect(success, isA<DocumentInferenceSuccess>());
+      expect((success as DocumentInferenceSuccess).data.name, 'Jane Doe');
+
+      const failure = DocumentInferenceResult.failure('Inference error');
+      expect(failure, isA<DocumentInferenceFailure>());
+      expect((failure as DocumentInferenceFailure).message, 'Inference error');
     });
   });
 }

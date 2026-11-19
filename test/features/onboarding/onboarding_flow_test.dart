@@ -7,6 +7,7 @@ import 'package:arca/core/ai/ai.dart';
 import 'package:arca/core/capture/capture.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
+import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 
 import '../../test_utils/fake_document_capture_service.dart';
 import '../../test_utils/fake_document_inference_pipeline.dart';
@@ -29,16 +30,36 @@ Widget _buildOnboardingApp({
   DocumentInferencePipeline? inferencePipeline,
   DocumentCaptureService? captureService,
 }) {
-  final module = OnboardingModule(
-    repo,
-    onCompleted,
-    inferencePipeline,
-    captureService,
-  );
+  final module = OnboardingModule(repo, onCompleted);
 
   final routerConfig = KaiselRouterConfig<OnboardingRoute>(
     initial: const OnboardingRoute.welcome(),
-    builder: (context, route) => module.buildPage(context, route),
+    builder: (context, route) {
+      if (route == const OnboardingRoute.documentScan() && (inferencePipeline != null || captureService != null)) {
+        return DocumentScanScreen(
+          captureService: captureService,
+          inferencePipeline: inferencePipeline,
+          onExtractionComplete: (data) => context.push(
+            OnboardingRoute.extractedReview(
+              extractedName: data.name,
+              extractedDob: data.dateOfBirth,
+              extractedMedication: data.medications.join(', '),
+              extractedAllergy: data.allergies.join(', '),
+            ),
+          ),
+          onCapture: () => context.push(
+            const OnboardingRoute.extractedReview(
+              extractedName: 'Alex Morgan',
+              extractedDob: '1988-04-12',
+              extractedMedication: 'Amoxicillin 500mg',
+              extractedAllergy: 'Penicillin',
+            ),
+          ),
+          onSwitchToManual: () => context.push(const OnboardingRoute.userName()),
+        );
+      }
+      return module.buildPage(context, route);
+    },
   );
 
   return WidgetsApp.router(
@@ -118,7 +139,8 @@ void main() {
         final fakeInference = FakeDocumentInferencePipeline(
           result: const DocumentInferenceResult.success(
             ExtractedProfileData(
-              patientName: 'Sarah Connor',
+              firstName: 'Sarah',
+              lastName: 'Connor',
               dateOfBirth: '1985-02-28',
               medications: ['Lisinopril 10mg'],
               allergies: ['Sulfa'],

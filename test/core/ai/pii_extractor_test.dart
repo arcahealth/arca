@@ -18,17 +18,19 @@ void main() {
       expect(entities, isEmpty);
     });
 
-    test('extracts patient name from clinical summary header', () async {
+    test('extracts name and components from clinical summary header', () async {
       const text = '''
 Arca Health Clinic
 Patient Name: Alex Morgan
 Date: 2026-11-20
 ''';
       final entities = await extractor.extractEntities(text);
-      final nameEntity = entities.firstWhere((e) => e.label == 'patient_name');
+      final nameEntity = entities.firstWhere((e) => e.label == 'name');
 
       expect(nameEntity.value, 'Alex Morgan');
       expect(nameEntity.confidence, greaterThanOrEqualTo(0.90));
+      expect(entities.any((e) => e.label == 'first_name' && e.value == 'Alex'), isTrue);
+      expect(entities.any((e) => e.label == 'last_name' && e.value == 'Morgan'), isTrue);
     });
 
     test('extracts and normalizes date of birth', () async {
@@ -81,7 +83,9 @@ Allergies: Penicillin
 ''';
       final entities = await extractor.extractEntities(text);
 
-      expect(entities.any((e) => e.label == 'patient_name' && e.value == 'Alex Morgan'), isTrue);
+      expect(entities.any((e) => e.label == 'name' && e.value == 'Alex Morgan'), isTrue);
+      expect(entities.any((e) => e.label == 'first_name' && e.value == 'Alex'), isTrue);
+      expect(entities.any((e) => e.label == 'last_name' && e.value == 'Morgan'), isTrue);
       expect(entities.any((e) => e.label == 'date_of_birth' && e.value == '1988-04-12'), isTrue);
       expect(entities.any((e) => e.label == 'medication' && e.value.contains('Amoxicillin 500mg')), isTrue);
       expect(entities.any((e) => e.label == 'allergy' && e.value.contains('Penicillin')), isTrue);

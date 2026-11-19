@@ -2,12 +2,9 @@ import 'extracted_profile_data.dart';
 
 /// Sealed outcome returned by the on-device document AI inference pipeline.
 sealed class const DocumentInferenceResult() {
-  const factory DocumentInferenceResult.success(ExtractedProfileData data) = DocumentInferenceSuccess;
+  const factory success(ExtractedProfileData data) = DocumentInferenceSuccess;
 
-  const factory DocumentInferenceResult.failure(
-    String message, [
-    Object? error,
-  ]) = DocumentInferenceFailure;
+  const factory failure(String message, [Object? error]) = DocumentInferenceFailure;
 }
 
 /// Inference succeeded and yielded structured profile data.

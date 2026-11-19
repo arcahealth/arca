@@ -5,7 +5,8 @@ final class FakeDocumentInferencePipeline implements DocumentInferencePipeline {
   FakeDocumentInferencePipeline({
     this.result = const DocumentInferenceResult.success(
       ExtractedProfileData(
-        patientName: 'Alex Morgan',
+        firstName: 'Alex',
+        lastName: 'Morgan',
         dateOfBirth: '1988-04-12',
         medications: ['Amoxicillin 500mg'],
         allergies: ['Penicillin'],

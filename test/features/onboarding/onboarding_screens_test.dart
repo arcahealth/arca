@@ -335,7 +335,8 @@ void main() {
         final fakeInference = FakeDocumentInferencePipeline(
           result: const DocumentInferenceResult.success(
             ExtractedProfileData(
-              patientName: 'Alex Morgan',
+              firstName: 'Alex',
+              lastName: 'Morgan',
               dateOfBirth: '1988-04-12',
               medications: ['Amoxicillin 500mg'],
               allergies: ['Penicillin'],
@@ -373,7 +374,9 @@ void main() {
 
         expect(fakeInference.processCalls, 1);
         expect(fakeInference.lastProcessedFiles, ['/tmp/doc.jpg']);
-        expect(extractedData?.patientName, 'Alex Morgan');
+        expect(extractedData?.name, 'Alex Morgan');
+        expect(extractedData?.firstName, 'Alex');
+        expect(extractedData?.lastName, 'Morgan');
         expect(extractedData?.medications, ['Amoxicillin 500mg']);
       },
     );

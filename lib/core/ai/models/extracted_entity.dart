@@ -5,4 +5,18 @@ final class const ExtractedEntity({
   final double confidence = 1.0,
   final int startIndex = 0,
   final int endIndex = 0,
-});
+}) {
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ExtractedEntity &&
+          runtimeType == other.runtimeType &&
+          label == other.label &&
+          value == other.value &&
+          confidence == other.confidence &&
+          startIndex == other.startIndex &&
+          endIndex == other.endIndex;
+
+  @override
+  int get hashCode => Object.hash(label, value, confidence, startIndex, endIndex);
+}

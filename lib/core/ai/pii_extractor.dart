@@ -199,14 +199,14 @@ final class DefaultPiiExtractor implements PiiExtractor {
     return entities;
   }
 
-  /// Extracts clinical entities (patient name, date of birth, medications, allergies) using rules and patterns.
+  /// Extracts clinical entities (name, date of birth, medications, allergies) using rules and patterns.
   List<ExtractedEntity> _extractClinicalEntities(String text) {
     final entities = <ExtractedEntity>[];
 
-    // 1. Patient Name
+    // 1. Name and decomposed name components
     final nameRegexes = [
       RegExp(
-        r'(?:Patient\s+Name|Patient|Name)\s*[:=\-]\s*([A-Za-z\s\.\-]+?)(?=\s*(?:\n|\r|DOB|Date|Age|Sex|Gender|Rx|Allerg|$))',
+        r'(?:Patient\s+Name|Patient|Full\s+Name|Name)\s*[:=\-]\s*([A-Za-z\s\.\-]+?)(?=\s*(?:\n|\r|DOB|Date|Age|Sex|Gender|Rx|Allerg|$))',
         caseSensitive: false,
       ),
     ];
@@ -217,15 +217,72 @@ final class DefaultPiiExtractor implements PiiExtractor {
         if (name.isNotEmpty && !name.contains(':') && name.split(' ').length <= 4) {
           entities.add(
             ExtractedEntity(
-              label: 'patient_name',
+              label: 'name',
               value: name,
               confidence: 0.95,
               startIndex: match.start,
               endIndex: match.end,
             ),
           );
+
+          // Decompose into first, middle, and last name entities when possible
+          final parts = name.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+          if (parts.length == 1) {
+            entities.add(ExtractedEntity(label: 'first_name', value: parts[0], confidence: 0.95));
+          } else if (parts.length == 2) {
+            entities.add(ExtractedEntity(label: 'first_name', value: parts[0], confidence: 0.95));
+            entities.add(ExtractedEntity(label: 'last_name', value: parts[1], confidence: 0.95));
+          } else if (parts.length == 3) {
+            entities.add(ExtractedEntity(label: 'first_name', value: parts[0], confidence: 0.95));
+            entities.add(ExtractedEntity(label: 'middle_name', value: parts[1], confidence: 0.95));
+            entities.add(ExtractedEntity(label: 'last_name', value: parts[2], confidence: 0.95));
+          } else if (parts.length > 3) {
+            entities.add(ExtractedEntity(label: 'first_name', value: parts[0], confidence: 0.95));
+            entities.add(
+              ExtractedEntity(
+                label: 'middle_name',
+                value: parts.sublist(1, parts.length - 1).join(' '),
+                confidence: 0.95,
+              ),
+            );
+            entities.add(ExtractedEntity(label: 'last_name', value: parts.last, confidence: 0.95));
+          }
           break;
         }
+      }
+    }
+
+    // Check for explicit first, middle, and last name fields
+    final firstNameMatch = RegExp(
+      r'(?:First\s+Name)\s*[:=\-]\s*([A-Za-z\-]+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (firstNameMatch != null) {
+      final val = firstNameMatch.group(1)?.trim() ?? '';
+      if (val.isNotEmpty && !entities.any((e) => e.label == 'first_name')) {
+        entities.add(ExtractedEntity(label: 'first_name', value: val, confidence: 0.95));
+      }
+    }
+
+    final middleNameMatch = RegExp(
+      r'(?:Middle\s+Name)\s*[:=\-]\s*([A-Za-z\-]+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (middleNameMatch != null) {
+      final val = middleNameMatch.group(1)?.trim() ?? '';
+      if (val.isNotEmpty && !entities.any((e) => e.label == 'middle_name')) {
+        entities.add(ExtractedEntity(label: 'middle_name', value: val, confidence: 0.95));
+      }
+    }
+
+    final lastNameMatch = RegExp(
+      r'(?:Last\s+Name|Surname)\s*[:=\-]\s*([A-Za-z\-]+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (lastNameMatch != null) {
+      final val = lastNameMatch.group(1)?.trim() ?? '';
+      if (val.isNotEmpty && !entities.any((e) => e.label == 'last_name')) {
+        entities.add(ExtractedEntity(label: 'last_name', value: val, confidence: 0.95));
       }
     }
 
