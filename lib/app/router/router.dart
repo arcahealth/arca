@@ -50,17 +50,16 @@ abstract final class ArcaRouter {
   }
 
   /// Constructs the Codec for the entire app, consolidating the top-level and nested routes/modules.
-  static KaiselConfigCodec<ArcaRoute> codec() =>
-      ConfigCodecWithModules<ArcaRoute>(
-        baseCodec: const StackToConfigCodec(AppStackCodec()),
-        modules: [
-          const ModuleMount(
-            mountRoute: OnboardingMount(),
-            prefix: '/onboarding',
-            codec: OnboardingModuleCodec(),
-          ),
-        ],
-      );
+  static KaiselConfigCodec<ArcaRoute> codec() => ConfigCodecWithModules<ArcaRoute>(
+    baseCodec: const StackToConfigCodec(AppStackCodec()),
+    modules: [
+      const ModuleMount(
+        mountRoute: OnboardingMount(),
+        prefix: '/onboarding',
+        codec: OnboardingModuleCodec(),
+      ),
+    ],
+  );
 }
 
 /// Stack codec enabling deep linking and restoring multi-frame back stacks.

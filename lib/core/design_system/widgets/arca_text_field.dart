@@ -61,11 +61,7 @@ class _ArcaTextFieldState extends State<ArcaTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveSemantics =
-        widget.semanticsLabel ??
-        widget.label ??
-        widget.hintText ??
-        'Text Input';
+    final effectiveSemantics = widget.semanticsLabel ?? widget.label ?? widget.hintText ?? 'Text Input';
 
     return Semantics(
       textField: true,
@@ -92,9 +88,7 @@ class _ArcaTextFieldState extends State<ArcaTextField> {
                 color: ArcaColors.surface,
                 borderRadius: ArcaRadii.none,
                 border: Border.all(
-                  color: _isFocused
-                      ? ArcaColors.border
-                      : ArcaColors.borderSubtle,
+                  color: _isFocused ? ArcaColors.border : ArcaColors.borderSubtle,
                   width: 2.0,
                 ),
                 boxShadow: _isFocused

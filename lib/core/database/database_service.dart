@@ -20,11 +20,10 @@ final class const DatabaseConfig({
 /// and lifecycle.
 abstract interface class DatabaseService {
   /// Resolves [DatabaseService] by feeding [DatabaseConfig] into [DatabaseManager.open].
-  static AsyncWire<DatabaseService> get wire =>
-      AsyncWire.takes<DatabaseConfig>().to(
-        DatabaseManager.open,
-        onDispose: (service) => service.close(),
-      );
+  static AsyncWire<DatabaseService> get wire => AsyncWire.takes<DatabaseConfig>().to(
+    DatabaseManager.open,
+    onDispose: (service) => service.close(),
+  );
 
   /// Active SQLite database connection pool.
   SqliteDatabase get db;

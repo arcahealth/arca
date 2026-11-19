@@ -30,9 +30,7 @@ void main() {
           isA<MockSharedPreferencesAsync>(),
         );
         expect(
-          (SharedPreferencesAsyncPlatform.instance
-                  as MockSharedPreferencesAsync)
-              .log,
+          (SharedPreferencesAsyncPlatform.instance as MockSharedPreferencesAsync).log,
           orderedEquals(<Matcher>[
             isMethodCall(
               'getBool',
@@ -75,9 +73,7 @@ void main() {
           isA<MockSharedPreferencesAsync>(),
         );
         expect(
-          (SharedPreferencesAsyncPlatform.instance
-                  as MockSharedPreferencesAsync)
-              .log,
+          (SharedPreferencesAsyncPlatform.instance as MockSharedPreferencesAsync).log,
           orderedEquals(<Matcher>[
             isMethodCall(
               'getBool',

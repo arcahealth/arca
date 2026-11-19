@@ -50,16 +50,13 @@ class const WelcomeScreen({
                 ],
                 Expanded(
                   child: ArcaButton(
-                    label: onManualEntry != null
-                        ? 'Scan Document'
-                        : 'Get Started',
+                    label: onManualEntry != null ? 'Scan Document' : 'Get Started',
                     trailingIcon: const PhosphorIcon(
                       PhosphorIconsBold.scan,
                       size: 18,
                     ),
                     variant: .primary,
-                    semanticsLabel:
-                        'Scan prescription or document with on-device OCR',
+                    semanticsLabel: 'Scan prescription or document with on-device OCR',
                     onPressed: effectiveScan,
                   ),
                 ),

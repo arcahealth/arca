@@ -10,8 +10,7 @@ import 'package:arca/core/onboarding/onboarding.dart';
 /// Composition root for Arca.
 ///
 /// Injects core dependencies at the application edge via [CircuitProvider].
-final class const ArcaApp({super.key, final List<CircuitWire> wires = const []})
-    extends StatelessWidget {
+final class const ArcaApp({super.key, final List<CircuitWire> wires = const []}) extends StatelessWidget {
   static final _defaultWires = [
     DatabaseConfig.wire,
     DatabaseService.wire,
@@ -22,11 +21,10 @@ final class const ArcaApp({super.key, final List<CircuitWire> wires = const []})
   static Widget _fallbackApp(Widget home) => WidgetsApp(
     color: ArcaColors.primary,
     textStyle: ArcaTypography.bodyMedium,
-    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
-        PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, _, _) => builder(context),
-        ),
+    pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) => PageRouteBuilder(
+      settings: settings,
+      pageBuilder: (context, _, _) => builder(context),
+    ),
     home: home,
   );
 

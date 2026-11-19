@@ -25,8 +25,7 @@ class const ArcaHeader({
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final textScale =
-              MediaQuery.maybeTextScalerOf(context)?.scale(10) ?? 10.0;
+          final textScale = MediaQuery.maybeTextScalerOf(context)?.scale(10) ?? 10.0;
           final isStacked = constraints.maxWidth < 420 || textScale > 13.0;
           if (isStacked && trailing != null) {
             return Column(
