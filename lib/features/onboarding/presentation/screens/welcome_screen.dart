@@ -42,8 +42,9 @@ class const WelcomeScreen({
                   ),
                 ],
               ),
-              const SizedBox(height: ArcaSpacing.sm),
-              Container(height: 2.0, color: ArcaColors.borderSubtle),
+              const ArcaDivider(
+                margin: EdgeInsets.symmetric(vertical: ArcaSpacing.md),
+              ),
               const Spacer(),
               const Text(
                 'Your medical records.\nEncrypted on your device.',
@@ -59,7 +60,7 @@ class const WelcomeScreen({
               const Spacer(flex: 2),
               ArcaButton(
                 label: 'Get Started',
-                icon: const PhosphorIcon(
+                trailingIcon: const PhosphorIcon(
                   PhosphorIconsBold.arrowRight,
                   size: 18,
                 ),

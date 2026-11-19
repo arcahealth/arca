@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
-import 'package:arca/core/widgets/widgets.dart';
 
 /// Document capture viewfinder screen for prescription or lab report scanning.
 ///
@@ -17,17 +16,33 @@ class const DocumentScanScreen({
   @override
   Widget build(BuildContext context) {
     return ArcaScaffold(
-      header: ArcaHeader(
-        title: 'Document Scan',
-        leading: NullableBuilder(
-          onBack,
-          builder: (context, back) => ArcaButton(
-            label: 'Back',
-            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
-            variant: .ghost,
-            semanticsLabel: 'Go back to intelligence prep',
-            onPressed: back,
+      bottomBar: ArcaBottomBar(
+        leading: onBack != null
+            ? ArcaButton(
+                label: 'Back',
+                leadingIcon: const PhosphorIcon(
+                  PhosphorIconsBold.arrowLeft,
+                  size: 18,
+                ),
+                variant: .secondary,
+                semanticsLabel: 'Go back to intelligence prep',
+                onPressed: onBack,
+              )
+            : ArcaButton(
+                label: 'Enter Details Manually Instead',
+                variant: .ghost,
+                semanticsLabel: 'Switch to manual profile entry flow',
+                onPressed: onSwitchToManual,
+              ),
+        trailing: ArcaButton(
+          label: 'Capture & Extract Details',
+          trailingIcon: const PhosphorIcon(
+            PhosphorIconsBold.arrowRight,
+            size: 18,
           ),
+          variant: .primary,
+          semanticsLabel: 'Capture document and extract health details',
+          onPressed: onCapture,
         ),
       ),
       body: SafeArea(
@@ -39,6 +54,26 @@ class const DocumentScanScreen({
           child: Column(
             crossAxisAlignment: .stretch,
             children: [
+              Row(
+                mainAxisAlignment: .spaceBetween,
+                children: [
+                  Text(
+                    'ARCA',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'DOCUMENT INTAKE',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              const ArcaDivider(
+                margin: EdgeInsets.symmetric(vertical: ArcaSpacing.md),
+              ),
               const Text('Scan Document', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
@@ -54,14 +89,10 @@ class const DocumentScanScreen({
                   decoration: BoxDecoration(
                     color: ArcaColors.surface,
                     borderRadius: ArcaRadii.none,
-                    border: Border.all(color: ArcaColors.border, width: 2.0),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: ArcaColors.borderSubtle,
-                        offset: Offset(4.0, 4.0),
-                        blurRadius: 0,
-                      ),
-                    ],
+                    border: Border.all(
+                      color: ArcaColors.borderSubtle,
+                      width: 1.0,
+                    ),
                   ),
                   child: const Center(
                     child: Column(
@@ -87,24 +118,15 @@ class const DocumentScanScreen({
                   ),
                 ),
               ),
-              const SizedBox(height: ArcaSpacing.xl),
-              ArcaButton(
-                label: 'Capture & Extract Details',
-                icon: const PhosphorIcon(
-                  PhosphorIconsBold.arrowRight,
-                  size: 18,
+              if (onBack != null) ...[
+                const SizedBox(height: ArcaSpacing.lg),
+                ArcaButton(
+                  label: 'Enter Details Manually Instead',
+                  variant: .ghost,
+                  semanticsLabel: 'Switch to manual profile entry flow',
+                  onPressed: onSwitchToManual,
                 ),
-                variant: .primary,
-                semanticsLabel: 'Capture document and extract health details',
-                onPressed: onCapture,
-              ),
-              const SizedBox(height: ArcaSpacing.sm),
-              ArcaButton(
-                label: 'Enter Details Manually Instead',
-                variant: .ghost,
-                semanticsLabel: 'Switch to manual profile entry flow',
-                onPressed: onSwitchToManual,
-              ),
+              ],
             ],
           ),
         ),

@@ -7,6 +7,7 @@ import 'package:arca/core/widgets/widgets.dart';
 /// Screen for collecting user name in the manual onboarding flow.
 ///
 /// Supports text editing and voice dictation via constructor callback [onVoiceInput].
+/// Follows Swiss typographic minimalism with clean 1px lines and thumb-reachable bottom actions.
 class const UserNameScreen({
   required final ValueChanged<String> onContinue,
   super.key,
@@ -57,7 +58,7 @@ class _UserNameScreenState extends State<UserNameScreen> {
   Widget _buildMicButton() {
     return ArcaButton(
       label: 'Dictate',
-      icon: const PhosphorIcon(PhosphorIconsBold.microphone, size: 18),
+      leadingIcon: const PhosphorIcon(PhosphorIconsBold.microphone, size: 18),
       variant: .secondary,
       semanticsLabel: 'Dictate name with voice',
       onPressed: _handleVoiceDictation,
@@ -67,17 +68,32 @@ class _UserNameScreenState extends State<UserNameScreen> {
   @override
   Widget build(BuildContext context) {
     return ArcaScaffold(
-      header: ArcaHeader(
-        title: 'Profile Setup',
+      bottomBar: ArcaBottomBar(
         leading: NullableBuilder(
           widget.onBack,
           builder: (context, back) => ArcaButton(
             label: 'Back',
-            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
-            variant: .ghost,
+            leadingIcon: const PhosphorIcon(
+              PhosphorIconsBold.arrowLeft,
+              size: 18,
+            ),
+            variant: .secondary,
             semanticsLabel: 'Go back',
             onPressed: back,
           ),
+        ),
+        trailing: ArcaButton(
+          label: 'Complete Setup & Create Vault',
+          trailingIcon: const PhosphorIcon(
+            PhosphorIconsBold.arrowRight,
+            size: 18,
+          ),
+          variant: .primary,
+          semanticsLabel: 'Complete onboarding and create vault',
+          onPressed: () {
+            final text = _controller.text.trim();
+            widget.onContinue(text.isNotEmpty ? text : 'Alex');
+          },
         ),
       ),
       body: SafeArea(
@@ -89,6 +105,26 @@ class _UserNameScreenState extends State<UserNameScreen> {
           child: Column(
             crossAxisAlignment: .stretch,
             children: [
+              Row(
+                mainAxisAlignment: .spaceBetween,
+                children: [
+                  Text(
+                    'ARCA',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'PERSONAL IDENTITY',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              const ArcaDivider(
+                margin: EdgeInsets.symmetric(vertical: ArcaSpacing.md),
+              ),
               const Text('Personal Identity', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
@@ -103,20 +139,6 @@ class _UserNameScreenState extends State<UserNameScreen> {
                 label: 'FULL NAME',
                 hintText: 'e.g. Alex Morgan',
                 trailing: _buildMicButton(),
-              ),
-              const SizedBox(height: ArcaSpacing.xxl),
-              ArcaButton(
-                label: 'Complete Setup & Create Vault',
-                icon: const PhosphorIcon(
-                  PhosphorIconsBold.arrowRight,
-                  size: 18,
-                ),
-                variant: .primary,
-                semanticsLabel: 'Complete onboarding and create vault',
-                onPressed: () {
-                  final text = _controller.text.trim();
-                  widget.onContinue(text.isNotEmpty ? text : 'Alex');
-                },
               ),
             ],
           ),

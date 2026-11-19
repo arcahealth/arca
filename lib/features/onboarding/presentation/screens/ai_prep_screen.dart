@@ -7,6 +7,8 @@ import 'package:arca/core/widgets/widgets.dart';
 /// Screen displaying the status of on-device AI features before scanning.
 ///
 /// Communicates local privacy guarantees and forwards to the document scan viewfinder via [onReady].
+/// Follows Swiss typographic minimalism with a thin grey architectural divider
+/// and thumb-reachable, evenly spaced bottom navigation actions.
 class const AiPrepScreen({
   required final VoidCallback onReady,
   super.key,
@@ -43,17 +45,29 @@ class const AiPrepScreen({
   @override
   Widget build(BuildContext context) {
     return ArcaScaffold(
-      header: ArcaHeader(
-        title: 'Device Readiness',
+      bottomBar: ArcaBottomBar(
         leading: NullableBuilder(
           onBack,
           builder: (context, back) => ArcaButton(
             label: 'Back',
-            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
-            variant: .ghost,
+            leadingIcon: const PhosphorIcon(
+              PhosphorIconsBold.arrowLeft,
+              size: 18,
+            ),
+            variant: .secondary,
             semanticsLabel: 'Go back to setup choice',
             onPressed: back,
           ),
+        ),
+        trailing: ArcaButton(
+          label: 'Proceed to Document Capture',
+          trailingIcon: const PhosphorIcon(
+            PhosphorIconsBold.arrowRight,
+            size: 18,
+          ),
+          variant: .primary,
+          semanticsLabel: 'Proceed to document scan viewfinder',
+          onPressed: onReady,
         ),
       ),
       body: SafeArea(
@@ -65,6 +79,26 @@ class const AiPrepScreen({
           child: Column(
             crossAxisAlignment: .stretch,
             children: [
+              Row(
+                mainAxisAlignment: .spaceBetween,
+                children: [
+                  Text(
+                    'ARCA',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'INTELLIGENCE',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              const ArcaDivider(
+                margin: EdgeInsets.symmetric(vertical: ArcaSpacing.md),
+              ),
               const Text(
                 'On-Device Intelligence',
                 style: ArcaTypography.display,
@@ -76,12 +110,9 @@ class const AiPrepScreen({
                   color: ArcaColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: ArcaSpacing.lg),
-              const ArcaProgressBar(
-                value: 1.0,
-                semanticsLabel: 'AI models ready',
+              const ArcaDivider(
+                margin: EdgeInsets.symmetric(vertical: ArcaSpacing.lg),
               ),
-              const SizedBox(height: ArcaSpacing.xl),
               ArcaCard(
                 padding: const EdgeInsets.all(ArcaSpacing.lg),
                 child: Column(
@@ -110,17 +141,6 @@ class const AiPrepScreen({
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: ArcaSpacing.xxl),
-              ArcaButton(
-                label: 'Proceed to Document Capture',
-                icon: const PhosphorIcon(
-                  PhosphorIconsBold.arrowRight,
-                  size: 18,
-                ),
-                variant: .primary,
-                semanticsLabel: 'Proceed to document scan viewfinder',
-                onPressed: onReady,
               ),
             ],
           ),

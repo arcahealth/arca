@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import 'package:arca/core/design_system/arca_design_system.dart';
-import 'package:arca/core/widgets/widgets.dart';
 
 /// Review screen presenting the data extracted from a scanned document.
 ///
@@ -38,17 +37,26 @@ class const ExtractedReviewScreen({
   @override
   Widget build(BuildContext context) {
     return ArcaScaffold(
-      header: ArcaHeader(
-        title: 'Review Data',
-        leading: NullableBuilder(
-          onBack,
-          builder: (context, back) => ArcaButton(
-            label: 'Back',
-            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
-            variant: .ghost,
-            semanticsLabel: 'Go back to scan screen',
-            onPressed: back,
+      bottomBar: ArcaBottomBar(
+        leading: ArcaButton(
+          label: 'Edit Details Manually',
+          leadingIcon: const PhosphorIcon(
+            PhosphorIconsBold.pencilSimple,
+            size: 18,
           ),
+          variant: .secondary,
+          semanticsLabel: 'Edit profile fields manually',
+          onPressed: onEditManually,
+        ),
+        trailing: ArcaButton(
+          label: 'Confirm & Create Vault',
+          trailingIcon: const PhosphorIcon(
+            PhosphorIconsBold.arrowRight,
+            size: 18,
+          ),
+          variant: .primary,
+          semanticsLabel: 'Confirm extracted profile and create vault',
+          onPressed: onConfirm,
         ),
       ),
       body: SafeArea(
@@ -60,6 +68,26 @@ class const ExtractedReviewScreen({
           child: Column(
             crossAxisAlignment: .stretch,
             children: [
+              Row(
+                mainAxisAlignment: .spaceBetween,
+                children: [
+                  Text(
+                    'ARCA',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'RECORD VERIFICATION',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              const ArcaDivider(
+                margin: EdgeInsets.symmetric(vertical: ArcaSpacing.md),
+              ),
               const Text('Review Profile', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
@@ -94,24 +122,6 @@ class const ExtractedReviewScreen({
                     _buildFieldRow('Known Allergy', extractedAllergy),
                   ],
                 ),
-              ),
-              const SizedBox(height: ArcaSpacing.xxl),
-              ArcaButton(
-                label: 'Confirm & Create Vault',
-                icon: const PhosphorIcon(
-                  PhosphorIconsBold.arrowRight,
-                  size: 18,
-                ),
-                variant: .primary,
-                semanticsLabel: 'Confirm extracted profile and create vault',
-                onPressed: onConfirm,
-              ),
-              const SizedBox(height: ArcaSpacing.sm),
-              ArcaButton(
-                label: 'Edit Details Manually',
-                variant: .ghost,
-                semanticsLabel: 'Edit profile fields manually',
-                onPressed: onEditManually,
               ),
             ],
           ),

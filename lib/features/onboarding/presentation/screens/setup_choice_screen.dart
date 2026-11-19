@@ -7,7 +7,8 @@ import 'package:arca/core/widgets/widgets.dart';
 /// Screen allowing the user to choose between automatic document extraction or manual entry.
 ///
 /// Emphasizes on-device privacy guarantee and forwards selection via [onChooseAuto]
-/// and [onChooseManual].
+/// and [onChooseManual]. Follows Swiss typographic minimalism with clean cards and
+/// thumb-reachable bottom navigation.
 class const SetupChoiceScreen({
   required final VoidCallback onChooseAuto,
   required final VoidCallback onChooseManual,
@@ -17,14 +18,16 @@ class const SetupChoiceScreen({
   @override
   Widget build(BuildContext context) {
     return ArcaScaffold(
-      header: ArcaHeader(
-        title: 'Setup Mode',
-        leading: NullableBuilder(
-          onBack,
-          builder: (context, back) => ArcaButton(
+      bottomBar: NullableBuilder(
+        onBack,
+        builder: (context, back) => ArcaBottomBar(
+          leading: ArcaButton(
             label: 'Back',
-            icon: const PhosphorIcon(PhosphorIconsBold.arrowLeft, size: 16),
-            variant: .ghost,
+            leadingIcon: const PhosphorIcon(
+              PhosphorIconsBold.arrowLeft,
+              size: 18,
+            ),
+            variant: .secondary,
             semanticsLabel: 'Go back to welcome screen',
             onPressed: back,
           ),
@@ -39,6 +42,26 @@ class const SetupChoiceScreen({
           child: Column(
             crossAxisAlignment: .stretch,
             children: [
+              Row(
+                mainAxisAlignment: .spaceBetween,
+                children: [
+                  Text(
+                    'ARCA',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'SETUP METHOD',
+                    style: ArcaTypography.label.copyWith(
+                      color: ArcaColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              const ArcaDivider(
+                margin: EdgeInsets.symmetric(vertical: ArcaSpacing.md),
+              ),
               const Text('Choose Setup Mode', style: ArcaTypography.display),
               const SizedBox(height: ArcaSpacing.xs),
               Text(
@@ -79,7 +102,7 @@ class const SetupChoiceScreen({
                     const SizedBox(height: ArcaSpacing.md),
                     ArcaButton(
                       label: 'Scan Document',
-                      icon: const PhosphorIcon(
+                      trailingIcon: const PhosphorIcon(
                         PhosphorIconsBold.arrowRight,
                         size: 18,
                       ),
@@ -121,7 +144,7 @@ class const SetupChoiceScreen({
                     const SizedBox(height: ArcaSpacing.md),
                     ArcaButton(
                       label: 'Enter Manually',
-                      icon: const PhosphorIcon(
+                      trailingIcon: const PhosphorIcon(
                         PhosphorIconsBold.arrowRight,
                         size: 18,
                       ),
