@@ -41,12 +41,12 @@ void main() {
         findsOneWidget,
       );
 
-      final startBtn = find.text('Get Started');
-      expect(startBtn, findsOneWidget);
-      await tester.tap(startBtn);
+      final scanBtn = find.text('Scan Document');
+      expect(scanBtn, findsOneWidget);
+      await tester.tap(scanBtn);
       await tester.pumpAndSettle();
 
-      expect(find.text('Choose Setup Mode'), findsOneWidget);
+      expect(find.text('Align document within frame'), findsOneWidget);
     },
   );
 }

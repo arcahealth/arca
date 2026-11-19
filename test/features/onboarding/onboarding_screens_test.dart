@@ -15,112 +15,60 @@ void _setViewport(WidgetTester tester) {
 
 void main() {
   group('WelcomeScreen Tests', () {
-    testWidgets('renders display title and fires onStart/onSkip callbacks', (
-      tester,
-    ) async {
-      _setViewport(tester);
-      var startCalled = false;
-      var skipCalled = false;
-
-      await tester.pumpWidget(
-        _wrap(
-          WelcomeScreen(
-            onStart: () => startCalled = true,
-            onSkip: () => skipCalled = true,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('ARCA'), findsOneWidget);
-      expect(find.textContaining('Your medical records'), findsOneWidget);
-
-      final startBtn = find.text('Get Started');
-      await tester.ensureVisible(startBtn);
-      await tester.tap(startBtn);
-      expect(startCalled, isTrue);
-
-      final skipBtn = find.text('Skip Setup');
-      await tester.ensureVisible(skipBtn);
-      await tester.tap(skipBtn);
-      expect(skipCalled, isTrue);
-    });
-  });
-
-  group('SetupChoiceScreen Tests', () {
     testWidgets(
-      'renders fork options and fires onChooseAuto / onChooseManual',
+      'renders display title and fires onScan, onManualEntry, and onSkip callbacks',
       (tester) async {
         _setViewport(tester);
-        var autoCalled = false;
+        var scanCalled = false;
         var manualCalled = false;
-        var backCalled = false;
+        var skipCalled = false;
 
         await tester.pumpWidget(
           _wrap(
-            SetupChoiceScreen(
-              onChooseAuto: () => autoCalled = true,
-              onChooseManual: () => manualCalled = true,
-              onBack: () => backCalled = true,
+            WelcomeScreen(
+              onScan: () => scanCalled = true,
+              onManualEntry: () => manualCalled = true,
+              onSkip: () => skipCalled = true,
             ),
           ),
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Choose Setup Mode'), findsOneWidget);
-        expect(find.text('Automatic Extraction'), findsOneWidget);
-        expect(find.text('Manual Setup'), findsOneWidget);
+        expect(find.text('ARCA'), findsOneWidget);
+        expect(find.textContaining('Your medical records'), findsOneWidget);
 
-        final autoBtn = find.text('Scan Document');
-        await tester.ensureVisible(autoBtn);
-        await tester.tap(autoBtn);
-        expect(autoCalled, isTrue);
+        final scanBtn = find.text('Scan Document');
+        await tester.ensureVisible(scanBtn);
+        await tester.tap(scanBtn);
+        expect(scanCalled, isTrue);
 
         final manualBtn = find.text('Enter Manually');
         await tester.ensureVisible(manualBtn);
         await tester.tap(manualBtn);
         expect(manualCalled, isTrue);
 
-        final backBtn = find.text('Back');
-        await tester.ensureVisible(backBtn);
-        await tester.tap(backBtn);
-        expect(backCalled, isTrue);
+        final skipBtn = find.text('Skip Setup');
+        await tester.ensureVisible(skipBtn);
+        await tester.tap(skipBtn);
+        expect(skipCalled, isTrue);
       },
     );
-  });
 
-  group('AiPrepScreen Tests', () {
-    testWidgets('renders model status indicators and fires onReady', (
+    testWidgets('renders Get Started when only onStart provided', (
       tester,
     ) async {
       _setViewport(tester);
-      var readyCalled = false;
-      var backCalled = false;
+      var startCalled = false;
 
       await tester.pumpWidget(
-        _wrap(
-          AiPrepScreen(
-            onReady: () => readyCalled = true,
-            onBack: () => backCalled = true,
-          ),
-        ),
+        _wrap(WelcomeScreen(onStart: () => startCalled = true)),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('On-Device Intelligence'), findsOneWidget);
-      expect(find.text('Local OCR Engine'), findsOneWidget);
-      expect(find.text('Clinical Entity Parser'), findsOneWidget);
-      expect(find.text('Hardware Vault Encryption'), findsOneWidget);
-
-      final readyBtn = find.text('Proceed to Document Capture');
-      await tester.ensureVisible(readyBtn);
-      await tester.tap(readyBtn);
-      expect(readyCalled, isTrue);
-
-      final backBtn = find.text('Back');
-      await tester.ensureVisible(backBtn);
-      await tester.tap(backBtn);
-      expect(backCalled, isTrue);
+      final startBtn = find.text('Get Started');
+      await tester.ensureVisible(startBtn);
+      await tester.tap(startBtn);
+      expect(startCalled, isTrue);
     });
   });
 
@@ -144,6 +92,7 @@ void main() {
 
       expect(find.text('Scan Document'), findsOneWidget);
       expect(find.text('Align document within frame'), findsOneWidget);
+      expect(find.text('Bundled RapidOCR'), findsOneWidget);
 
       final captureBtn = find.text('Capture & Extract Details');
       await tester.ensureVisible(captureBtn);
@@ -179,7 +128,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Review Profile'), findsOneWidget);
+      expect(find.text('Profile Overview'), findsOneWidget);
       expect(find.text('Alex Morgan'), findsOneWidget);
       expect(find.text('Amoxicillin 500mg'), findsOneWidget);
       expect(find.text('100% On-Device'), findsOneWidget);
@@ -205,7 +154,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Review Profile'), findsOneWidget);
+      expect(find.text('Profile Overview'), findsOneWidget);
       expect(find.text('Full Name'), findsOneWidget);
       expect(find.text('Date of Birth'), findsOneWidget);
     });
@@ -242,7 +191,7 @@ void main() {
         await tester.enterText(textField, 'Jane Doe');
         await tester.pumpAndSettle();
 
-        final continueBtn = find.text('Complete Setup & Create Vault');
+        final continueBtn = find.text('Continue to Overview');
         await tester.ensureVisible(continueBtn);
         await tester.tap(continueBtn);
         expect(enteredName, 'Jane Doe');
@@ -267,7 +216,7 @@ void main() {
 
         expect(find.text('Alex Morgan'), findsOneWidget);
 
-        final continueBtn = find.text('Complete Setup & Create Vault');
+        final continueBtn = find.text('Continue to Overview');
         await tester.ensureVisible(continueBtn);
         await tester.tap(continueBtn);
         expect(enteredName, 'Alex Morgan');

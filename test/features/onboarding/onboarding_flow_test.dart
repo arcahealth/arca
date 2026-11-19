@@ -47,7 +47,7 @@ void main() {
 
   group('Onboarding Flow Navigation Tests', () {
     testWidgets(
-      'navigates through inverted automatic scan flow to completion',
+      'navigates through streamlined scan flow with bundled AI to overview and completion',
       (tester) async {
         _setViewport(tester);
         final repo = FakeOnboardingRepository();
@@ -67,34 +67,21 @@ void main() {
           find.text('Your medical records.\nEncrypted on your device.'),
           findsOneWidget,
         );
-        final startBtn = find.text('Get Started');
-        await tester.ensureVisible(startBtn);
-        await tester.tap(startBtn);
-        await tester.pumpAndSettle();
-
-        // Screen 2: Setup Choice Screen
-        expect(find.text('Choose Setup Mode'), findsOneWidget);
         final scanBtn = find.text('Scan Document');
         await tester.ensureVisible(scanBtn);
         await tester.tap(scanBtn);
         await tester.pumpAndSettle();
 
-        // Screen 3A: AI Preparation Screen
-        expect(find.text('On-Device Intelligence'), findsOneWidget);
-        final proceedBtn = find.text('Proceed to Document Capture');
-        await tester.ensureVisible(proceedBtn);
-        await tester.tap(proceedBtn);
-        await tester.pumpAndSettle();
-
-        // Screen 4A: Document Scan Screen
+        // Screen 2: Document Scan Screen (Bundled RapidOCR)
         expect(find.text('Scan Document'), findsOneWidget);
+        expect(find.text('Bundled RapidOCR'), findsOneWidget);
         final captureBtn = find.text('Capture & Extract Details');
         await tester.ensureVisible(captureBtn);
         await tester.tap(captureBtn);
         await tester.pumpAndSettle();
 
-        // Screen 5A: Extracted Review Screen
-        expect(find.text('Review Profile'), findsOneWidget);
+        // Screen 3: Overview Screen (with edit and confirm)
+        expect(find.text('Profile Overview'), findsOneWidget);
         expect(find.text('100% On-Device'), findsOneWidget);
         final confirmBtn = find.text('Confirm & Create Vault');
         await tester.ensureVisible(confirmBtn);
@@ -106,48 +93,84 @@ void main() {
       },
     );
 
-    testWidgets('navigates through manual flow with text/voice to completion', (
+    testWidgets(
+      'navigates through manual flow with text/voice to overview and completion',
+      (tester) async {
+        _setViewport(tester);
+        final repo = FakeOnboardingRepository();
+        var completedCalled = false;
+
+        await tester.pumpWidget(
+          _buildOnboardingApp(
+            repo: repo,
+            onCompleted: () => completedCalled = true,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Screen 1: Welcome Screen
+        final manualBtn = find.text('Enter Manually');
+        await tester.ensureVisible(manualBtn);
+        await tester.tap(manualBtn);
+        await tester.pumpAndSettle();
+
+        // Screen 2: User Name Screen (Information gathering)
+        expect(find.text('Personal Identity'), findsOneWidget);
+        final micFinder = find.bySemanticsLabel('Dictate name with voice');
+        await tester.ensureVisible(micFinder);
+        await tester.tap(micFinder);
+        await tester.pumpAndSettle();
+
+        final continueBtn = find.text('Continue to Overview');
+        await tester.ensureVisible(continueBtn);
+        await tester.tap(continueBtn);
+        await tester.pumpAndSettle();
+
+        // Screen 3: Overview Screen
+        expect(find.text('Profile Overview'), findsOneWidget);
+        expect(find.text('Alex Morgan'), findsOneWidget);
+
+        final confirmBtn = find.text('Confirm & Create Vault');
+        await tester.ensureVisible(confirmBtn);
+        await tester.tap(confirmBtn);
+        await tester.pumpAndSettle();
+
+        expect(repo.completed, isTrue);
+        expect(completedCalled, isTrue);
+      },
+    );
+
+    testWidgets('allows editing details from overview back to manual entry', (
       tester,
     ) async {
       _setViewport(tester);
       final repo = FakeOnboardingRepository();
-      var completedCalled = false;
 
-      await tester.pumpWidget(
-        _buildOnboardingApp(
-          repo: repo,
-          onCompleted: () => completedCalled = true,
-        ),
-      );
+      await tester.pumpWidget(_buildOnboardingApp(repo: repo));
       await tester.pumpAndSettle();
 
-      // Screen 1: Welcome Screen
-      final startBtn = find.text('Get Started');
-      await tester.ensureVisible(startBtn);
-      await tester.tap(startBtn);
+      // Welcome -> Scan -> Overview
+      final scanBtn = find.text('Scan Document');
+      await tester.ensureVisible(scanBtn);
+      await tester.tap(scanBtn);
       await tester.pumpAndSettle();
 
-      // Screen 2: Setup Choice Screen
-      expect(find.text('Choose Setup Mode'), findsOneWidget);
-      final manualBtn = find.text('Enter Manually');
-      await tester.ensureVisible(manualBtn);
-      await tester.tap(manualBtn);
+      final captureBtn = find.text('Capture & Extract Details');
+      await tester.ensureVisible(captureBtn);
+      await tester.tap(captureBtn);
       await tester.pumpAndSettle();
 
-      // Screen 3B: User Name Screen
+      expect(find.text('Profile Overview'), findsOneWidget);
+
+      // Tap Edit Details Manually
+      final editBtn = find.text('Edit Details Manually');
+      await tester.ensureVisible(editBtn);
+      await tester.tap(editBtn);
+      await tester.pumpAndSettle();
+
+      // Should open manual entry with prefilled name
       expect(find.text('Personal Identity'), findsOneWidget);
-      final micFinder = find.bySemanticsLabel('Dictate name with voice');
-      await tester.ensureVisible(micFinder);
-      await tester.tap(micFinder);
-      await tester.pumpAndSettle();
-
-      final completeBtn = find.text('Complete Setup & Create Vault');
-      await tester.ensureVisible(completeBtn);
-      await tester.tap(completeBtn);
-      await tester.pumpAndSettle();
-
-      expect(repo.completed, isTrue);
-      expect(completedCalled, isTrue);
+      expect(find.text('Alex Morgan'), findsOneWidget);
     });
   });
 }
