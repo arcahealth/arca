@@ -36,13 +36,14 @@ abstract final class ArcaRouter {
     OnboardingRepository onboardingRepo, {
     ArcaRoute initial = const OnboardingMount(),
   }) {
+    final onboardingModule = OnboardingModule(onboardingRepo);
     return KaiselRouterConfig<ArcaRoute>(
       initial: initial,
       codec: codec(),
       guards: [ArcaRouteGuards.onboarding(onboardingRepo)],
       builder: (context, route) => switch (route) {
         OnboardingMount() => KaiselModuleMount<OnboardingRoute>(
-          module: OnboardingModule(onboardingRepo),
+          module: onboardingModule,
         ),
       },
     );
