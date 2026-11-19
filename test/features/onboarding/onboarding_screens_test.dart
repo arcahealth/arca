@@ -1,10 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:arca/core/capture/capture.dart';
 import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 
-Widget _wrap(Widget child) =>
-    Directionality(textDirection: TextDirection.ltr, child: child);
+import '../../test_utils/fake_document_capture_service.dart';
+
+Widget _wrap(Widget child) => Directionality(textDirection: TextDirection.ltr, child: child);
 
 void _setViewport(WidgetTester tester) {
   tester.view.physicalSize = const Size(1080, 2400);
@@ -93,6 +95,9 @@ void main() {
       expect(find.text('Scan Document'), findsOneWidget);
       expect(find.text('Align document within frame'), findsOneWidget);
       expect(find.text('Bundled RapidOCR'), findsOneWidget);
+      expect(find.text('Start Document Scan'), findsOneWidget);
+      expect(find.text('Take Photo'), findsOneWidget);
+      expect(find.text('Choose from Gallery'), findsOneWidget);
 
       final captureBtn = find.text('Capture & Extract Details');
       await tester.ensureVisible(captureBtn);
@@ -104,6 +109,184 @@ void main() {
       await tester.tap(manualBtn);
       expect(manualCalled, isTrue);
     });
+
+    testWidgets(
+      'Start Document Scan invokes captureService and updates UI with captured pages',
+      (tester) async {
+        _setViewport(tester);
+        final fakeService = FakeDocumentCaptureService(
+          scanResult: const DocumentCaptureResult.success([
+            '/tmp/prescription_page1.jpg',
+            '/tmp/prescription_page2.jpg',
+          ]),
+        );
+        List<String>? capturedImages;
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeService,
+              onImagesCaptured: (images) => capturedImages = images,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final scanBtn = find.text('Start Document Scan');
+        await tester.ensureVisible(scanBtn);
+        await tester.tap(scanBtn);
+        await tester.pumpAndSettle();
+
+        expect(fakeService.scanCalls, 1);
+        expect(capturedImages, [
+          '/tmp/prescription_page1.jpg',
+          '/tmp/prescription_page2.jpg',
+        ]);
+        expect(
+          find.text('2 Document Page(s) Selected'),
+          findsOneWidget,
+        );
+        expect(find.text('prescription_page1.jpg'), findsOneWidget);
+        expect(find.text('Ready for OCR'), findsOneWidget);
+        expect(find.text('Proceed to Review'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Take Photo invokes captureService photo and fires onImagesCaptured',
+      (tester) async {
+        _setViewport(tester);
+        final fakeService = FakeDocumentCaptureService(
+          photoResult: const DocumentCaptureResult.success([
+            '/tmp/rx_snapshot.jpg',
+          ]),
+        );
+        List<String>? capturedImages;
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeService,
+              onImagesCaptured: (images) => capturedImages = images,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final photoBtn = find.text('Take Photo');
+        await tester.ensureVisible(photoBtn);
+        await tester.tap(photoBtn);
+        await tester.pumpAndSettle();
+
+        expect(fakeService.photoCalls, 1);
+        expect(capturedImages, ['/tmp/rx_snapshot.jpg']);
+        expect(find.text('1 Document Page(s) Selected'), findsOneWidget);
+        expect(find.text('rx_snapshot.jpg'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Choose from Gallery invokes captureService gallery and fires onImagesCaptured',
+      (tester) async {
+        _setViewport(tester);
+        final fakeService = FakeDocumentCaptureService(
+          pickResult: const DocumentCaptureResult.success([
+            '/tmp/lab_report_gallery.png',
+          ]),
+        );
+        List<String>? capturedImages;
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeService,
+              onImagesCaptured: (images) => capturedImages = images,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final galleryBtn = find.text('Choose from Gallery');
+        await tester.ensureVisible(galleryBtn);
+        await tester.tap(galleryBtn);
+        await tester.pumpAndSettle();
+
+        expect(fakeService.pickCalls, 1);
+        expect(capturedImages, ['/tmp/lab_report_gallery.png']);
+        expect(find.text('1 Document Page(s) Selected'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'displays warning card and message when camera permission is denied',
+      (tester) async {
+        _setViewport(tester);
+        final fakeService = FakeDocumentCaptureService(
+          scanResult: const DocumentCaptureResult.failure(
+            DocumentCaptureFailure.permissionDenied(
+              'Camera access was denied by user.',
+            ),
+          ),
+        );
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeService,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final scanBtn = find.text('Start Document Scan');
+        await tester.ensureVisible(scanBtn);
+        await tester.tap(scanBtn);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Action Required'), findsOneWidget);
+        expect(
+          find.text('Camera access was denied by user.'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'handles user cancellation cleanly without showing error card',
+      (tester) async {
+        _setViewport(tester);
+        final fakeService = FakeDocumentCaptureService(
+          scanResult: const DocumentCaptureResult.canceled(),
+        );
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeService,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final scanBtn = find.text('Start Document Scan');
+        await tester.ensureVisible(scanBtn);
+        await tester.tap(scanBtn);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Action Required'), findsNothing);
+        expect(find.text('Align document within frame'), findsOneWidget);
+      },
+    );
   });
 
   group('ExtractedReviewScreen Tests', () {

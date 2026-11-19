@@ -2,6 +2,7 @@ import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaisel/kaisel.dart';
 
+import 'package:arca/core/capture/capture.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 
@@ -27,8 +28,7 @@ final class const _OnboardingExtractedReview({
   final String extractedAllergy = '',
 }) extends OnboardingRoute;
 
-final class const _OnboardingUserName({final String? initialName})
-    extends OnboardingRoute;
+final class const _OnboardingUserName({final String? initialName}) extends OnboardingRoute;
 
 /// Self-contained routing module managing the streamlined scan and manual onboarding flows.
 final class const OnboardingModule([
@@ -40,9 +40,7 @@ final class const OnboardingModule([
 
   @override
   Widget buildPage(BuildContext context, OnboardingRoute route) {
-    final repo =
-        onboardingRepo ??
-        CircuitProvider.of(context).get<OnboardingRepository>();
+    final repo = onboardingRepo ?? CircuitProvider.of(context).get<OnboardingRepository>();
 
     return switch (route) {
       _OnboardingWelcome() => WelcomeScreen(
@@ -54,6 +52,15 @@ final class const OnboardingModule([
         },
       ),
       _OnboardingDocumentScan() => DocumentScanScreen(
+        captureService: CircuitProvider.maybeOf(context)?.get<DocumentCaptureService>(),
+        onImagesCaptured: (paths) => context.push(
+          const OnboardingRoute.extractedReview(
+            extractedName: 'Alex Morgan',
+            extractedDob: '1988-04-12',
+            extractedMedication: 'Amoxicillin 500mg',
+            extractedAllergy: 'Penicillin',
+          ),
+        ),
         onCapture: () => context.push(
           const OnboardingRoute.extractedReview(
             extractedName: 'Alex Morgan',
@@ -67,8 +74,7 @@ final class const OnboardingModule([
       ),
       _OnboardingUserName(:final initialName) => UserNameScreen(
         initialName: initialName,
-        onContinue: (name) =>
-            context.push(OnboardingRoute.extractedReview(extractedName: name)),
+        onContinue: (name) => context.push(OnboardingRoute.extractedReview(extractedName: name)),
         onBack: () => context.pop(),
       ),
       _OnboardingExtractedReview(
@@ -96,8 +102,7 @@ final class const OnboardingModule([
 }
 
 /// Codec serializing and deserializing the onboarding flow routes and deep link stacks.
-final class const OnboardingModuleCodec()
-    extends ModuleStackCodec<OnboardingRoute> {
+final class const OnboardingModuleCodec() extends ModuleStackCodec<OnboardingRoute> {
   @override
   List<String> encode(List<OnboardingRoute> stack) => switch (stack.last) {
     _OnboardingWelcome() => const [],
