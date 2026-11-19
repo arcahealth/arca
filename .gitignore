@@ -46,9 +46,7 @@ app.*.map.json
 
 # On-device AI & ONNX model assets (bundled into release binary, not committed to git)
 *.onnx
-/assets/models/**
-!/assets/models/**/
-!/assets/models/**/.gitkeep
+/assets/models/
 
 # Widget Preview related
 .widget_preview/
