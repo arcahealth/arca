@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 ///
 /// Prevents redundant allocations and provides standard O(N) element comparison
 /// singletons for models, state objects, and database DTOs.
-abstract final class ArcaEquality {
+abstract final class CollectionEquality {
   /// Constant equality comparator for [List] containing [String] elements.
   static const stringList = ListEquality<String>();
 
@@ -17,3 +17,6 @@ abstract final class ArcaEquality {
   /// Constant equality comparator for generic [Map] collections using key/value equality.
   static const map = MapEquality<dynamic, dynamic>();
 }
+
+/// Backwards-compatible alias for [CollectionEquality].
+typedef ArcaEquality = CollectionEquality;

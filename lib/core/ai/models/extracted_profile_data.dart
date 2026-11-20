@@ -58,10 +58,10 @@ final class const ExtractedProfileData({
           middleName == other.middleName &&
           lastName == other.lastName &&
           dateOfBirth == other.dateOfBirth &&
-          ArcaEquality.stringList.equals(medications, other.medications) &&
-          ArcaEquality.stringList.equals(allergies, other.allergies) &&
+          CollectionEquality.stringList.equals(medications, other.medications) &&
+          CollectionEquality.stringList.equals(allergies, other.allergies) &&
           rawText == other.rawText &&
-          ArcaEquality.list.equals(entities, other.entities) &&
+          CollectionEquality.list.equals(entities, other.entities) &&
           confidence == other.confidence;
 
   @override
@@ -70,10 +70,10 @@ final class const ExtractedProfileData({
     middleName,
     lastName,
     dateOfBirth,
-    ArcaEquality.stringList.hash(medications),
-    ArcaEquality.stringList.hash(allergies),
+    CollectionEquality.stringList.hash(medications),
+    CollectionEquality.stringList.hash(allergies),
     rawText,
-    ArcaEquality.list.hash(entities),
+    CollectionEquality.list.hash(entities),
     confidence,
   );
 }
