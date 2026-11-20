@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
+import 'package:arca/core/ai/ai.dart';
 import 'package:arca/core/capture/capture.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:arca/core/widgets/widgets.dart';
@@ -12,9 +13,11 @@ import 'package:arca/core/widgets/widgets.dart';
 final class const DocumentScanScreen({
   super.key,
   final DocumentCaptureService? captureService,
+  final DocumentInferencePipeline? inferencePipeline,
   required final VoidCallback onCapture,
   required final VoidCallback onSwitchToManual,
   final ValueChanged<List<String>>? onImagesCaptured,
+  final ValueChanged<ExtractedProfileData>? onExtractionComplete,
   final VoidCallback? onBack,
 }) extends StatefulWidget {
   @override
@@ -23,7 +26,9 @@ final class const DocumentScanScreen({
 
 class _DocumentScanScreenState extends State<DocumentScanScreen> {
   late final DocumentCaptureService _captureService;
+  late final DocumentInferencePipeline _inferencePipeline;
   bool _isCapturing = false;
+  bool _isExtracting = false;
   String? _errorMessage;
   List<String> _capturedPaths = const [];
 
@@ -31,6 +36,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
   void initState() {
     super.initState();
     _captureService = widget.captureService ?? DefaultDocumentCaptureService();
+    _inferencePipeline = widget.inferencePipeline ?? DefaultDocumentInferencePipeline();
   }
 
   Future<void> _handleCapture(DocumentCaptureSource source) async {
@@ -75,6 +81,46 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
     }
   }
 
+  Future<void> _handleExtraction() async {
+    if (_capturedPaths.isEmpty) {
+      widget.onCapture();
+      return;
+    }
+
+    setState(() {
+      _isExtracting = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await _inferencePipeline.processDocuments(_capturedPaths);
+      if (!mounted) return;
+
+      switch (result) {
+        case DocumentInferenceSuccess(:final data):
+          setState(() {
+            _isExtracting = false;
+          });
+          if (widget.onExtractionComplete != null) {
+            widget.onExtractionComplete!(data);
+          } else {
+            widget.onCapture();
+          }
+        case DocumentInferenceFailure(:final message):
+          setState(() {
+            _isExtracting = false;
+            _errorMessage = message;
+          });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isExtracting = false;
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasCaptured = _capturedPaths.isNotEmpty;
@@ -101,19 +147,29 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
           ),
         ),
         trailing: ArcaButton(
-          label: hasCaptured ? 'Proceed to Review' : 'Capture & Extract Details',
-          trailingIcon: const PhosphorIcon(
-            PhosphorIconsBold.arrowRight,
-            size: 18,
-          ),
+          label: _isExtracting
+              ? 'Extracting...'
+              : hasCaptured
+              ? 'Proceed to Review'
+              : 'Capture & Extract Details',
+          trailingIcon: _isExtracting
+              ? null
+              : const PhosphorIcon(
+                  PhosphorIconsBold.arrowRight,
+                  size: 18,
+                ),
           variant: .primary,
           semanticsLabel: 'Capture document and extract health details',
-          onPressed: () {
-            if (hasCaptured) {
-              widget.onImagesCaptured?.call(_capturedPaths);
-            }
-            widget.onCapture();
-          },
+          onPressed: (_isCapturing || _isExtracting)
+              ? null
+              : () {
+                  if (hasCaptured) {
+                    widget.onImagesCaptured?.call(_capturedPaths);
+                    _handleExtraction();
+                  } else {
+                    widget.onCapture();
+                  }
+                },
         ),
       ),
       body: SafeArea(
@@ -191,6 +247,34 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                             const ArcaBadge(
                               label: 'Scanning',
                               variant: .info,
+                            ),
+                          ] else if (_isExtracting) ...[
+                            const PhosphorIcon(
+                              PhosphorIconsBold.cpu,
+                              size: 40,
+                              color: ArcaColors.primary,
+                            ),
+                            const SizedBox(height: ArcaSpacing.md),
+                            const Text(
+                              'Extracting Clinical Records...',
+                              style: ArcaTypography.titleMedium,
+                            ),
+                            const SizedBox(height: ArcaSpacing.xs),
+                            const Text(
+                              'Analyzing document with on-device OCR & PII models',
+                              style: ArcaTypography.caption,
+                              textAlign: .center,
+                            ),
+                            const SizedBox(height: ArcaSpacing.md),
+                            const ArcaBadge(
+                              label: 'On-Device AI',
+                              variant: .info,
+                            ),
+                            const SizedBox(height: ArcaSpacing.md),
+                            const ArcaProgressBar(
+                              value: 0.75,
+                              height: 3.0,
+                              semanticsLabel: 'Document extraction progress',
                             ),
                           ] else if (hasCaptured) ...[
                             const PhosphorIcon(
@@ -278,7 +362,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                 ),
                 variant: .primary,
                 semanticsLabel: 'Scan document using native scanner',
-                onPressed: _isCapturing ? null : () => _handleCapture(.documentScan),
+                onPressed: (_isCapturing || _isExtracting) ? null : () => _handleCapture(.documentScan),
               ),
               const SizedBox(height: ArcaSpacing.sm),
               Row(
@@ -292,7 +376,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                       ),
                       variant: .secondary,
                       semanticsLabel: 'Capture photo with camera',
-                      onPressed: _isCapturing ? null : () => _handleCapture(.camera),
+                      onPressed: (_isCapturing || _isExtracting) ? null : () => _handleCapture(.camera),
                     ),
                   ),
                   const SizedBox(width: ArcaSpacing.sm),
@@ -305,7 +389,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                       ),
                       variant: .secondary,
                       semanticsLabel: 'Choose document image from gallery',
-                      onPressed: _isCapturing ? null : () => _handleCapture(.gallery),
+                      onPressed: (_isCapturing || _isExtracting) ? null : () => _handleCapture(.gallery),
                     ),
                   ),
                 ],
@@ -319,7 +403,7 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
                 ),
                 variant: .secondary,
                 semanticsLabel: 'Select PDF or document file from storage',
-                onPressed: _isCapturing ? null : () => _handleCapture(.files),
+                onPressed: (_isCapturing || _isExtracting) ? null : () => _handleCapture(.files),
               ),
               NullableBuilder(
                 widget.onBack,

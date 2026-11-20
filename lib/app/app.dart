@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:kaisel/kaisel.dart';
 
 import 'package:arca/app/router/router.dart';
+import 'package:arca/core/ai/ai.dart';
 import 'package:arca/core/database/database_service.dart';
 import 'package:arca/core/design_system/arca_design_system.dart';
 import 'package:circuitry_flutter/circuitry_flutter.dart';
@@ -15,6 +16,7 @@ final class const ArcaApp({super.key, final List<CircuitWire> wires = const []})
     DatabaseConfig.wire,
     DatabaseService.wire,
     OnboardingRepository.wire,
+    DocumentInferencePipeline.wire,
     ArcaRouter.wire,
   ];
 

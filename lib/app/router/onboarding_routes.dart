@@ -51,12 +51,12 @@ final class const OnboardingModule([
         },
       ),
       _OnboardingDocumentScan() => DocumentScanScreen(
-        onImagesCaptured: (paths) => context.push(
-          const OnboardingRoute.extractedReview(
-            extractedName: 'Alex Morgan',
-            extractedDob: '1988-04-12',
-            extractedMedication: 'Amoxicillin 500mg',
-            extractedAllergy: 'Penicillin',
+        onExtractionComplete: (data) => context.push(
+          OnboardingRoute.extractedReview(
+            extractedName: data.name,
+            extractedDob: data.dateOfBirth,
+            extractedMedication: data.medications.join(', '),
+            extractedAllergy: data.allergies.join(', '),
           ),
         ),
         onCapture: () => context.push(

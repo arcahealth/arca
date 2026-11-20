@@ -9,22 +9,24 @@
 - Implement inverted onboarding UI/UX flow with automatic document scan and manual voice/text paths.
 - Streamline onboarding to 3-step scan/manual paths leveraging bundled onnxruntime and RapidOCR.
 - Bundle recommended PP-OCRv6 OCR and MiniLM-L6 PII ONNX models and companion assets.
+- Enable offline on-device document scanning, camera photo capture, and gallery selection (`DocumentCaptureService`).
 
 ## Next
 
-### Document scanning, camera capture, and photo picker pipeline
+### On-device OCR and PII document inference pipeline for onboarding
 
 - **Release:** 0.2.0
-- **Goal:** Enable offline on-device document scanning with automatic edge detection, direct camera photo capture, and gallery image selection for medical prescriptions and lab reports.
+- **Goal:** Transform captured, picked, or scanned prescriptions and medical lab documents into structured profile and clinical records on-device via OCR and PII extraction.
 - **Requirements:**
-  - Provide `DocumentCaptureService` interface with `DocumentCaptureResult` and `DocumentCaptureFailure`.
-  - Implement native document scanning (`cunning_document_scanner`) with VisionKit on iOS and ML Kit on Android.
-  - Implement photo capture, gallery picker (`image_picker`), and document/PDF file import (`file_picker`).
-  - Support lazy instantiation with `DefaultDocumentCaptureService()` fallback on `DocumentScanScreen` without upfront DI overhead.
-  - Update `DocumentScanScreen` to provide dedicated actions for document scan, camera capture, and gallery selection with loading and error feedback.
-  - Configure iOS camera and photo library usage descriptions in `Info.plist` and Android manifest camera permissions.
-- **Approach:** Core capture service with interface-driven abstraction, Circuitry wire integration, and accessible presentation controls with >=48x48 dp touch targets.
-- **Acceptance:** Unit and widget tests verify capture outcomes (success, canceled, failure) and screen interactions; zero analyzer warnings.
+  - Build `BertTokenizer` supporting WordPiece tokenization and token offset mapping.
+  - Implement `OcrEngine` interface and `DefaultOcrEngine` for extracting text lines from captured documents.
+  - Implement `PiiExtractor` interface and `DefaultPiiExtractor` combining MiniLM-L6 token classification and clinical entity parsing (patient name, DOB, medications, allergies).
+  - Implement `DocumentInferencePipeline` interface, `DefaultDocumentInferencePipeline`, and Circuitry DI wire (`DocumentInferencePipeline.wire`).
+  - Wire `DocumentScanScreen` to trigger the AI inference pipeline upon document capture and display on-device extraction progress with accessible UI feedback.
+  - Update `OnboardingModule` router to navigate from document capture to `ExtractedReviewScreen` populated with real AI-extracted profile and clinical data.
+  - Provide test fakes (`FakeDocumentInferencePipeline`, `FakeOcrEngine`) and comprehensive unit and widget tests.
+- **Approach:** Decoupled AI domain services in `lib/core/ai/`, interface-driven DI, and responsive state handling in onboarding presentation.
+- **Acceptance:** Full unit and widget test suite passes cleanly with zero analyzer warnings, and onboarding successfully extracts clinical data from scanned documents.
 
 ### Multi-member health vault and setup wizard
 
