@@ -41,7 +41,7 @@ final class DefaultDocumentInferencePipeline implements DocumentInferencePipelin
       final cleanText = recognizedText.trim();
 
       if (cleanText.isEmpty) {
-        return const DocumentInferenceSuccess(ExtractedProfileData.empty());
+        return const DocumentInferenceSuccess(ExtractedProfileData.empty);
       }
 
       // 2. Personally Identifiable Information (PII) and clinical extraction step

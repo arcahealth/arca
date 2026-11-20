@@ -123,14 +123,18 @@ Allergies: Penicillin
   });
 
   group('ExtractedProfileData Model Tests', () {
-    test('supports empty concise factory constructor', () {
-      const data = ExtractedProfileData.empty();
+    test('supports empty constant singleton and isEmpty comparison', () {
+      const data = ExtractedProfileData.empty;
       expect(data.isEmpty, isTrue);
       expect(data.isNotEmpty, isFalse);
       expect(data.name, isEmpty);
       expect(data.firstName, isEmpty);
       expect(data.middleName, isEmpty);
       expect(data.lastName, isEmpty);
+
+      const defaultInstance = ExtractedProfileData();
+      expect(defaultInstance.isEmpty, isTrue);
+      expect(defaultInstance == ExtractedProfileData.empty, isTrue);
     });
 
     test('assembles computed name from individual components', () {

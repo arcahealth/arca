@@ -1,4 +1,4 @@
-import 'package:collection/collection.dart';
+import 'package:arca/core/utils/utils.dart';
 
 import 'extracted_entity.dart';
 
@@ -14,23 +14,17 @@ final class const ExtractedProfileData({
   final List<ExtractedEntity> entities = const [],
   final double confidence = 0.0,
 }) {
-  /// Empty profile default when no clinical entities were detected.
-  const factory empty() = ExtractedProfileData;
+  /// Constant empty profile singleton when no clinical entities were detected.
+  static const empty = ExtractedProfileData();
 
   /// Full combined name assembled from first, middle, and last names.
   String get name => [firstName, middleName, lastName].where((part) => part.isNotEmpty).join(' ');
 
-  /// Returns true if all extracted profile fields are empty.
-  bool get isEmpty =>
-      firstName.isEmpty &&
-      middleName.isEmpty &&
-      lastName.isEmpty &&
-      dateOfBirth.isEmpty &&
-      medications.isEmpty &&
-      allergies.isEmpty;
+  /// Returns true if this profile is empty.
+  bool get isEmpty => this == empty;
 
   /// Returns true if at least one extracted clinical field is present.
-  bool get isNotEmpty => !isEmpty;
+  bool get isNotEmpty => this != empty;
 
   /// Returns a copy of this [ExtractedProfileData] with updated fields.
   ExtractedProfileData copyWith({
@@ -64,13 +58,10 @@ final class const ExtractedProfileData({
           middleName == other.middleName &&
           lastName == other.lastName &&
           dateOfBirth == other.dateOfBirth &&
-          const ListEquality<String>().equals(medications, other.medications) &&
-          const ListEquality<String>().equals(allergies, other.allergies) &&
+          ArcaEquality.stringList.equals(medications, other.medications) &&
+          ArcaEquality.stringList.equals(allergies, other.allergies) &&
           rawText == other.rawText &&
-          const ListEquality<ExtractedEntity>().equals(
-            entities,
-            other.entities,
-          ) &&
+          ArcaEquality.list.equals(entities, other.entities) &&
           confidence == other.confidence;
 
   @override
@@ -79,10 +70,10 @@ final class const ExtractedProfileData({
     middleName,
     lastName,
     dateOfBirth,
-    const ListEquality<String>().hash(medications),
-    const ListEquality<String>().hash(allergies),
+    ArcaEquality.stringList.hash(medications),
+    ArcaEquality.stringList.hash(allergies),
     rawText,
-    const ListEquality<ExtractedEntity>().hash(entities),
+    ArcaEquality.list.hash(entities),
     confidence,
   );
 }
