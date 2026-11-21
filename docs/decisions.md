@@ -106,3 +106,9 @@ Superseded by 2026-11-15: Flutter Bridge (CircuitProvider and CircuitState) for 
 - **Choice:** Implement an interface-driven AI pipeline in `lib/core/ai/` featuring `OcrEngine`, `PiiExtractor`, and `DocumentInferencePipeline` backed by `BertTokenizer` (WordPiece tokenization for MiniLM-L6) and high-precision clinical entity extraction (patient name, DOB, medications, and allergies). Wire `DocumentInferencePipeline.wire` into Circuitry DI, and allow lazy fallback instantiation on `DocumentScanScreen` with `onExtractionComplete` callback forwarding structured profile data to `ExtractedReviewScreen`.
 - **Reason:** Keeps all medical extraction 100% on-device without cloud network latency or data leakage, provides graceful fallback in headless/test environments, and maintains strict layer seams and test isolation via fakes.
 - **Alternative rejected:** Cloud-based OCR/NER APIs, monolithic screen-level model loading, and rigid regex-only parsing without subword tokenization support.
+
+## 2026-11-21: Restrict Document File Picker to Supported Formats with Defensive Validation
+- **Status:** agreed
+- **Choice:** Constrain `DocumentCaptureService.pickFiles` to supported OCR formats (`txt`, `json`, `md`, `csv`) via `FileType.custom` and enforce post-selection extension validation. Return `DocumentInferenceFailure` instead of empty success when document text or profile entities are missing, and display actionable error feedback on `DocumentScanScreen` preventing silent navigation to an empty review screen.
+- **Reason:** Prevents unsupported file types (such as raw images without tensor preprocessing or unparsed PDFs) from silently succeeding and yielding empty records, providing immediate user feedback and fail-safe onboarding progression.
+- **Alternative rejected:** Unchecked file picker allowing arbitrary file types, silent empty success results, and implicit navigation to unpopulated review screens.

@@ -101,6 +101,12 @@ class _DocumentScanScreenState extends State<DocumentScanScreen> {
           setState(() {
             _isExtracting = false;
           });
+          if (data.isEmpty) {
+            setState(() {
+              _errorMessage = 'No clinical details could be identified in the document. Please try another document or enter details manually.';
+            });
+            return;
+          }
           if (widget.onExtractionComplete != null) {
             widget.onExtractionComplete!(data);
           } else {

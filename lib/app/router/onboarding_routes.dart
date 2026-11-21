@@ -2,6 +2,7 @@ import 'package:circuitry_flutter/circuitry_flutter.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kaisel/kaisel.dart';
 
+import 'package:arca/core/ai/ai.dart';
 import 'package:arca/core/onboarding/repositories/onboarding_repository.dart';
 import 'package:arca/features/onboarding/presentation/screens/screens.dart';
 
@@ -33,6 +34,7 @@ final class const _OnboardingUserName({final String? initialName}) extends Onboa
 final class const OnboardingModule([
   final OnboardingRepository? onboardingRepo,
   final VoidCallback? onCompleted,
+  final DocumentInferencePipeline? inferencePipeline,
 ]) extends RouteModule<OnboardingRoute> {
   @override
   List<OnboardingRoute> get initialStack => const [.welcome()];
@@ -40,6 +42,7 @@ final class const OnboardingModule([
   @override
   Widget buildPage(BuildContext context, OnboardingRoute route) {
     final repo = onboardingRepo ?? CircuitProvider.of(context).get<OnboardingRepository>();
+    final pipeline = inferencePipeline ?? CircuitProvider.maybeOf(context)?.get<DocumentInferencePipeline>();
 
     return switch (route) {
       _OnboardingWelcome() => WelcomeScreen(
@@ -51,6 +54,7 @@ final class const OnboardingModule([
         },
       ),
       _OnboardingDocumentScan() => DocumentScanScreen(
+        inferencePipeline: pipeline,
         onExtractionComplete: (data) => context.push(
           OnboardingRoute.extractedReview(
             extractedName: data.name,

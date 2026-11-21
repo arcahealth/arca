@@ -25,6 +25,27 @@ void main() {
       expect(text, isEmpty);
     });
 
+    test('OcrEngine.isSupported correctly validates file extensions', () {
+      expect(OcrEngine.isSupported('notes.txt'), isTrue);
+      expect(OcrEngine.isSupported('records.JSON'), isTrue);
+      expect(OcrEngine.isSupported('summary.md'), isTrue);
+      expect(OcrEngine.isSupported('labs.csv'), isTrue);
+
+      expect(OcrEngine.isSupported('scan.jpg'), isFalse);
+      expect(OcrEngine.isSupported('scan.jpeg'), isFalse);
+      expect(OcrEngine.isSupported('scan.png'), isFalse);
+      expect(OcrEngine.isSupported('doc.pdf'), isFalse);
+      expect(OcrEngine.isSupported('file_without_ext'), isFalse);
+    });
+
+    test('returns empty string when file is an unsupported format', () async {
+      final unsupportedFile = File('${tempDir.path}/report.jpg');
+      await unsupportedFile.writeAsString('fake image bytes');
+
+      final text = await engine.recognizeText(unsupportedFile.path);
+      expect(text, isEmpty);
+    });
+
     test('extracts text directly from textual files and fixtures', () async {
       final sampleFile = File('${tempDir.path}/clinical_note.txt');
       await sampleFile.writeAsString(

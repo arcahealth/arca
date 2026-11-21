@@ -186,7 +186,52 @@ void main() {
       expect(result, isA<DocumentCaptureCanceled>());
     });
 
-    test('pickFiles returns DocumentCaptureSuccess when files selected', () async {
+    test('pickFiles returns DocumentCaptureSuccess when supported files selected', () async {
+      FileType? passedType;
+      List<String>? passedExtensions;
+
+      final service = DefaultDocumentCaptureService(
+        null,
+        null,
+        ({type = FileType.any, allowedExtensions}) async {
+          passedType = type;
+          passedExtensions = allowedExtensions;
+          return [
+            _TestPlatformFile('prescription.txt', '/tmp/prescription.txt'),
+          ];
+        },
+      );
+
+      final result = await service.pickFiles();
+      expect(result, isA<DocumentCaptureSuccess>());
+      final success = result as DocumentCaptureSuccess;
+      expect(success.filePaths, ['/tmp/prescription.txt']);
+      expect(success.firstFilePath, '/tmp/prescription.txt');
+      expect(passedType, FileType.custom);
+      expect(passedExtensions, DocumentCaptureService.allowedFileExtensions);
+    });
+
+    test('pickFiles returns DocumentCaptureUnsupported when selected file has unsupported extension', () async {
+      final service = DefaultDocumentCaptureService(
+        null,
+        null,
+        ({type = FileType.any, allowedExtensions}) async {
+          return [
+            _TestPlatformFile('lab_report.jpg', '/tmp/lab_report.jpg'),
+          ];
+        },
+      );
+
+      final result = await service.pickFiles();
+      expect(result, isA<DocumentCaptureError>());
+      final error = result as DocumentCaptureError;
+      expect(error.failure, isA<DocumentCaptureUnsupported>());
+      final failure = error.failure as DocumentCaptureUnsupported;
+      expect(failure.message, contains('Unsupported file type'));
+      expect(failure.message, contains('.txt'));
+    });
+
+    test('pickFiles permits custom allowedExtensions when explicitly specified', () async {
       final service = DefaultDocumentCaptureService(
         null,
         null,
@@ -197,11 +242,10 @@ void main() {
         },
       );
 
-      final result = await service.pickFiles();
+      final result = await service.pickFiles(allowedExtensions: const ['pdf']);
       expect(result, isA<DocumentCaptureSuccess>());
       final success = result as DocumentCaptureSuccess;
       expect(success.filePaths, ['/tmp/prescription.pdf']);
-      expect(success.firstFilePath, '/tmp/prescription.pdf');
     });
 
     test('pickFiles returns DocumentCaptureCanceled when user cancels', () async {
@@ -252,7 +296,7 @@ void main() {
         ({type = FileType.any, allowedExtensions}) async {
           filesCount++;
           return [
-            _TestPlatformFile('doc.pdf', '/tmp/doc.pdf'),
+            _TestPlatformFile('doc.txt', '/tmp/doc.txt'),
           ];
         },
       );

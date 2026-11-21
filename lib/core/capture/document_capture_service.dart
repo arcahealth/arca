@@ -84,9 +84,20 @@ abstract interface class DocumentCaptureService {
   /// Chooses an image from the photo library or gallery.
   Future<DocumentCaptureResult> pickImage();
 
-  /// Chooses document or PDF files from storage.
+  /// Allowed file extensions when importing document files via [pickFiles].
+  ///
+  /// Image-based capture (.jpg, .png) is handled via [capturePhoto], [pickImage],
+  /// and [scanDocument].
+  static const List<String> allowedFileExtensions = [
+    'txt',
+    'json',
+    'md',
+    'csv',
+  ];
+
+  /// Chooses document files from storage matching [allowedExtensions].
   Future<DocumentCaptureResult> pickFiles({
-    List<String>? allowedExtensions = const ['pdf', 'png', 'jpg', 'jpeg'],
+    List<String>? allowedExtensions = allowedFileExtensions,
   });
 
   /// Captures documents or images from the requested [source].
@@ -220,7 +231,7 @@ final class DefaultDocumentCaptureService([
 
   @override
   Future<DocumentCaptureResult> pickFiles({
-    List<String>? allowedExtensions = const ['pdf', 'png', 'jpg', 'jpeg'],
+    List<String>? allowedExtensions = DocumentCaptureService.allowedFileExtensions,
   }) async {
     try {
       final files = await _filePickerLauncher(
@@ -234,6 +245,24 @@ final class DefaultDocumentCaptureService([
       if (paths.isEmpty) {
         return const DocumentCaptureResult.canceled();
       }
+
+      // Enforce extension validation in case the platform picker returned non-matching files
+      if (allowedExtensions != null && allowedExtensions.isNotEmpty) {
+        final validPaths = paths.where((p) {
+          final ext = p.split('.').last.toLowerCase();
+          return allowedExtensions.contains(ext);
+        }).toList();
+
+        if (validPaths.isEmpty) {
+          return DocumentCaptureResult.failure(
+            DocumentCaptureFailure.unsupported(
+              'Unsupported file type selected. Allowed formats: ${allowedExtensions.map((e) => '.$e').join(', ')}.',
+            ),
+          );
+        }
+        return DocumentCaptureResult.success(validPaths);
+      }
+
       return DocumentCaptureResult.success(paths);
     } on PlatformException catch (e) {
       if (_isPermissionDenied(e)) {

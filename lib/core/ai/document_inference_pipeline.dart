@@ -35,13 +35,25 @@ final class DefaultDocumentInferencePipeline implements DocumentInferencePipelin
       );
     }
 
+    // Validate that document files have supported formats
+    for (final path in filePaths) {
+      if (!OcrEngine.isSupported(path)) {
+        final fileName = path.split('/').last;
+        return DocumentInferenceFailure(
+          'Unsupported document format for "$fileName". Supported formats: ${OcrEngine.supportedExtensions.map((e) => '.$e').join(', ')}.',
+        );
+      }
+    }
+
     try {
       // 1. Optical Character Recognition (OCR) step
       final recognizedText = await _ocrEngine.recognizeAll(filePaths);
       final cleanText = recognizedText.trim();
 
       if (cleanText.isEmpty) {
-        return const DocumentInferenceSuccess(ExtractedProfileData.empty);
+        return const DocumentInferenceFailure(
+          'No readable clinical text could be extracted from the document.',
+        );
       }
 
       // 2. Personally Identifiable Information (PII) and clinical extraction step
@@ -49,6 +61,12 @@ final class DefaultDocumentInferencePipeline implements DocumentInferencePipelin
 
       // 3. Synthesize extracted profile data
       final profile = _synthesizeProfile(cleanText, entities);
+
+      if (profile.isEmpty) {
+        return const DocumentInferenceFailure(
+          'No clinical profile details (name, date of birth, medications, or allergies) could be found in the document.',
+        );
+      }
 
       return DocumentInferenceSuccess(profile);
     } catch (e) {
@@ -117,6 +135,16 @@ final class DefaultDocumentInferencePipeline implements DocumentInferencePipelin
           lastName = parts.last;
         }
       }
+    }
+
+    // If no clinical profile details or name components were detected, return empty singleton
+    if (firstName == null &&
+        middleName == null &&
+        lastName == null &&
+        dateOfBirth == null &&
+        medications.isEmpty &&
+        allergies.isEmpty) {
+      return ExtractedProfileData.empty;
     }
 
     // Compute overall extraction confidence
