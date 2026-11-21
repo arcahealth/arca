@@ -137,6 +137,16 @@ final class DefaultDocumentInferencePipeline implements DocumentInferencePipelin
       }
     }
 
+    // If no clinical profile details or name components were detected, return empty singleton
+    if (firstName == null &&
+        middleName == null &&
+        lastName == null &&
+        dateOfBirth == null &&
+        medications.isEmpty &&
+        allergies.isEmpty) {
+      return ExtractedProfileData.empty;
+    }
+
     // Compute overall extraction confidence
     final confidence = entities.isEmpty
         ? 0.0

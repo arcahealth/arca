@@ -39,7 +39,7 @@ final class FakeDocumentCaptureService implements DocumentCaptureService {
 
   @override
   Future<DocumentCaptureResult> pickFiles({
-    List<String>? allowedExtensions = DocumentCaptureService.defaultAllowedExtensions,
+    List<String>? allowedExtensions = DocumentCaptureService.allowedFileExtensions,
   }) async {
     filesCalls++;
     return filesResult;

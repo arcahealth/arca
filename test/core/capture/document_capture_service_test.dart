@@ -208,7 +208,7 @@ void main() {
       expect(success.filePaths, ['/tmp/prescription.txt']);
       expect(success.firstFilePath, '/tmp/prescription.txt');
       expect(passedType, FileType.custom);
-      expect(passedExtensions, DocumentCaptureService.defaultAllowedExtensions);
+      expect(passedExtensions, DocumentCaptureService.allowedFileExtensions);
     });
 
     test('pickFiles returns DocumentCaptureUnsupported when selected file has unsupported extension', () async {

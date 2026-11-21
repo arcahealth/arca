@@ -84,8 +84,11 @@ abstract interface class DocumentCaptureService {
   /// Chooses an image from the photo library or gallery.
   Future<DocumentCaptureResult> pickImage();
 
-  /// Default supported extensions for document file selection.
-  static const List<String> defaultAllowedExtensions = [
+  /// Allowed file extensions when importing document files via [pickFiles].
+  ///
+  /// Image-based capture (.jpg, .png) is handled via [capturePhoto], [pickImage],
+  /// and [scanDocument].
+  static const List<String> allowedFileExtensions = [
     'txt',
     'json',
     'md',
@@ -94,7 +97,7 @@ abstract interface class DocumentCaptureService {
 
   /// Chooses document files from storage matching [allowedExtensions].
   Future<DocumentCaptureResult> pickFiles({
-    List<String>? allowedExtensions = defaultAllowedExtensions,
+    List<String>? allowedExtensions = allowedFileExtensions,
   });
 
   /// Captures documents or images from the requested [source].
@@ -228,7 +231,7 @@ final class DefaultDocumentCaptureService([
 
   @override
   Future<DocumentCaptureResult> pickFiles({
-    List<String>? allowedExtensions = DocumentCaptureService.defaultAllowedExtensions,
+    List<String>? allowedExtensions = DocumentCaptureService.allowedFileExtensions,
   }) async {
     try {
       final files = await _filePickerLauncher(
