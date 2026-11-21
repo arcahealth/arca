@@ -39,7 +39,7 @@ final class FakeDocumentCaptureService implements DocumentCaptureService {
 
   @override
   Future<DocumentCaptureResult> pickFiles({
-    List<String>? allowedExtensions = const ['pdf', 'png', 'jpg', 'jpeg'],
+    List<String>? allowedExtensions = DocumentCaptureService.defaultAllowedExtensions,
   }) async {
     filesCalls++;
     return filesResult;

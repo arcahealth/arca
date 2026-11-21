@@ -423,6 +423,55 @@ void main() {
         expect(find.text('Failed to decode model tensors.'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      'displays error card and does not navigate when extracted data is empty',
+      (tester) async {
+        _setViewport(tester);
+        final fakeCapture = FakeDocumentCaptureService(
+          scanResult: const DocumentCaptureResult.success(['/tmp/blank.txt']),
+        );
+        final fakeInference = FakeDocumentInferencePipeline(
+          result: const DocumentInferenceResult.success(ExtractedProfileData.empty),
+        );
+        var extractionCompleteCalled = false;
+
+        await tester.pumpWidget(
+          _wrap(
+            DocumentScanScreen(
+              captureService: fakeCapture,
+              inferencePipeline: fakeInference,
+              onExtractionComplete: (_) => extractionCompleteCalled = true,
+              onCapture: () {},
+              onSwitchToManual: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Scan document
+        final scanBtn = find.text('Start Document Scan');
+        await tester.ensureVisible(scanBtn);
+        await tester.tap(scanBtn);
+        await tester.pumpAndSettle();
+
+        // Proceed to Review
+        final proceedBtn = find.text('Proceed to Review');
+        await tester.ensureVisible(proceedBtn);
+        await tester.tap(proceedBtn);
+        await tester.pumpAndSettle();
+
+        expect(fakeInference.processCalls, 1);
+        expect(extractionCompleteCalled, isFalse);
+        expect(find.text('Action Required'), findsOneWidget);
+        expect(
+          find.text(
+            'No clinical details could be identified in the document. Please try another document or enter details manually.',
+          ),
+          findsOneWidget,
+        );
+      },
+    );
   });
 
   group('ExtractedReviewScreen Tests', () {

@@ -20,11 +20,17 @@ final class const ExtractedProfileData({
   /// Full combined name assembled from first, middle, and last names.
   String get name => [firstName, middleName, lastName].where((part) => part.isNotEmpty).join(' ');
 
-  /// Returns true if this profile is empty.
-  bool get isEmpty => this == empty;
+  /// Returns true if no extracted clinical profile fields are present.
+  bool get isEmpty =>
+      firstName.isEmpty &&
+      middleName.isEmpty &&
+      lastName.isEmpty &&
+      dateOfBirth.isEmpty &&
+      medications.isEmpty &&
+      allergies.isEmpty;
 
   /// Returns true if at least one extracted clinical field is present.
-  bool get isNotEmpty => this != empty;
+  bool get isNotEmpty => !isEmpty;
 
   /// Returns a copy of this [ExtractedProfileData] with updated fields.
   ExtractedProfileData copyWith({

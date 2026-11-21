@@ -6,6 +6,20 @@ import 'model_assets.dart';
 
 /// Abstract interface for extracting textual content from captured document files and images.
 abstract interface class OcrEngine {
+  /// Canonical list of file extensions currently supported for text recognition.
+  static const List<String> supportedExtensions = [
+    'txt',
+    'json',
+    'md',
+    'csv',
+  ];
+
+  /// Checks whether the given [filePath] has a supported file extension.
+  static bool isSupported(String filePath) {
+    final lower = filePath.toLowerCase();
+    return supportedExtensions.any((ext) => lower.endsWith('.$ext'));
+  }
+
   /// Extracts text from a single image or document file at [filePath].
   Future<String> recognizeText(String filePath);
 

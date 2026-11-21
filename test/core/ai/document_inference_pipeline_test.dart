@@ -30,7 +30,7 @@ void main() {
       expect(failure.message, contains('No document files provided'));
     });
 
-    test('returns empty ExtractedProfileData when OCR text is empty', () async {
+    test('returns DocumentInferenceFailure when OCR text is empty', () async {
       final emptyFile = File('${tempDir.path}/empty.txt');
       await emptyFile.writeAsString('   ');
 
@@ -39,12 +39,37 @@ void main() {
       );
       final result = await pipeline.processDocuments([emptyFile.path]);
 
-      expect(result, isA<DocumentInferenceSuccess>());
-      final success = result as DocumentInferenceSuccess;
-      expect(success.data.isEmpty, isTrue);
-      expect(success.data.name, isEmpty);
-      expect(success.data.firstName, isEmpty);
-      expect(success.data.lastName, isEmpty);
+      expect(result, isA<DocumentInferenceFailure>());
+      final failure = result as DocumentInferenceFailure;
+      expect(failure.message, contains('No readable clinical text could be extracted'));
+    });
+
+    test('returns DocumentInferenceFailure when document format is unsupported', () async {
+      final unsupportedFile = File('${tempDir.path}/report.jpg');
+      await unsupportedFile.writeAsString('image bytes');
+
+      final pipeline = DefaultDocumentInferencePipeline();
+      final result = await pipeline.processDocuments([unsupportedFile.path]);
+
+      expect(result, isA<DocumentInferenceFailure>());
+      final failure = result as DocumentInferenceFailure;
+      expect(failure.message, contains('Unsupported document format'));
+      expect(failure.message, contains('report.jpg'));
+    });
+
+    test('returns DocumentInferenceFailure when no clinical profile entities can be identified', () async {
+      final sampleDoc = File('${tempDir.path}/random.txt');
+      await sampleDoc.writeAsString('Hello world');
+
+      final pipeline = DefaultDocumentInferencePipeline(
+        ocrEngine: FakeOcrEngine(text: 'Random unstructured paragraph without entities'),
+        piiExtractor: FakePiiExtractor(entities: const []),
+      );
+      final result = await pipeline.processDocuments([sampleDoc.path]);
+
+      expect(result, isA<DocumentInferenceFailure>());
+      final failure = result as DocumentInferenceFailure;
+      expect(failure.message, contains('No clinical profile details'));
     });
 
     test('successfully extracts profile and clinical records end-to-end', () async {
